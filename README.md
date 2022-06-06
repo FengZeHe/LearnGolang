@@ -247,7 +247,7 @@ No2 Orange
 
 - 变量定义： var xxx type
 
-```
+```go
 var a, b, c, d int = 1, 2, 3, 4
 
 var a, b, c, d = 1, true, "six", false
@@ -259,10 +259,10 @@ var a, b, c, d = 1, true, "six", false
 
 通过int, float32,float64,uint这些函数进行类型转换
 
-```
-	var i int = 12
-	var f float64 = float64(i)
-	var u uint = uint(f)
+```go
+var i int = 12
+var f float64 = float64(i)
+var u uint = uint(f)
 ```
 
 #### 数组和切片
@@ -271,28 +271,38 @@ var a, b, c, d = 1, true, "six", false
 - 访问元素：以下标形式访问
 - 定义一个数组： var myarray [len] type
 
-```
+```go
 //新建一个长度为3类型为int的数组
-	var myintarray [3]int
-	myintarray[0] = 1
+var myintarray [3]int
+myintarray[0] = 1
 	
 //若不知道数组长度可以用[...]替代
-	var myintarray = [...]int{7, 8, 9, 10, 5, 2, 3}
-	for i, v := range myintarray {
-		fmt.Println("i= ", i, "v= ", v)
-	}
+var myintarray = [...]int{7, 8, 9, 10, 5, 2, 3}
+for i, v := range myintarray {
+	fmt.Println("i= ", i, "v= ", v)
+}
+```
+
+- 切片的定义：切片是对数组有一个连续片段的引用
+- 定义一个切片：数组定义中不指定长度是切片
+- 切片在未初始化之前默认为nil,长度为0
+
+```
+
 ```
 
 
-
-- 切片的定义：切片是对数组有一个连续片段的引用
-- 定义一个切片：数组定义中不指定程度即为切片
-- 切片在未初始化之前默认为nil,长度为0
 
 #### Make和New
 
-- New返回指针地址
-- Make返回第一个元素，可以预设内存空间，避免未来的内存拷贝
+- New返回指针地址——new函数只接受一个参数（类型），并返回一个指向该类型内存地址的指针。
+- Make也是用于内存分配到，但与new不同的是它只用于**channel,map**以及**slice**的内存创建。Make返回第一个元素，可以预设内存空间，避免未来的内存拷贝。
+
+##### Make和New的主要区别
+
+1. Make智能用来分配或初始化类型为lcie,map,channel的数据，new可以份分配任意类型的数据
+2. new 分配返回的是指针，Make返回的是引用
+3. new分配的空间被清零。Make分配空间后开始初始化。
 
 #### Map
 
