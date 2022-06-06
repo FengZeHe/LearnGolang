@@ -179,21 +179,20 @@ ok      learngolang/gobasecommand       0.004s
 ```go
 // 有限的循环	
 var sum int
-	for i := 0; i < 10; i++ {
-		sum += i
-	}
+for i := 0; i < 10; i++ {
+	sum += i
+}
 
 //等价于while的循环
-	sum := 1
-	for sum < 1000 {
-		sum += sum
-	}
+sum := 1
+for sum < 1000 {
+	sum += sum
+}
 
 // 无限循环 就写一个for 就完成了
-	for {
-		fmt.Println("hi")
-	}
-
+for {
+	fmt.Println("hi")
+}
 ```
 
 
@@ -204,10 +203,10 @@ For range循环是将一个东西循环到底，可以遍历字符串、切片�
 
 ```go
 // 遍历字符串
-	str := "helloworld"
-	for _, v := range str {
-		fmt.Println(string(v), v)
-	}
+str := "helloworld"
+for _, v := range str {
+	fmt.Println(string(v), v)
+}
 // 循环出来v是int32类型的，需要再用string()转一下
 /*
 h 104
@@ -223,14 +222,14 @@ d 100
 */
 
 // 遍历Map
-	var myMap map[string]string
-	myMap = make(map[string]string)
-	myMap["No1"] = "Apple"
-	myMap["No2"] = "Orange"
+var myMap map[string]string
+myMap = make(map[string]string)
+myMap["No1"] = "Apple"
+myMap["No2"] = "Orange"
 
-	for i, v := range myMap {
-		fmt.Println(i, v)
-	}
+for i, v := range myMap {
+	fmt.Println(i, v)
+}
 	
 /*
 No1 Apple
