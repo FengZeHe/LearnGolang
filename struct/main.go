@@ -21,6 +21,7 @@ func main() {
 	person1.Num = 1
 	fmt.Println(person1.Name, person1.Num)
 
+	// Marshal＆Unmarshal
 	person2 := Teacher{"teacher1", "math"}
 	m, err := json.Marshal(person2)
 	if err == nil {
