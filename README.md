@@ -332,8 +332,6 @@ fmt.Println(m1.Name, m1.Age)
 
 
 
-
-
 ### 函数
 
 #### Main函数
