@@ -484,7 +484,7 @@ Go语言提供了一种数据类型即接口，它把所有的具有共性的方
 
 - 函数返回之前执行某个语句或函数
 
-- 常见的defer场景
+- 常见的defer场景：记得关闭你打开的资源
 
   - defer file.Close()
   - defer mu.Unlock()
@@ -494,7 +494,11 @@ Go语言提供了一种数据类型即接口，它把所有的具有共性的方
 
 #### Panic 和 recover
 
-- panic: 在系统出现不可恢复错误时主动调用panic，panic会使当前线程直接crash
+##### 概述
+
+panic和revocer是Go的两个内置函数，用于处理Go运行的错误。panic用于主动抛出异常，recover用于捕获panic抛出的错误。
+
+- panic: 在系统出现不可恢复错误时主动调用panic，panic会使当前线程直接crash。发生panic后，程序会从调用Panci的函数位置或发生panic的地方立即返回，逐层向上执行函数的defer语句，然后逐层打印函数调用堆栈，直到被recover捕获或运行到最外层函数。
 - defer :保证执行并把控制权交还给收到panic的函数调用者
 - recover : 函数从panic或错误场景中恢复
 
