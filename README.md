@@ -560,3 +560,12 @@ panic和revocer是Go的两个内置函数，用于处理Go运行的错误。pani
 - 声明方式
   - var identifier chan datatype
   - 操作符 <- 
+- 关闭通道
+  - close()
+  - 关闭通道的作用是告知接收者该通道没有新数据发送了
+  - 至于发送方需要关闭通道
+
+
+
+##### Context
+
