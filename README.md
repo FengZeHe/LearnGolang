@@ -22,7 +22,6 @@ Go 语言是一个可以编译高效，支持高并发的，面向垃圾回收�
    - GOPROXY -->  设置**goproxy --> export GO111MODULE=on --> export GOPROXY=https://goproxy.cn**
 4. 下载VS Code -->  **https://code.visualstudio.com/download**
 5. 设置Golang的VS Code插件  -->  **https://marketplace.visualstudio.com/items?itemName=golang.go**
-6. 
 
 
 
@@ -284,11 +283,20 @@ for i, v := range myintarray {
 ```
 
 - 切片的定义：切片是对数组有一个连续片段的引用
-- 定义一个切片：数组定义中不指定长度是切片
+- 定义一个切片：**数组定义中不指定长度是切片**
 - 切片在未初始化之前默认为nil,长度为0
 
-```
-
+```go
+myarr := [5]int{1, 2, 3, 4, 5}
+myslice := []int{6, 7, 8, 9}
+fmt.Println(myarr, myslice, reflect.TypeOf(myarr), reflect.TypeOf(myslice))
+myslice1 := myslice[1:]
+myslice2 := myslice[:2]
+myslice3 := myslice[:]
+myslice4 := append(myslice1, myslice2...)
+fmt.Println(myslice1, myslice2, myslice3, myslice4)
+myslice4[0] = 99
+fmt.Println(myslice4)
 ```
 
 
@@ -300,15 +308,60 @@ for i, v := range myintarray {
 
 ##### Make和New的主要区别
 
-1. Make智能用来分配或初始化类型为lcie,map,channel的数据，new可以份分配任意类型的数据
+1. **Make只能用来分配或初始化类型为slice,map,channel的数据**，new可以份分配任意类型的数据
 2. new 分配返回的是指针，Make返回的是引用
 3. new分配的空间被清零。Make分配空间后开始初始化。
+
+```go
+	var num *int
+	num = new(int)
+	*num = 100
+	fmt.Println(*num, num)
+	// 100 0xc0000180a0
+
+	myslice1 := make([]int, 0)
+	myslice2 := make([]int, 0)
+	myslice3 := make([]int, 10)
+	myslice4 := make([]int, 10, 20)
+
+	fmt.Println(myslice1, myslice2, myslice3, myslice4)
+```
+
+
 
 #### Map
 
 - 声明方法  var myMap = make(map[string]string)
 - 添加Map元素  myMap["a"] = ["b"]
 - 遍历Map元素 for range
+
+```go
+mymap := make(map[string]string)
+	//Map添加元素
+	mymap["name"] = "Feng"
+
+	//Map读取元素
+	fmt.Println(mymap["name"])
+
+	// 遍历Map
+	for k, v := range mymap {
+		fmt.Println(k, v)
+	}
+
+	// 删除Map元素
+	delete(mymap, "name")
+	fmt.Println("delete:", mymap["name"])
+
+	// 判断Map中是否存在某个元素
+	_, exist := mymap["name"]
+	if exist == false {
+		fmt.Println("元素不存在")
+	} else {
+		fmt.Println("元素存在")
+	}
+```
+
+
 
 #### 结构体、结构体标签和指针
 
@@ -353,7 +406,7 @@ func main() {
 - Init函数会在包初始化时运行
 - 谨慎使用init函数--> 当多个依赖项目引用统一项目，且被引用项目的初始化在 init 中完成，并且不可重复运行时，会导致启动错误
 
-```
+```go
 var myinit = 0
 func main() {
 	fmt.Println("myinit", myinit)
@@ -376,13 +429,23 @@ func init() {
 - 调用者忽略部分返回值
   -  a ,_ := returnfunc(args)
 
+```go
+func main(){
+  multStr, multNum, multBool := demoMultiple()
+}	
+
+func demoMultiple() (value string, num int, trueOrfalse bool) {
+	return "my string", 88, true
+}
+```
+
 
 
 #### 可变参数
 
 Go语言中允许传入
 
-```
+```go
 func main() {
 	a, b, _ := RetrunSomething(1, 2, 3, 4, 5, 6, 9, 1)
 	fmt.Println(a, b)
@@ -420,7 +483,7 @@ func RetrunSomething(args ...int) (a, b, c int) {
 
 - 函数作为参数传入其他函数，并在其他函数内部调用执行
 
-```
+```go
 func main() {
 	execAdd(1, 2, Add)
 }
@@ -438,27 +501,64 @@ func execAdd(a int, b int, f func(int, int)) {
 
 #### 闭包
 
-- 匿名函数
-  - 不能独立存在
-  - 可以复制给其他变量
-  - 可以直接调用
-  - 可作为函数的返回值
+**闭包是由函数和与其相关的引用环境组合而成的实体。**
+
+```go
+func main() {
+	value := test()
+	fmt.Println(value())
+	fmt.Println(value())
+	fmt.Println(value())
+	fmt.Println(value())
+	fmt.Println(value())
+}
+
+func test() func() int {
+	var a int
+	return func() int {
+		a++
+		return a
+	}
+}
+// 1,2,3,4,5 每调用一次a自增一次
+//value :=test() --> 通过把函数变量复制给value,value就变成了一个闭包，value保存着对a的引用，所以可以修改a。
+```
+
+
 
 #### 接口
 
 Go语言提供了一种数据类型即接口，它把所有的具有共性的方法定义在一起，任何其他方法只要实现了这些方法就是实现了这个接口。
 
 - 接口定义一组方法集合
-- 使用场景：kubernetes中有大量的接口抽象和多种实现
 - Struct无需显示声明实现interface,只需直接实现方法
 - Struct除实现interface定义的接口外还有额外的方法
 - 一个类型可实现多个接口（go语言的多重继承）
 - Go语言中接口不接受属性定义
 - 接口可以嵌套其他接口
 
-**Interface 是可能为 nil 的，所以针对 interface 的使用一定要预先判空，否则会引起程序 crash(nil panic)**
+**Interface 是可能为 nil 的，所以针对 interface 的使用一定要预先判空，否则会引起程序崩溃(nil panic)**
 
 **Struct 初始化意味着空间分配，对 struct 的引用不会出现空指针**
+
+```go
+type Student struct {
+	Name string
+	Num  int
+}
+
+type Teacher struct {
+	Name     string `json:Name`
+	Subjects string `json:Subjects`
+}
+
+func main(){
+  var person1 Student
+	person1.Name = "Feng"
+	person1.Num = 1
+	fmt.Println(person1.Name, person1.Num)
+}
+```
 
 
 
@@ -467,12 +567,40 @@ Go语言提供了一种数据类型即接口，它把所有的具有共性的方
 - reflect.TypeOf() 返回被检查对象的类型
 - reflect.TypeOf() 返回被检查对象的值
 
+```go
+str := "xxx"
+	fmt.Println(reflect.TypeOf(str),reflect.ValueOf(str))
+
+	myMap := make(map[string]string)
+	myMap["name"]= "Feng"
+	fmt.Println(reflect.TypeOf(myMap),reflect.TypeOf(myMap["name"]))
+
+	person := Student{name:"xu",id:1}
+	fmt.Println(person,reflect.TypeOf(person),reflect.ValueOf(person))
+```
+
 
 
 #### JSON编解码
 
 - Unmarshal  从string --> struct
 - Marshal 从struct --> string
+
+```go
+//接着上面struct的例子
+person2 := Teacher{"teacher1", "math"}
+	m, err := json.Marshal(person2)
+	if err == nil {
+		fmt.Println(string(m))
+	}
+
+	empJsonData := `{"Name":"Xu","Subjects":"Math"}`
+	empBytes := []byte(empJsonData)
+	var person3 Teacher
+	json.Unmarshal(empBytes, &person3)
+	fmt.Println(person3.Name)
+	fmt.Println(person3.Subjects)
+```
 
 
 
@@ -483,14 +611,22 @@ Go语言提供了一种数据类型即接口，它把所有的具有共性的方
 #### defer
 
 - 函数返回之前执行某个语句或函数
-
 - 常见的defer场景：记得关闭你打开的资源
 
   - defer file.Close()
   - defer mu.Unlock()
   - defer println("xxx")
 
-  
+
+```go
+	fmt.Println("hello")
+	defer fmt.Println("1")
+	defer fmt.Println("2")
+	fmt.Println("world")
+	defer fmt.Println("3")
+```
+
+
 
 #### Panic 和 recover
 
@@ -502,42 +638,19 @@ panic和revocer是Go的两个内置函数，用于处理Go运行的错误。pani
 - defer :保证执行并把控制权交还给收到panic的函数调用者
 - recover : 函数从panic或错误场景中恢复
 
+```go
+	defer func() {
+		fmt.Println("defer defer")
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+	panic("panic!!")
+```
+
 
 
 ### 多线程
-
-#### 并发和并行
-
-​	并发和并行的概念。并行：两个或多个事件在同一时间间隔发生；并行：两个或多个事件在同一时刻发生
-
-#### 协程
-
-- 进程
-
-  - 分配系统资源（CPU时间、内存等）基本单位
-  - 有独立的内存空间、切换开销大
-
-- 线程：进程中的一个执行流，是CPU调度并能独立运行的基本单位
-
-  - 同一进程中的多线程共享内存空间，线程切换代价小
-
-  - 多线程通讯方便
-
-  - 从内核层面来看线程其实也是一种特殊的进程，它跟父进程共享了打开的文件和文件系统信息，共
-
-    享了地址空间和信号处理函数
-
-- 协程
-
-  - Go 语言中的轻量级线程实现
-
-  - Golang 在 runtime、系统调用等多方面对 goroutine 调度进行了封装和处理，当遇到长时间执行
-
-    或者进行系统调用时，会主动把当前 goroutine 的 CPU (P) 转让出去，让其他 goroutine 能被调度
-
-    并执行，也就是 Golang 从语言层面支持了协程
-
-
 
 #### 线程和协程的差异
 
@@ -565,6 +678,19 @@ panic和revocer是Go的两个内置函数，用于处理Go运行的错误。pani
   - 关闭通道的作用是告知接收者该通道没有新数据发送了
   - 至于发送方需要关闭通道
 
+```go
+func main() {
+	test()
+	time.Sleep(time.Second)
+}
+
+func test() {
+	for i := 0; i < 10; i++ {
+		go fmt.Println(i)
+	}
+}
+```
+
 
 
 ##### Context
@@ -589,7 +715,7 @@ type Context interface {
 
 
 
-##### Context的时候方法
+##### Context方法
 
 - context.Background (Background是所有Context对象树的根，它不能被取消，它是一个emptyCtx的实例)
 - context.TODO
@@ -597,7 +723,29 @@ type Context interface {
 - context.WithValue (WithValue对应valueCtx ，WithValue是在Context中设置一个 map，这个Context以及它的后代的goroutine都可以拿到map 里的值)
 - context.WithCancel (返回一个cancelCtx示例，并返回一个函数，可以在外层直接调用cancelCtx.cancel()来取消Context)
 
+```go
+baseCtx := context.Background()
+	ctx := context.WithValue(baseCtx, "name", "feng")
+	ctxcancel, cancel := context.WithCancel(baseCtx)
+	fmt.Println(ctx.Value("name"))
 
+	go func() {
+		for {
+			select {
+			case <-ctxcancel.Done():
+				fmt.Println("done")
+				return
+			default:
+				fmt.Println("run")
+			}
+		}
+	}()
+
+	time.Sleep(1 * time.Second)
+	fmt.Println("Stop")
+	cancel()
+	time.Sleep(1 * time.Second)
+```
 
 
 
