@@ -569,3 +569,45 @@ panic和revocer是Go的两个内置函数，用于处理Go运行的错误。pani
 
 ##### Context
 
+##### 概述	
+
+​	context是上下文的意思，准确说是goroutine的上下文。可以用来传递取消信号，超时时间，截止时间等等
+
+```go
+type Context interface {
+  Deadline() (deadline time.Time, ok bool)
+  Done() <-chan struct{}
+  Err() error
+  Value(key interface{}) interface{}
+}
+```
+
+- Deadline 会返回一个time.Time，是当前Context应该结束的时间
+- Done方法在Context在被取消或超时时返回一个close的channel,告诉给context相关的函数要停止当前工作然后返回。
+- Err 返回context取消的原因
+- Value可以让goroutine共享一些数据。但使用数据到时候要注意同步，如读写要加锁。
+
+
+
+##### Context的时候方法
+
+- context.Background (Background是所有Context对象树的根，它不能被取消，它是一个emptyCtx的实例)
+- context.TODO
+- context.WithDeadline (返回一个timerCtx示例，设置具体的deadline时间，到达 deadline的时候，后代goroutine退出)
+- context.WithValue (WithValue对应valueCtx ，WithValue是在Context中设置一个 map，这个Context以及它的后代的goroutine都可以拿到map 里的值)
+- context.WithCancel (返回一个cancelCtx示例，并返回一个函数，可以在外层直接调用cancelCtx.cancel()来取消Context)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
