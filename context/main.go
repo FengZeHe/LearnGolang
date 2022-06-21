@@ -9,13 +9,13 @@ import (
 func main() {
 	baseCtx := context.Background()
 	ctx := context.WithValue(baseCtx, "name", "feng")
+	ctxcancel, cancel := context.WithCancel(baseCtx)
 	fmt.Println(ctx.Value("name"))
 
-	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		for {
 			select {
-			case <-ctx.Done():
+			case <-ctxcancel.Done():
 				fmt.Println("done")
 				return
 			default:
