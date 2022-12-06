@@ -5,6 +5,10 @@ import (
 )
 
 // 定义接口
+/*
+	Interface 里面只能有方法，方法也不需要func 关键字
+	接口是一组行为的抽象， 在编程中尽量使用接口  面向接口编程
+*/
 type Phone interface {
 	call()
 }
@@ -32,5 +36,4 @@ func main() {
 
 	phone = new(IPhone)
 	phone.call()
-
 }
