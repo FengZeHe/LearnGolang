@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 
+// 函数闭包 = 匿名函数 + 定义它的上下文
 func main() {
 	value := test()
 	fmt.Println(value())
