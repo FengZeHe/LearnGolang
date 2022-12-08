@@ -26,4 +26,8 @@ func main() {
 		fmt.Println("wrapped is err")
 	}
 
+	/*
+		As找到err链中与target匹配的第一个错误，如果找到则将target设置为错误值并返回true,否则返回false
+	*/
+	fmt.Println(errors.As(err3, &err))
 }
