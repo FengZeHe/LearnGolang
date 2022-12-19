@@ -3,5 +3,9 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println("shit this is array")
+	var arr = [10]int{}
+	for i := 0; i < len(arr); i++ {
+		fmt.Print(&arr[i], " ")
+	}
+
 }
