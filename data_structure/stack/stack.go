@@ -41,3 +41,19 @@ func (s *ItemStack) Pop() Item {
 	s.items = s.items[0 : len(s.items)-1]
 	return item
 }
+
+var stack *ItemStack
+
+func main() {
+	stack = NewStack()
+
+	stack.Print()
+
+	stack.Push("One")
+	stack.Push("Two")
+	stack.Push("Three")
+	stack.Print()
+
+	stack.Pop()
+	stack.Print()
+}
