@@ -23,5 +23,4 @@ func BubbleSort(arr []int) {
 func main() {
 	var arr = []int{4, 5, 6, 3, 2, 1}
 	BubbleSort(arr)
-	//fmt.Println(arr)
 }
