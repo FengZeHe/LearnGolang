@@ -33,9 +33,18 @@ func CreateUser(user *models.User) (err error) {
 	return nil
 }
 
+// 根据邮箱查询用户信息
 func FindByEmail(user *models.User) (result models.User, err error) {
 	if err = db.Where("email = ?", user.Email).Find(&result).Error; err != nil {
 		return result, err
 	}
 	return result, nil
+}
+
+// 更新用户信息
+func UpdateUserProfile(user *models.User) (err error) {
+	if err = db.Save(&user).Error; err != nil {
+		return err
+	}
+	return nil
 }

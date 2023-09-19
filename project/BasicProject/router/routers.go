@@ -2,6 +2,7 @@ package router
 
 import (
 	"BasicProject/controller"
+	"BasicProject/middlewares/JWT"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +18,7 @@ func SetupRouter(mode string) *gin.Engine {
 	{
 		v1.POST("/signin", controller.HandleUserSiginIn)
 		v1.POST("/login", controller.HanlerUserLogin)
-		v1.GET("/user/profile", controller.HandlerUserProfile)
+		v1.GET("/user/profile", JWT.JWTAuth(), controller.HandlerUserProfile)
 		v1.POST("/user/edit", controller.HandleEditProfile)
 	}
 	return r

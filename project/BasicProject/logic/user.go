@@ -37,3 +37,13 @@ func GetUserProfile(email string) (user models.User, err error) {
 	user, err = mysql.FindByEmail(&tempUser)
 	return user, err
 }
+
+// 修改用户信息
+func EditUserProfile(user *models.User) (err error) {
+	if err = mysql.UpdateUserProfile(user); err != nil {
+		return err
+	} else {
+		return nil
+	}
+
+}

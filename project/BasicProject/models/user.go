@@ -18,7 +18,7 @@ type User struct {
 	Phone    string `json:"phone" gorm:"default:null"`
 	Birthday int64  `json:"birthday"  gorm:"column:birthday;default:null"`
 	Nickname string `json:"nickname" gorm:"column:nickname;default:null"`
-	Aboutme  string `json:"aboutme"`
+	Aboutme  string `json:"aboutme" gorm:"column:about_me;default:null"`
 	Ctime    int64  `json:"ctime"`
 	Utime    int64  `json:"utime" `
 }
