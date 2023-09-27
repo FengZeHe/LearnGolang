@@ -5,6 +5,7 @@ import (
 	"BasicProject/middlewares/JWT"
 	"BasicProject/models"
 	"fmt"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
@@ -22,8 +23,8 @@ func HandleUserSiginIn(ctx *gin.Context) {
 	}
 	// 3. 交给logic层
 	if err := logic.SignIn(fo); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Sign In Error",
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
 		})
 	} else {
 		//生成token
@@ -91,4 +92,17 @@ func HandleEditProfile(ctx *gin.Context) {
 			"message": err,
 		})
 	}
+}
+
+func HandleTestSession(c *gin.Context) {
+	c.JSON(http.StatusOK, "Welcome ")
+}
+
+func HandleGetSession(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Set("user-session", "username")
+	session.Save()
+	c.JSON(http.StatusOK, gin.H{
+		"message": "ok",
+	})
 }
