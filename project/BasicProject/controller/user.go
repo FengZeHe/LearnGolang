@@ -19,6 +19,9 @@ func HandleUserSiginIn(ctx *gin.Context) {
 	// 2.校验数据的有效性
 	if err := ctx.ShouldBindJSON(&fo); err != nil {
 		zap.L().Error("Sign In with invalid params", zap.Error(err))
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": "请求参数错误",
+		})
 		return
 	}
 	// 3. 交给logic层

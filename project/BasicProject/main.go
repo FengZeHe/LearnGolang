@@ -4,7 +4,9 @@ import (
 	"BasicProject/dao/mysql"
 	"BasicProject/router"
 	"BasicProject/setting"
+	"fmt"
 	"log"
+	"strconv"
 )
 
 func main() {
@@ -19,6 +21,10 @@ func main() {
 
 	// 初始化路由
 	r := router.SetupRouter(setting.Conf.Mode)
-	r.Run(":8085")
+	port := fmt.Sprintf(":%s", strconv.Itoa(setting.Conf.Port))
+	err := r.Run(port)
+	if err != nil {
+		return
+	}
 
 }
