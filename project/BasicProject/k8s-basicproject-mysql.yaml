@@ -1,0 +1,88 @@
+# 定义资源的版本和类型
+apiVersion: v1
+# 定义资源的类型
+kind: Service
+# 定义资源的名称
+metadata:
+  name: basic-project-mysql
+# 定义资源的规格、内容
+spec:
+  type: LoadBalancer
+  # 定义端口
+  ports:
+    # 服务的端口号
+    - port: 3309
+      # 名称
+      name: mysql
+      # 服务的协议，通常是TCP
+      protocol: TCP
+      # Pod上的目标端口
+      targetPort: 3306
+  # selector 定义了哪些Pod可以被此Server访问，通常是通过标签选择器实现的
+  selector:
+    app: basic-project-mysql
+
+---
+# 定义资源的版本
+apiVersion: apps/v1
+# 定义资源的类型
+kind: Deployment
+# 定义资源的名称和标签
+metadata:
+  name: basic-project-mysql
+# 定义资源的规格
+spec:
+  # 定义那些Pod可以被Deployment管理
+  selector:
+    matchLabels:
+      app: basic-project-mysql
+  template:
+    metadata:
+      labels:
+        app: basic-project-mysql
+    spec:
+      containers:
+        - name: mysql-8
+          env:
+            - name: MYSQL-ROOT-PASSWORD
+              value: "123456"
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - mountPath: /mysql
+              name: mysql-storage
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: basic-project-mysql-pv-claim
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: basic-project-mysql-pv-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kine: PersistentVolume
+metadata:
+  name: basic-project-mysql-pv-claim
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+    accessModes:
+      - ReadWriteOnce
+    hostPath:
+      path: "/mnt/data"

@@ -11,3 +11,8 @@ docker:
 	# 打包镜像
 
 	@docker build -t basic_project:v1 .
+
+.PHONY: clean
+clean:
+	@rm main || true
+	@echo "clean success"
