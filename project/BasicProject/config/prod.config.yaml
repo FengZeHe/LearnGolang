@@ -4,8 +4,8 @@ port: 8081
 version: "v0.0.1"
 
 mysql:
-  host: "30.116.184.138"
-  port: 3309
+  host: "basic-project-mysql"
+  port: 3306
   user: "root"
   password: "123456"
   dbname: "webook"

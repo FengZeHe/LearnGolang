@@ -1,0 +1,18 @@
+version: '3'
+services:
+  db:
+    image: 'mysql:8.0'
+    container_name: 'basic-project-mysql'
+#    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: '123456'
+      MYSQL_DATABASE: webook
+    volumes:
+      - ./data:/var/lib/mysql
+    ports:
+      - '13308:3306'
+  backend:
+    image: basic_project:v1
+    container_name: 'basic-project'
+    ports:
+      - '8081:8081'
