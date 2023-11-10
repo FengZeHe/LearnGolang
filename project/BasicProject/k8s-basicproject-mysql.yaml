@@ -33,6 +33,7 @@ metadata:
 # 定义资源的规格
 spec:
   # 定义那些Pod可以被Deployment管理
+  replicas: 0
   selector:
     matchLabels:
       app: basic-project-mysql
@@ -44,14 +45,16 @@ spec:
       containers:
         - name: mysql-8
           env:
-            - name: MYSQL-ROOT-PASSWORD
+            - name: MYSQL_ROOT_PASSWORD
               value: "123456"
+            - name: MYSQL_DATABASE
+              value: "webook"
           image: mysql:8.0
           ports:
             - containerPort: 3306
               name: mysql
           volumeMounts:
-            - mountPath: /mysql
+            - mountPath: /var/lib/mysql
               name: mysql-storage
       volumes:
         - name: mysql-storage
@@ -73,16 +76,14 @@ spec:
 
 ---
 apiVersion: v1
-kine: PersistentVolume
+kind: PersistentVolume
 metadata:
   name: basic-project-mysql-pv-claim
-  labels:
-    type: local
 spec:
   storageClassName: manual
   capacity:
     storage: 1Gi
-    accessModes:
-      - ReadWriteOnce
-    hostPath:
-      path: "/mnt/data"
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
