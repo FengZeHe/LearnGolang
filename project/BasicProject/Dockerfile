@@ -8,6 +8,8 @@ COPY . .
 
 ENV GOPROXY=https://goproxy.io
 
+RUN go mod tidy
+
 RUN go build -o main .
 
 FROM alpine:3.10.0
