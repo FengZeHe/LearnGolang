@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"log"
 )
 
 var db *gorm.DB
@@ -22,6 +23,6 @@ func Init(cfg *setting.Mysql) (err error) {
 	if err = db.AutoMigrate(&user); err != nil {
 		return err
 	}
-	fmt.Println("Mysql init success")
+	log.Println("Mysql init success")
 	return nil
 }

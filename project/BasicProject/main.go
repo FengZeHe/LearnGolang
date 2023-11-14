@@ -2,6 +2,7 @@ package main
 
 import (
 	"BasicProject/dao/mysql"
+	"BasicProject/middlewares/cache"
 	"BasicProject/router"
 	"BasicProject/setting"
 	"fmt"
@@ -17,6 +18,10 @@ func main() {
 	// 初始化MySQL
 	if err := mysql.Init(setting.Conf.Mysql); err != nil {
 		log.Println("init Mysql DB error")
+	}
+
+	if err := cache.RedisInit(); err != nil {
+		log.Println("init Redis DB error")
 	}
 
 	// 初始化路由
