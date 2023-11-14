@@ -29,7 +29,7 @@ type Mysql struct {
 
 func Init() error {
 	// 设置viper读取的配置文件路径
-	viper.SetConfigFile("./config/config.yaml")
+	viper.SetConfigFile("./config/dev.config.yaml")
 	viper.WatchConfig()
 
 	viper.OnConfigChange(func(in fsnotify.Event) {

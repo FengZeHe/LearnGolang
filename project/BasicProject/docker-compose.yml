@@ -3,7 +3,7 @@ services:
   db:
     image: 'mysql:8.0'
     container_name: 'basic-project-mysql'
-    # 设置Mysql_native_password
+    # 设置mysql_native_password
     command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: '123456'
