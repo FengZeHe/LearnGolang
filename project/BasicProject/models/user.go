@@ -12,7 +12,7 @@ type LoginForm struct {
 }
 
 type User struct {
-	Id       string `json:"id" `
+	Id       string `json:"id"`
 	Email    string `json:"email" gorm:"type:varchar(255);unique"`
 	Password string `json:"-" gorm:"type:varchar(255)"`
 	Phone    string `json:"phone" gorm:"type:varchar(255);default:null"`
@@ -20,5 +20,5 @@ type User struct {
 	Nickname string `json:"nickname" gorm:"type:varchar(255);column:nickname;default:null"`
 	Aboutme  string `json:"aboutme" gorm:"type:varchar(255);column:about_me;default:null"`
 	Ctime    int64  `json:"ctime"`
-	Utime    int64  `json:"utime" `
+	Utime    int64  `json:"utime"`
 }

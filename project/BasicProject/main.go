@@ -17,11 +17,11 @@ func main() {
 
 	// 初始化MySQL
 	if err := mysql.Init(setting.Conf.Mysql); err != nil {
-		log.Println("init Mysql DB error")
+		log.Println("init Mysql DB error", err)
 	}
 
 	if err := cache.RedisInit(); err != nil {
-		log.Println("init Redis DB error")
+		log.Println("init Redis DB error", err)
 	}
 
 	// 初始化路由

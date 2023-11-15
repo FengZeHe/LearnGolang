@@ -5,6 +5,7 @@ import (
 	"BasicProject/models"
 	"BasicProject/pkg/bcrypt"
 	"BasicProject/pkg/snowflake"
+	"log"
 	"time"
 )
 
@@ -24,11 +25,12 @@ func SignIn(user *models.RegisterForm) (err error) {
 }
 
 // 处理登录逻辑
-func Login(user *models.LoginForm) (result bool, err error) {
+func Login(user *models.LoginForm) (result bool, tempUser models.User, err error) {
 	tempuser := models.User{Email: user.Email, Password: user.Password}
 	dbuser, err := mysql.FindByEmail(&tempuser)
+	log.Println(dbuser)
 	result = bcrypt.ComparePwd(dbuser.Password, tempuser.Password)
-	return result, err
+	return result, dbuser, err
 }
 
 // 获取用户信息

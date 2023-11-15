@@ -49,10 +49,10 @@ func HanlerUserLogin(ctx *gin.Context) {
 		return
 	}
 	// 3. 交给Logic层
-	result, _ := logic.Login(fo)
+	result, tempuser, _ := logic.Login(fo)
 	if result == true {
 		// 登录成功
-		strToken, _ := JWT.GenToken(fo.Email)
+		strToken, _ := JWT.GenToken(tempuser.Id)
 		ctx.JSON(http.StatusOK, gin.H{
 			"message": "login success",
 			"token":   strToken,
@@ -74,10 +74,12 @@ func HandlerUserProfile(ctx *gin.Context) {
 		})
 	}
 	userinfo, _ := logic.GetUserProfile(emailStr)
+	// 设置userinfo到redis中缓存
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "success",
 		"data":    userinfo,
 	})
+
 }
 
 func HandleEditProfile(ctx *gin.Context) {

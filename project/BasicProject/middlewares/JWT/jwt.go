@@ -14,7 +14,7 @@ var jwtKey = []byte("my_secret")
 
 // MyClaims 定义jwt对象struct
 type MyClaims struct {
-	Email string `json:"email"`
+	UserId string `json:"userid"`
 	jwt.RegisteredClaims
 }
 
@@ -51,8 +51,8 @@ func JWTAuth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		//将用户名设置到上下文
-		c.Set("email", claims.Email)
+		//将用户id 设置到上下文
+		c.Set("userid", claims.UserId)
 		c.Next()
 	}
 }
@@ -72,9 +72,9 @@ func ParseToken(tokenStr string) (myclaims *MyClaims, err error) {
 }
 
 // 生成token
-func GenToken(email string) (tokenStr string, err error) {
+func GenToken(userId string) (tokenStr string, err error) {
 	expirationTime := time.Now().Add(10 * time.Hour)
-	claims := &MyClaims{Email: email, RegisteredClaims: jwt.RegisteredClaims{
+	claims := &MyClaims{UserId: userId, RegisteredClaims: jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(expirationTime),
 	}}
 
