@@ -20,7 +20,7 @@ func main() {
 		log.Println("init Mysql DB error", err)
 	}
 
-	if err := cache.RedisInit(); err != nil {
+	if err := cache.RedisInit(setting.Conf.Redis); err != nil {
 		log.Println("init Redis DB error", err)
 	}
 

@@ -1,21 +1,27 @@
-version: '3'
+version: '3.7'
 services:
   db:
     image: 'mysql:8.0'
     container_name: 'basic-project-mysql'
-    # 设置mysql_native_password
     command: --default-authentication-plugin=mysql_native_password
     environment:
-      MYSQL_ROOT_PASSWORD: '123456'
+      MYSQL_ROOT_PASSWORD: 12345678
       MYSQL_DATABASE: webook
     volumes:
       - ./data:/var/lib/mysql
     ports:
-      - '13308:3306'
+      - '13306:3306'
+  redis:
+    image: 'redis:7.2.3'
+    container_name: 'basic_project_redis'
+    ports:
+      - '16379:6379'
   backend:
     depends_on:
+      - redis
       - db
-    image: basic_project:v1
+    image: 'basic_project:v1'
     container_name: 'basic-project'
     ports:
       - '8085:8085'
+    restart: always

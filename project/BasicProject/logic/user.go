@@ -34,9 +34,15 @@ func Login(user *models.LoginForm) (result bool, tempUser models.User, err error
 }
 
 // 获取用户信息
-func GetUserProfile(email string) (user models.User, err error) {
+func GetUserProfileByEmail(email string) (user models.User, err error) {
 	tempUser := models.User{Email: email}
 	user, err = mysql.FindByEmail(&tempUser)
+	return user, err
+}
+
+func GetUserProfileById(id string) (user models.User, err error) {
+	tempUser := models.User{Id: id}
+	user, err = mysql.FindById(&tempUser)
 	return user, err
 }
 

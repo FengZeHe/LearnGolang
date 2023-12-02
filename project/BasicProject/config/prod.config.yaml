@@ -7,7 +7,11 @@ mysql:
   host: "db"
   port: 3306
   user: "root"
-  password: "123456"
+  password: "12345678"
   dbname: "webook"
   max_open_conns: 200
   max_idle_conns: 50
+
+redis:
+  host: "redis"
+  port: 6379

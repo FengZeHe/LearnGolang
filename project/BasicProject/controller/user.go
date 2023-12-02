@@ -3,11 +3,13 @@ package controller
 import (
 	"BasicProject/logic"
 	"BasicProject/middlewares/JWT"
+	"BasicProject/middlewares/cache"
 	"BasicProject/models"
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"log"
 	"net/http"
 )
 
@@ -66,19 +68,22 @@ func HanlerUserLogin(ctx *gin.Context) {
 
 // 处理获取用户信息请求
 func HandlerUserProfile(ctx *gin.Context) {
-	email, _ := ctx.Get("email")
-	emailStr := fmt.Sprintf("%v", email)
-	if len(emailStr) <= 0 {
+	userId, _ := ctx.Get("userid")
+	userIdStr := fmt.Sprintf("%v", userId)
+	if len(userIdStr) <= 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "Get User Profile Error",
 		})
 	}
-	userinfo, _ := logic.GetUserProfile(emailStr)
+	userinfo, _ := logic.GetUserProfileById(userIdStr)
 	// 设置userinfo到redis中缓存
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "success",
 		"data":    userinfo,
 	})
+	if err := cache.SetCacheByUserId(&userinfo, userinfo.Id); err != nil {
+		log.Println("Set User Profile Cache ERROR", err)
+	}
 
 }
 
