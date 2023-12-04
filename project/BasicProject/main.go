@@ -5,13 +5,17 @@ import (
 	"BasicProject/middlewares/cache"
 	"BasicProject/router"
 	"BasicProject/setting"
+	"flag"
 	"fmt"
 	"log"
 	"strconv"
 )
 
 func main() {
-	if err := setting.Init(); err != nil {
+	env := flag.String("env", "", "set env")
+	flag.Parse()
+
+	if err := setting.Init(*env); err != nil {
 		log.Println("setting Init ERROR:", err)
 	}
 

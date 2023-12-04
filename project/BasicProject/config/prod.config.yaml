@@ -1,5 +1,5 @@
 name: "basicproject"
-mode: "dev"
+mode: "prod"
 port: 8085
 version: "v0.0.1"
 

@@ -1,6 +1,6 @@
 name: "basicproject"
 mode: "dev"
-port: 8081
+port: 8085
 version: "v0.0.1"
 
 mysql:

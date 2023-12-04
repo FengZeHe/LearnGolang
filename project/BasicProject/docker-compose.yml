@@ -7,8 +7,9 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: 12345678
       MYSQL_DATABASE: webook
+    # 要确保要挂载的目录存在且有正确的读取权限
     volumes:
-      - ./data:/var/lib/mysql
+      - /var/lib/mysql
     ports:
       - '13306:3306'
   redis:

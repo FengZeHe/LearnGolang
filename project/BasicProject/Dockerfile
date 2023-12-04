@@ -21,4 +21,4 @@ COPY --from=builder /app/config/prod.config.yaml /app/config/config.yaml
 
 EXPOSE 8085
 
-CMD ["/app/main"]
+CMD ["/app/main","-env","prod"]

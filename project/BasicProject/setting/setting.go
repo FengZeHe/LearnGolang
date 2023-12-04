@@ -33,9 +33,13 @@ type Redis struct {
 	Port int    `mapstructure:"port"`
 }
 
-func Init() error {
+func Init(env string) error {
 	// 设置viper读取的配置文件路径
-	viper.SetConfigFile("./config/config.yaml")
+	if env == "prod" {
+		viper.SetConfigFile("./config/config.yaml")
+	} else {
+		viper.SetConfigFile("./config/dev.config.yaml")
+	}
 	viper.WatchConfig()
 
 	viper.OnConfigChange(func(in fsnotify.Event) {
