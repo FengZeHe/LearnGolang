@@ -17,6 +17,7 @@ func SetupRouter(mode string) *gin.Engine {
 	r := gin.New()
 	r.Use(cors.Default())
 	session.InitSession(r)
+
 	v1 := r.Group("/api/v1")
 	{
 		v1.POST("/signin", controller.HandleUserSiginIn)
@@ -30,6 +31,7 @@ func SetupRouter(mode string) *gin.Engine {
 		v2.GET("/getsession", controller.HandleGetSession)
 		v2.GET("/login", session.SessionMiddleware(), controller.HandleTestSession)
 	}
+	r.GET("/hello", controller.HandleHello)
 
 	return r
 

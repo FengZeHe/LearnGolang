@@ -1,0 +1,36 @@
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: basic-project-redis
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 16379
+      name: redis
+      protocol: TCP
+      targetPort: 6379
+  selector:
+    app: basic-project-redis
+
+# Deployment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basic-project-redis-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: basic-project-redis
+  template:
+    metadata:
+      labels:
+        app: basic-project-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.2.3
+          ports:
+            - containerPort: 6379
