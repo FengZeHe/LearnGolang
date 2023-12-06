@@ -8,9 +8,9 @@ spec:
     app: basic-project
   ports:
     - name: http
-      port: 8086
+      port: 8081
       protocol: TCP
-      targetPort: 8086
+      targetPort: 8081
 
 ---
 apiVersion: apps/v1
@@ -18,7 +18,7 @@ kind : Deployment
 metadata:
   name: basic-project
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: basic-project

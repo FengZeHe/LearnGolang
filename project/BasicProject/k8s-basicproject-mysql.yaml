@@ -11,7 +11,7 @@ spec:
   # 定义端口
   ports:
     # 服务的端口号
-    - port: 3309
+    - port: 3308
       # 名称
       name: mysql
       # 服务的协议，通常是TCP
@@ -46,7 +46,7 @@ spec:
         - name: mysql-8
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: "123456"
+              value: "12345678"
             - name: MYSQL_DATABASE
               value: "webook"
           image: mysql:8.0

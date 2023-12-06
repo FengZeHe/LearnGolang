@@ -6,7 +6,7 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-    - port: 16379
+    - port: 6380
       name: redis
       protocol: TCP
       targetPort: 6379
