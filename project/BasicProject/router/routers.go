@@ -4,8 +4,8 @@ import (
 	"BasicProject/controller"
 	"BasicProject/middlewares/JWT"
 	"BasicProject/middlewares/cache"
+	"BasicProject/middlewares/cors"
 	"BasicProject/middlewares/session"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +15,7 @@ func SetupRouter(mode string) *gin.Engine {
 	}
 
 	r := gin.New()
-	r.Use(cors.Default())
+	r.Use(cors.Cors())
 	session.InitSession(r)
 
 	v1 := r.Group("/api/v1")
