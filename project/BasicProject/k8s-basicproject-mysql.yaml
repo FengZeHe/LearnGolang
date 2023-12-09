@@ -33,7 +33,7 @@ metadata:
 # 定义资源的规格
 spec:
   # 定义那些Pod可以被Deployment管理
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: basic-project-mysql
@@ -46,7 +46,7 @@ spec:
         - name: mysql-8
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: "123456"
+              value: "12345678"
             - name: MYSQL_DATABASE
               value: "webook"
           image: mysql:8.0

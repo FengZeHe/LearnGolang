@@ -4,7 +4,7 @@ port: 8086
 version: "v0.0.1"
 
 mysql:
-  host: "30.116.184.138"
+  host: "192.168.2.119"
   port: 3309
   user: "root"
   password: "12345678"
@@ -13,5 +13,5 @@ mysql:
   max_idle_conns: 50
 
 redis:
-  host: "30.116.184.138"
+  host: "192.168.2.119"
   port: 16379

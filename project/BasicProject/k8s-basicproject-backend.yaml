@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: basic-project
+  name: basic-project-backend
 spec:
   type: LoadBalancer
   selector:
-    app: basic-project
+    app: basic-project-backend
   ports:
     - name: http
       port: 8086
@@ -16,16 +16,16 @@ spec:
 apiVersion: apps/v1
 kind : Deployment
 metadata:
-  name: basic-project
+  name: basic-project-backend
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
-      app: basic-project
+      app: basic-project-backend
   template:
     metadata:
       labels:
-        app: basic-project
+        app: basic-project-backend
     spec:
       containers:
         - name: basic-project

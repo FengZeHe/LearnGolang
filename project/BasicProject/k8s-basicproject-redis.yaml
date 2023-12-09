@@ -20,7 +20,7 @@ kind: Deployment
 metadata:
   name: basic-project-redis-deployment
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: basic-project-redis
