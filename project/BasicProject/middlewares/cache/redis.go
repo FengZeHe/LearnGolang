@@ -63,8 +63,8 @@ func CacheMiddleWare(kind string) gin.HandlerFunc {
 				c.Next()
 			}
 			c.JSON(http.StatusOK, gin.H{
-				"message": "success",
-				"data":    res,
+				"message":     "success",
+				"userprofile": res,
 			})
 			c.Abort()
 		} else {

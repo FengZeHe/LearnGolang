@@ -1,11 +1,11 @@
 name: "basicproject"
 mode: "prod"
-port: 8081
+port: 8000
 version: "v0.0.1"
 
 mysql:
-  host: "30.116.184.138"
-  port: 3308
+  host: "db"
+  port: 3306
   user: "root"
   password: "12345678"
   dbname: "webook"
@@ -13,5 +13,5 @@ mysql:
   max_idle_conns: 50
 
 redis:
-  host: "30.116.184.138"
-  port: 6380
+  host: "redis"
+  port: 6379

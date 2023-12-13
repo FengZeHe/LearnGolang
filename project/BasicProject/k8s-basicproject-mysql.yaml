@@ -33,7 +33,7 @@ metadata:
 # 定义资源的规格
 spec:
   # 定义那些Pod可以被Deployment管理
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: basic-project-mysql

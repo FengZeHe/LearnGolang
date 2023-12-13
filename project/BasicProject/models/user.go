@@ -18,7 +18,14 @@ type User struct {
 	Phone    string `json:"phone" gorm:"type:varchar(255);default:null"`
 	Birthday int64  `json:"birthday"  gorm:"column:birthday;default:null"`
 	Nickname string `json:"nickname" gorm:"type:varchar(255);column:nickname;default:null"`
-	Aboutme  string `json:"aboutme" gorm:"type:varchar(255);column:about_me;default:null"`
+	Aboutme  string `json:"aboutme" gorm:"type:varchar(255);column:aboutme;default:null"`
 	Ctime    int64  `json:"ctime"`
 	Utime    int64  `json:"utime"`
+}
+
+type EditUserProfile struct {
+	Email    string `json:"email"`
+	Birthday int64  `json:"birthday"`
+	Nickname string `json:"nickname"`
+	Aboutme  string `json:"aboutme"`
 }

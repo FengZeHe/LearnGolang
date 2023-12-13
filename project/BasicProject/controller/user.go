@@ -78,8 +78,8 @@ func HandlerUserProfile(ctx *gin.Context) {
 	userinfo, _ := logic.GetUserProfileById(userIdStr)
 	// 设置userinfo到redis中缓存
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "success",
-		"data":    userinfo,
+		"message":     "success",
+		"userprofile": userinfo,
 	})
 	if err := cache.SetCacheByUserId(&userinfo, userinfo.Id); err != nil {
 		log.Println("Set User Profile Cache ERROR", err)
@@ -88,20 +88,25 @@ func HandlerUserProfile(ctx *gin.Context) {
 }
 
 func HandleEditProfile(ctx *gin.Context) {
-	// 1.获取请求参数
-	var fo *models.User
 
+	// 1.获取请求参数
+	var fo *models.EditUserProfile
 	// 2.校验数据的有效性
 	if err := ctx.ShouldBindJSON(&fo); err != nil {
 		zap.L().Error("Sign In with invalid params", zap.Error(err))
 		return
 	}
 	// 3.logic层
-	if err := logic.EditUserProfile(fo); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{
+	userId, _ := ctx.Get("userid")
+	userStr, _ := userId.(string)
+	if err := logic.EditUserProfile(userStr, fo); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": err,
 		})
 	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "success",
+	})
 }
 
 func HandleTestSession(c *gin.Context) {
