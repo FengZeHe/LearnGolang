@@ -18,7 +18,7 @@ kind : Deployment
 metadata:
   name: basic-project
 spec:
-  replicas: 2
+  replicas: 0
   selector:
     matchLabels:
       app: basic-project
@@ -31,4 +31,4 @@ spec:
         - name: basic-project
           image: basic_project:v1
           ports:
-            - containerPort: 8086
+            - containerPort: 8081

@@ -11,6 +11,7 @@ func Cors() gin.HandlerFunc {
 		AllowAllOrigins: true,
 		AllowMethods:    []string{"GET", "POST", "PUT", "DELETE", "PATCH"},         //允许的方法
 		AllowHeaders:    []string{"Content-Type", "Access-Token", "Authorization"}, //允许设置的头部
+		ExposeHeaders:   []string{"Content-Length", "Authorization"},               //添加ExposeHeaders
 		MaxAge:          6 * time.Hour,                                             // 设置过期时间
 	}
 	return cors.New(c)

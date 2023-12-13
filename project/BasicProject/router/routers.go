@@ -16,6 +16,7 @@ func SetupRouter(mode string) *gin.Engine {
 
 	r := gin.New()
 	r.Use(cors.Cors())
+	//r.Use(cors.Default())
 	session.InitSession(r)
 
 	v1 := r.Group("/api/v1")

@@ -22,3 +22,10 @@ type User struct {
 	Ctime    int64  `json:"ctime"`
 	Utime    int64  `json:"utime"`
 }
+
+type EditUserProfile struct {
+	Email    string `json:"email"`
+	Birthday int64  `json:"birthday"`
+	Nickname string `json:"nickname"`
+	Aboutme  string `json:"aboutme"`
+}

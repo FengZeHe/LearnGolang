@@ -50,8 +50,8 @@ func FindById(user *models.User) (result models.User, err error) {
 }
 
 // 更新用户信息
-func UpdateUserProfile(userid string, user *models.User) (err error) {
-	if err = db.Table("users").Where("id = ?", userid).Updates(&user).Error; err != nil {
+func UpdateUserProfile(userid string, user *models.EditUserProfile) (err error) {
+	if err = db.Table("users").Where("id=?", userid).Save(&user).Error; err != nil {
 		return err
 	}
 	return nil
