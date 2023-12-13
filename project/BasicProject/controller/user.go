@@ -78,8 +78,8 @@ func HandlerUserProfile(ctx *gin.Context) {
 	userinfo, _ := logic.GetUserProfileById(userIdStr)
 	// 设置userinfo到redis中缓存
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "success",
-		"data":    userinfo,
+		"message":     "success",
+		"userprofile": userinfo,
 	})
 	if err := cache.SetCacheByUserId(&userinfo, userinfo.Id); err != nil {
 		log.Println("Set User Profile Cache ERROR", err)
@@ -88,6 +88,10 @@ func HandlerUserProfile(ctx *gin.Context) {
 }
 
 func HandleEditProfile(ctx *gin.Context) {
+
+	userId, _ := ctx.Get("userid")
+	userIdStr := fmt.Sprintf("%v", userId)
+	fmt.Println(userIdStr)
 	// 1.获取请求参数
 	var fo *models.User
 
@@ -97,7 +101,7 @@ func HandleEditProfile(ctx *gin.Context) {
 		return
 	}
 	// 3.logic层
-	if err := logic.EditUserProfile(fo); err != nil {
+	if err := logic.EditUserProfile(userIdStr, fo); err != nil {
 		ctx.JSON(http.StatusOK, gin.H{
 			"message": err,
 		})

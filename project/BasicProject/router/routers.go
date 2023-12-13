@@ -23,7 +23,7 @@ func SetupRouter(mode string) *gin.Engine {
 		v1.POST("/signin", controller.HandleUserSiginIn)
 		v1.POST("/login", controller.HanlerUserLogin)
 		v1.GET("/user/profile", JWT.JWTAuth(), cache.CacheMiddleWare(cache.KeyUserIdSet), controller.HandlerUserProfile)
-		v1.POST("/user/edit", controller.HandleEditProfile)
+		v1.POST("/user/edit", JWT.JWTAuth(), controller.HandleEditProfile)
 
 	}
 	v2 := r.Group("/api/v2")

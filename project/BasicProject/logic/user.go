@@ -47,8 +47,8 @@ func GetUserProfileById(id string) (user models.User, err error) {
 }
 
 // 修改用户信息
-func EditUserProfile(user *models.User) (err error) {
-	if err = mysql.UpdateUserProfile(user); err != nil {
+func EditUserProfile(userid string, user *models.User) (err error) {
+	if err = mysql.UpdateUserProfile(userid, user); err != nil {
 		return err
 	} else {
 		return nil
