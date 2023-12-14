@@ -6,7 +6,7 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-    - port: 6380
+    - port: 16380
       name: redis
       protocol: TCP
       targetPort: 6379
@@ -20,7 +20,7 @@ kind: Deployment
 metadata:
   name: basic-project-redis-deployment
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: basic-project-redis

@@ -11,7 +11,7 @@ spec:
   # 定义端口
   ports:
     # 服务的端口号
-    - port: 3308
+    - port: 3309
       # 名称
       name: mysql
       # 服务的协议，通常是TCP
@@ -33,7 +33,7 @@ metadata:
 # 定义资源的规格
 spec:
   # 定义那些Pod可以被Deployment管理
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: basic-project-mysql

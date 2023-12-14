@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-demo
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: basicproject.me.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: basic
+                port:
+                  number: 8085
+            pathType: Prefix
+            path: /
+

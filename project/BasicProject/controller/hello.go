@@ -6,7 +6,5 @@ import (
 )
 
 func HandleHello(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "hello!",
-	})
+	ctx.String(http.StatusOK, "hello, 欢迎!!")
 }
