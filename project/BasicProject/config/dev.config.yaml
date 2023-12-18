@@ -1,6 +1,6 @@
 name: "basicproject"
 mode: "dev"
-port: 8081
+port: 8082
 version: "v0.0.1"
 
 mysql:
@@ -11,3 +11,7 @@ mysql:
   dbname: "webook"
   max_open_conns: 200
   max_idle_conns: 50
+
+redis:
+  host: "127.0.0.1"
+  port: 6379

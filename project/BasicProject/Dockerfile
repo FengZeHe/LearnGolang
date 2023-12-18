@@ -19,6 +19,6 @@ WORKDIR /app
 COPY --from=builder /app/main /app/main
 COPY --from=builder /app/config/prod.config.yaml /app/config/config.yaml
 
-EXPOSE 8085
+EXPOSE 8000
 
-CMD ["/app/main"]
+CMD ["/app/main","-env","prod"]

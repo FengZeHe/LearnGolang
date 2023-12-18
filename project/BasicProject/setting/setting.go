@@ -15,6 +15,7 @@ type AppConfig struct {
 	Name    string `mapstructure:"name"`
 	Version string `mapstructure:"version"`
 	*Mysql  `mapstructure:"mysql"`
+	*Redis  `mapstructure:"redis"`
 }
 
 type Mysql struct {
@@ -27,9 +28,18 @@ type Mysql struct {
 	MaxIdleConns int    `mapstructure:"max_idle_conns"`
 }
 
-func Init() error {
+type Redis struct {
+	Host string `mapstructure:"host"`
+	Port int    `mapstructure:"port"`
+}
+
+func Init(env string) error {
 	// 设置viper读取的配置文件路径
-	viper.SetConfigFile("./config/dev.config.yaml")
+	if env == "prod" {
+		viper.SetConfigFile("./config/config.yaml")
+	} else {
+		viper.SetConfigFile("./config/dev.config.yaml")
+	}
 	viper.WatchConfig()
 
 	viper.OnConfigChange(func(in fsnotify.Event) {

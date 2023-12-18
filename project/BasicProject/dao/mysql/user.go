@@ -41,9 +41,17 @@ func FindByEmail(user *models.User) (result models.User, err error) {
 	return result, nil
 }
 
+// 根据用户id查询信息
+func FindById(user *models.User) (result models.User, err error) {
+	if err = db.Where("id=?", user.Id).Find(&result).Error; err != nil {
+		return result, err
+	}
+	return result, nil
+}
+
 // 更新用户信息
-func UpdateUserProfile(user *models.User) (err error) {
-	if err = db.Save(&user).Error; err != nil {
+func UpdateUserProfile(userid string, user *models.EditUserProfile) (err error) {
+	if err = db.Table("users").Where("id=?", userid).Save(&user).Error; err != nil {
 		return err
 	}
 	return nil

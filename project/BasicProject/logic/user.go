@@ -5,6 +5,7 @@ import (
 	"BasicProject/models"
 	"BasicProject/pkg/bcrypt"
 	"BasicProject/pkg/snowflake"
+	"log"
 	"time"
 )
 
@@ -24,26 +25,32 @@ func SignIn(user *models.RegisterForm) (err error) {
 }
 
 // 处理登录逻辑
-func Login(user *models.LoginForm) (result bool, err error) {
+func Login(user *models.LoginForm) (result bool, tempUser models.User, err error) {
 	tempuser := models.User{Email: user.Email, Password: user.Password}
 	dbuser, err := mysql.FindByEmail(&tempuser)
+	log.Println(dbuser)
 	result = bcrypt.ComparePwd(dbuser.Password, tempuser.Password)
-	return result, err
+	return result, dbuser, err
 }
 
 // 获取用户信息
-func GetUserProfile(email string) (user models.User, err error) {
+func GetUserProfileByEmail(email string) (user models.User, err error) {
 	tempUser := models.User{Email: email}
 	user, err = mysql.FindByEmail(&tempUser)
 	return user, err
 }
 
+func GetUserProfileById(id string) (user models.User, err error) {
+	tempUser := models.User{Id: id}
+	user, err = mysql.FindById(&tempUser)
+	return user, err
+}
+
 // 修改用户信息
-func EditUserProfile(user *models.User) (err error) {
-	if err = mysql.UpdateUserProfile(user); err != nil {
+func EditUserProfile(userid string, user *models.EditUserProfile) (err error) {
+	if err = mysql.UpdateUserProfile(userid, user); err != nil {
 		return err
 	} else {
 		return nil
 	}
-
 }

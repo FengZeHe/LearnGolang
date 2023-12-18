@@ -33,7 +33,7 @@ metadata:
 # 定义资源的规格
 spec:
   # 定义那些Pod可以被Deployment管理
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: basic-project-mysql
@@ -46,7 +46,7 @@ spec:
         - name: mysql-8
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: "123456"
+              value: "12345678"
             - name: MYSQL_DATABASE
               value: "webook"
           image: mysql:8.0
@@ -74,16 +74,17 @@ spec:
     requests:
       storage: 1Gi
 
+# PersistentVolume (PV) 是集群中的一块存储空间
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: basic-project-mysql-pv-claim
+  name: basic-project-mysql-pv
 spec:
   storageClassName: manual
   capacity:
     storage: 1Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce #可以被一个Pod读写
   hostPath:
-    path: "/mnt/data"
+    path: "/mnt/data" # 节点上的路径

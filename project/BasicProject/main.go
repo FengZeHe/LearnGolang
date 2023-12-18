@@ -5,23 +5,27 @@ import (
 	"BasicProject/middlewares/cache"
 	"BasicProject/router"
 	"BasicProject/setting"
+	"flag"
 	"fmt"
 	"log"
 	"strconv"
 )
 
 func main() {
-	if err := setting.Init(); err != nil {
+	env := flag.String("env", "", "set env")
+	flag.Parse()
+
+	if err := setting.Init(*env); err != nil {
 		log.Println("setting Init ERROR:", err)
 	}
 
 	// 初始化MySQL
 	if err := mysql.Init(setting.Conf.Mysql); err != nil {
-		log.Println("init Mysql DB error")
+		log.Println("init Mysql DB error", err)
 	}
 
-	if err := cache.RedisInit(); err != nil {
-		log.Println("init Redis DB error")
+	if err := cache.RedisInit(setting.Conf.Redis); err != nil {
+		log.Println("init Redis DB error", err)
 	}
 
 	// 初始化路由

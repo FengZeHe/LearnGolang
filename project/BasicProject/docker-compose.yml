@@ -1,21 +1,37 @@
-version: '3'
+version: '3.7'
 services:
   db:
     image: 'mysql:8.0'
     container_name: 'basic-project-mysql'
-    # 设置mysql_native_password
     command: --default-authentication-plugin=mysql_native_password
     environment:
-      MYSQL_ROOT_PASSWORD: '123456'
+      MYSQL_ROOT_PASSWORD: 12345678
       MYSQL_DATABASE: webook
+    # 要确保要挂载的目录存在且有正确的读取权限
     volumes:
-      - ./data:/var/lib/mysql
+      - /var/lib/mysql
     ports:
-      - '13308:3306'
+      - '13306:3306'
+  redis:
+    image: 'redis:7.2.3'
+    container_name: 'basic_project_redis'
+    ports:
+      - '16379:6379'
   backend:
     depends_on:
+      - redis
       - db
-    image: basic_project:v1
+    image: 'basic_project:v1'
     container_name: 'basic-project'
     ports:
-      - '8085:8085'
+      - '8083:8000'
+    restart: always
+  frontend:
+    depends_on:
+      - backend
+    image: 'basic_project_frontend_compose:v1'
+    container_name: 'basic_project_frontend_compose'
+    environment:
+      - VUE_APP_BASE_API=http://30.116.184.138:8083
+    ports:
+      - '8080:80'

@@ -3,11 +3,13 @@ package controller
 import (
 	"BasicProject/logic"
 	"BasicProject/middlewares/JWT"
+	"BasicProject/middlewares/cache"
 	"BasicProject/models"
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"log"
 	"net/http"
 )
 
@@ -49,10 +51,10 @@ func HanlerUserLogin(ctx *gin.Context) {
 		return
 	}
 	// 3. 交给Logic层
-	result, _ := logic.Login(fo)
+	result, tempuser, _ := logic.Login(fo)
 	if result == true {
 		// 登录成功
-		strToken, _ := JWT.GenToken(fo.Email)
+		strToken, _ := JWT.GenToken(tempuser.Id)
 		ctx.JSON(http.StatusOK, gin.H{
 			"message": "login success",
 			"token":   strToken,
@@ -66,35 +68,45 @@ func HanlerUserLogin(ctx *gin.Context) {
 
 // 处理获取用户信息请求
 func HandlerUserProfile(ctx *gin.Context) {
-	email, _ := ctx.Get("email")
-	emailStr := fmt.Sprintf("%v", email)
-	if len(emailStr) <= 0 {
+	userId, _ := ctx.Get("userid")
+	userIdStr := fmt.Sprintf("%v", userId)
+	if len(userIdStr) <= 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "Get User Profile Error",
 		})
 	}
-	userinfo, _ := logic.GetUserProfile(emailStr)
+	userinfo, _ := logic.GetUserProfileById(userIdStr)
+	// 设置userinfo到redis中缓存
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "success",
-		"data":    userinfo,
+		"message":     "success",
+		"userprofile": userinfo,
 	})
+	if err := cache.SetCacheByUserId(&userinfo, userinfo.Id); err != nil {
+		log.Println("Set User Profile Cache ERROR", err)
+	}
+
 }
 
 func HandleEditProfile(ctx *gin.Context) {
-	// 1.获取请求参数
-	var fo *models.User
 
+	// 1.获取请求参数
+	var fo *models.EditUserProfile
 	// 2.校验数据的有效性
 	if err := ctx.ShouldBindJSON(&fo); err != nil {
 		zap.L().Error("Sign In with invalid params", zap.Error(err))
 		return
 	}
 	// 3.logic层
-	if err := logic.EditUserProfile(fo); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{
+	userId, _ := ctx.Get("userid")
+	userStr, _ := userId.(string)
+	if err := logic.EditUserProfile(userStr, fo); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": err,
 		})
 	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "success",
+	})
 }
 
 func HandleTestSession(c *gin.Context) {
