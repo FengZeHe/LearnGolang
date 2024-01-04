@@ -2,10 +2,14 @@ package logic
 
 import (
 	"BasicProject/dao/mysql"
+	"BasicProject/middlewares/cache"
 	"BasicProject/models"
 	"BasicProject/pkg/bcrypt"
 	"BasicProject/pkg/snowflake"
+	"BasicProject/sms"
+	"fmt"
 	"log"
+	"math/rand"
 	"time"
 )
 
@@ -31,6 +35,26 @@ func Login(user *models.LoginForm) (result bool, tempUser models.User, err error
 	log.Println(dbuser)
 	result = bcrypt.ComparePwd(dbuser.Password, tempuser.Password)
 	return result, dbuser, err
+}
+
+func SMSLogin(phone string) (err error) {
+	// 1. 生成随机验证码
+	source := rand.NewSource(time.Now().UnixNano())
+	code := fmt.Sprintf("%06d", rand.New(source).Intn(1000000))
+	// 2. 发送验证码
+	if err := sms.SendSMS(phone, code); err != nil {
+		fmt.Println("SMS Send Code ERROR", err)
+		return err
+	}
+	// 3. 存储验证码 将验证码存储到redis中，过期时间5分钟
+	if err := cache.SetCodeForUserSMSLogin(phone, code); err != nil {
+		fmt.Println("Set Code For User SMS Login ERROR:", err)
+		return err
+		// 如果redis写不进，就要写入本地存储
+	}
+
+	return nil
+
 }
 
 // 获取用户信息

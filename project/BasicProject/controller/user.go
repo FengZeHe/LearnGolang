@@ -66,6 +66,54 @@ func HanlerUserLogin(ctx *gin.Context) {
 	}
 }
 
+// 请求发送验证码
+func HandlerSendSMSForLogin(ctx *gin.Context) {
+	var fo *models.SMS
+	if err := ctx.ShouldBindJSON(&fo); err != nil {
+		zap.L().Error("Sign In with invalid params", zap.Error(err))
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"code": 400,
+			"msg":  "bad request",
+		})
+		return
+	}
+
+	// 没有问题的话发送验证码，交给Logic层处理
+	if err := logic.SMSLogin(fo.Phone); err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"code": 404,
+			"msg":  "send code error",
+		})
+	} else {
+		// 发送验证码没问题，将验证码存储到redis中，设置过期时间5分钟
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"code": 200,
+			"msg":  "success",
+		})
+	}
+
+}
+
+/*
+处理使用验证码登录的请求
+*/
+func HandlerUserSMSLogin(ctx *gin.Context) {
+	/*
+		1. 看看请求参数是否正确
+		2. 验证验证码
+	*/
+	var fo *models.VerifySMSLogin
+	if err := ctx.ShouldBindJSON(&fo); err != nil {
+		fmt.Println("请求参数错误")
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"code": 400,
+			"msg":  "请求错误",
+		})
+	}
+
+}
+
 // 处理获取用户信息请求
 func HandlerUserProfile(ctx *gin.Context) {
 	userId, _ := ctx.Get("userid")

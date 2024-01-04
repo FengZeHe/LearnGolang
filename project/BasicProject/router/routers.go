@@ -25,7 +25,8 @@ func SetupRouter(mode string) *gin.Engine {
 		v1.POST("/login", controller.HanlerUserLogin)
 		v1.GET("/user/profile", JWT.JWTAuth(), cache.CacheMiddleWare(cache.KeyUserIdSet), controller.HandlerUserProfile)
 		v1.POST("/user/edit", JWT.JWTAuth(), controller.HandleEditProfile)
-
+		v1.POST("/sendSMS", controller.HandlerSendSMSForLogin) // 发送验证码
+		v1.POST("/smsLogin", controller.HandlerUserSMSLogin)   // 使用验证码登录
 	}
 	v2 := r.Group("/api/v2")
 	{

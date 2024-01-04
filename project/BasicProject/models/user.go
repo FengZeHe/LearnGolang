@@ -11,6 +11,15 @@ type LoginForm struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type SMS struct {
+	Phone string `json:"phone"`
+}
+
+type VerifySMSLogin struct {
+	Phone string `json:"phone"`
+	Code  string `json:"code"`
+}
+
 type User struct {
 	Id       string `json:"id"`
 	Email    string `json:"email" gorm:"type:varchar(255);unique"`
