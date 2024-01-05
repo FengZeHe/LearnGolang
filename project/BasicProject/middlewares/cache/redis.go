@@ -1,16 +1,13 @@
 package cache
 
 import (
-	"BasicProject/models"
 	"BasicProject/setting"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"log"
 	"net/http"
-	"time"
 )
 
 var (
@@ -73,25 +70,12 @@ func CacheMiddleWare(kind string) gin.HandlerFunc {
 	}
 }
 
-// 根据用户id获取缓存
-func GetCacheByUseId(key string) (data *models.User, err error) {
-	res, err := rdb.Get(ctx, key).Result()
-	if err != nil {
-		log.Println("GET redis CACHE ERROR", err)
-		return nil, err
-	}
-	err = json.Unmarshal([]byte(res), &data)
-	return data, nil
-}
-
-// 根据用户id设置缓存
-func SetCacheByUserId(data *models.User, userid string) (err error) {
-	strdata, _ := json.Marshal(data)
-	key := fmt.Sprintf("%s%s", KeyUserIdSet, userid)
-	if err = rdb.Set(ctx, key, strdata, 60*time.Second).Err(); err != nil {
-		log.Println("set Cache ERROR:", err)
+// 删除某个key
+func DeleteKey(key string) (err error) {
+	if err = rdb.Del(ctx, key).Err(); err != nil {
+		log.Println("redis Delete Key ERROR", err)
 		return err
 	}
-	log.Println("set cache success!")
+
 	return nil
 }

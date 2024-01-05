@@ -73,7 +73,7 @@ func ParseToken(tokenStr string) (myclaims *MyClaims, err error) {
 
 // 生成token
 func GenToken(userId string) (tokenStr string, err error) {
-	expirationTime := time.Now().Add(10 * time.Hour)
+	expirationTime := time.Now().Add(30 * time.Minute)
 	claims := &MyClaims{UserId: userId, RegisteredClaims: jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(expirationTime),
 	}}

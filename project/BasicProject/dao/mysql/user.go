@@ -2,12 +2,13 @@ package mysql
 
 import (
 	"BasicProject/models"
+	"database/sql"
 	"fmt"
 	"github.com/pkg/errors"
 )
 
 // 查询是否已经存在该用户
-func CheckUserExist(email string) (err error) {
+func CheckUserExist(email sql.NullString) (err error) {
 	var user models.User
 	result := db.Find(&user, models.User{Email: email})
 	if result.RowsAffected > 0 {
@@ -36,6 +37,14 @@ func CreateUser(user *models.User) (err error) {
 // 根据邮箱查询用户信息
 func FindByEmail(user *models.User) (result models.User, err error) {
 	if err = db.Where("email = ?", user.Email).Find(&result).Error; err != nil {
+		return result, err
+	}
+	return result, nil
+}
+
+// 根据邮箱查询用户信息
+func FindByPhone(user *models.User) (result models.User, err error) {
+	if err = db.Where("phone = ?", user.Phone).Find(&result).Error; err != nil {
 		return result, err
 	}
 	return result, nil
