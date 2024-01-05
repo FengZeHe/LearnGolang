@@ -86,7 +86,6 @@ func HandlerSendSMSForLogin(ctx *gin.Context) {
 		})
 	} else {
 		// 发送验证码没问题，将验证码存储到redis中，设置过期时间5分钟
-
 		ctx.JSON(http.StatusOK, gin.H{
 			"code": 200,
 			"msg":  "success",
@@ -105,11 +104,51 @@ func HandlerUserSMSLogin(ctx *gin.Context) {
 	*/
 	var fo *models.VerifySMSLogin
 	if err := ctx.ShouldBindJSON(&fo); err != nil {
-		fmt.Println("请求参数错误")
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"code": 400,
-			"msg":  "请求错误",
+			"msg":  "请求参数错误",
 		})
+		ctx.Abort()
+	}
+	/*
+		在redis中验证，从redis中取出验证码，此时会有两种情况：
+		1. redis中根本没有这个key
+		2. redis中key对应的value不正确
+	*/
+	key, verify, err := cache.VerifyCodeForUserSMSLogin(fo.Phone, fo.Code)
+	if err != nil {
+		fmt.Println("系统化错误", err)
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"code": http.StatusNotFound,
+			"msg":  "系统错误",
+		})
+	}
+
+	user, err := logic.GetUserProfileByPhone(fo.Phone)
+	if err != nil {
+		fmt.Println("查询Mysql数据库错误")
+	}
+	if user.Phone == "" {
+		// 创建用户
+		if err := logic.CreateUserByPhone(fo.Phone); err != nil {
+			fmt.Println("创建用户失败 返回系统错误")
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"code": http.StatusBadRequest,
+				"msg":  "系统错误",
+			})
+			ctx.Abort()
+		}
+	}
+	if verify == true && user.Phone != "" {
+		strToken, _ := JWT.GenToken(user.Id)
+		fmt.Println("SMS验证通过,清除redis中的sms cache")
+		_ = cache.DeleteKey(key)
+		ctx.JSON(http.StatusOK, gin.H{
+			"code":  http.StatusOK,
+			"msg":   "登录成功",
+			"token": strToken,
+		})
+
 	}
 
 }

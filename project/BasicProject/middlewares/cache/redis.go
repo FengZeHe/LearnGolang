@@ -69,3 +69,13 @@ func CacheMiddleWare(kind string) gin.HandlerFunc {
 		}
 	}
 }
+
+// 删除某个key
+func DeleteKey(key string) (err error) {
+	if err = rdb.Del(ctx, key).Err(); err != nil {
+		log.Println("redis Delete Key ERROR", err)
+		return err
+	}
+
+	return nil
+}

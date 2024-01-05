@@ -7,6 +7,7 @@ import (
 	"BasicProject/pkg/bcrypt"
 	"BasicProject/pkg/snowflake"
 	"BasicProject/sms"
+	"database/sql"
 	"fmt"
 	"log"
 	"math/rand"
@@ -37,6 +38,7 @@ func Login(user *models.LoginForm) (result bool, tempUser models.User, err error
 	return result, dbuser, err
 }
 
+// 处理SMS登录逻辑
 func SMSLogin(phone string) (err error) {
 	// 1. 生成随机验证码
 	source := rand.NewSource(time.Now().UnixNano())
@@ -52,16 +54,35 @@ func SMSLogin(phone string) (err error) {
 		return err
 		// 如果redis写不进，就要写入本地存储
 	}
+	/*
+		查询数据库中是否有该用户
+	*/
 
 	return nil
-
 }
 
-// 获取用户信息
-func GetUserProfileByEmail(email string) (user models.User, err error) {
+// 根据邮箱查询用户信息
+func GetUserProfileByEmail(email sql.NullString) (user models.User, err error) {
 	tempUser := models.User{Email: email}
 	user, err = mysql.FindByEmail(&tempUser)
 	return user, err
+}
+
+// 根据手机号查询用户细腻系
+func GetUserProfileByPhone(phone string) (user models.User, err error) {
+	tempUser := models.User{Phone: phone}
+	user, err = mysql.FindByPhone(&tempUser)
+	return user, err
+}
+
+// 根据手机号注册用户
+func CreateUserByPhone(phone string) (err error) {
+	tempUser := models.User{Phone: phone, Id: snowflake.GenId(), Ctime: time.Now().Unix()}
+	if err = mysql.CreateUser(&tempUser); err != nil {
+		fmt.Println("create user error", err)
+		return err
+	}
+	return err
 }
 
 func GetUserProfileById(id string) (user models.User, err error) {

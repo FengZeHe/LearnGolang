@@ -4,6 +4,8 @@ import (
 	"BasicProject/models"
 	"encoding/json"
 	"fmt"
+	"github.com/go-redis/redis/v8"
+	"github.com/pkg/errors"
 	"log"
 	"time"
 )
@@ -39,4 +41,22 @@ func SetCodeForUserSMSLogin(phone, code string) (err error) {
 		return err
 	}
 	return nil
+}
+
+// 用于验证短信登录，手机号和验证码是否正确
+func VerifyCodeForUserSMSLogin(phone, code string) (key string, res bool, err error) {
+	key = fmt.Sprintf("%s%s", KeyUserSMSLoginSet, phone)
+	val, err := rdb.Get(ctx, key).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return key, true, nil
+		}
+		fmt.Println("Get Redis Result ERROR", err)
+		return key, false, err
+	}
+	if val != code {
+		fmt.Println("Code ERROR 验证码不正确，登录失败")
+		return key, false, nil
+	}
+	return key, true, nil
 }
