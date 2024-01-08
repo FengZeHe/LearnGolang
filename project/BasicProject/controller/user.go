@@ -110,6 +110,12 @@ func HandlerUserSMSLogin(ctx *gin.Context) {
 		})
 		ctx.Abort()
 	}
+
+	/*
+		要加入一个校验请求次数的功能
+		看看在规定时间内是否频繁请求多次
+	*/
+
 	/*
 		在redis中验证，从redis中取出验证码，此时会有两种情况：
 		1. redis中根本没有这个key
@@ -139,6 +145,7 @@ func HandlerUserSMSLogin(ctx *gin.Context) {
 			ctx.Abort()
 		}
 	}
+	// 如果验证码正确且用户手机不为空
 	if verify == true && user.Phone != "" {
 		strToken, _ := JWT.GenToken(user.Id)
 		fmt.Println("SMS验证通过,清除redis中的sms cache")
@@ -148,8 +155,19 @@ func HandlerUserSMSLogin(ctx *gin.Context) {
 			"msg":   "登录成功",
 			"token": strToken,
 		})
-
+	} else if verify == false {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"code": http.StatusNotFound,
+			"msg":  "登录失败,请重试",
+		})
 	}
+
+}
+
+/*
+使用lua脚本处理验证码登录请求
+*/
+func HandlerUserSMSLoginV2(ctx *gin.Context) {
 
 }
 

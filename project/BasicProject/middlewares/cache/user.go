@@ -7,6 +7,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/pkg/errors"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -49,7 +50,7 @@ func VerifyCodeForUserSMSLogin(phone, code string) (key string, res bool, err er
 	val, err := rdb.Get(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return key, true, nil
+			return key, false, nil
 		}
 		fmt.Println("Get Redis Result ERROR", err)
 		return key, false, err
@@ -59,4 +60,43 @@ func VerifyCodeForUserSMSLogin(phone, code string) (key string, res bool, err er
 		return key, false, nil
 	}
 	return key, true, nil
+}
+
+// 用于短信验证码剩余次数
+func CheckSMSResidualDegree(phone string) (status bool, err error) {
+	/*
+		1.首先查询 key是否存在，如果存在就不能覆盖
+		2.key如果存在，则查询value剩余次数并 -1
+		3.key如果不存在则添加一个 并设置剩余次数5次， 过期时间600s
+		查询该手机发送验证码的的剩余次数，如果 -1次大于0，那么可以发送 return true
+	*/
+	tempKey := fmt.Sprintf("%s%s", KeyUserSMSCount, phone)
+	if existed := ExistKey(tempKey); existed != true {
+		// key不存在 设置值
+		if err = rdb.Set(ctx, tempKey, 5, time.Second*600).Err(); err != nil {
+			// 设置成功
+			return true, nil
+		} else {
+			return false, err
+		}
+	} else {
+		// key 存在 查询值
+		res, err := rdb.Get(ctx, tempKey).Result()
+		if err != nil {
+			// 查询的时候出错 返回错误
+			return false, err
+		}
+		intres, _ := strconv.Atoi(res)
+		if intres-1 > 0 {
+			// 还有剩余次数 -1 并返回true
+			if err = rdb.Decr(ctx, tempKey).Err(); err != nil {
+				// 操作redis错误
+				return false, err
+			}
+			return true, nil
+		}
+
+	}
+
+	return true, nil
 }
