@@ -78,6 +78,21 @@ func HandlerSendSMSForLogin(ctx *gin.Context) {
 		return
 	}
 
+	// 检查一下该用户是否还有剩余发送短信的次数
+	status, err := cache.CheckSMSResidualDegree(fo.Phone)
+	if err != nil {
+		log.Println("检查短信发送次数错误", err)
+		return
+	}
+	if status != true {
+		log.Println("发送短信验证码次数用完")
+		ctx.JSON(http.StatusTooManyRequests, gin.H{
+			"code": http.StatusTooManyRequests,
+			"msg":  "操作过于频繁，请稍后再试",
+		})
+		return
+	}
+
 	// 没有问题的话发送验证码，交给Logic层处理
 	if err := logic.SMSLogin(fo.Phone); err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
@@ -112,13 +127,8 @@ func HandlerUserSMSLogin(ctx *gin.Context) {
 	}
 
 	/*
-		要加入一个校验请求次数的功能
-		看看在规定时间内是否频繁请求多次
-	*/
-
-	/*
 		在redis中验证，从redis中取出验证码，此时会有两种情况：
-		1. redis中根本没有这个key
+		1. redis中没有这个key
 		2. redis中key对应的value不正确
 	*/
 	key, verify, err := cache.VerifyCodeForUserSMSLogin(fo.Phone, fo.Code)

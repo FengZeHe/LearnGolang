@@ -74,10 +74,10 @@ func CheckSMSResidualDegree(phone string) (status bool, err error) {
 	if existed := ExistKey(tempKey); existed != true {
 		// key不存在 设置值
 		if err = rdb.Set(ctx, tempKey, 5, time.Second*600).Err(); err != nil {
-			// 设置成功
-			return true, nil
-		} else {
+			// 设置失败
 			return false, err
+		} else {
+			return true, nil
 		}
 	} else {
 		// key 存在 查询值
@@ -94,9 +94,19 @@ func CheckSMSResidualDegree(phone string) (status bool, err error) {
 				return false, err
 			}
 			return true, nil
+		} else {
+			/*
+				获取key的ttl剩余时间，并将value置为 -1
+			*/
+			ttl, err := rdb.TTL(ctx, tempKey).Result()
+			if err != nil {
+				return false, err
+			}
+			err = rdb.Set(ctx, tempKey, -1, ttl).Err()
+			if err != nil {
+				return false, err
+			}
+			return false, nil
 		}
-
 	}
-
-	return true, nil
 }
