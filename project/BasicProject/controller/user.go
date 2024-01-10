@@ -94,19 +94,23 @@ func HandlerSendSMSForLogin(ctx *gin.Context) {
 	}
 
 	// 没有问题的话发送验证码，交给Logic层处理
-	if err := logic.SMSLogin(fo.Phone); err != nil {
+	code, err := logic.SMSLogin(fo.Phone)
+	if err != nil {
+		// 发送验证码失败
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"code": 404,
 			"msg":  "send code error",
 		})
-	} else {
-		// 发送验证码没问题，将验证码存储到redis中，设置过期时间5分钟
-		ctx.JSON(http.StatusOK, gin.H{
-			"code": 200,
-			"msg":  "success",
-		})
 	}
-
+	// 发送验证码没问题，将验证码存储到redis中，设置过期时间5分钟
+	if err = cache.SetCodeForUserSMSLogin(fo.Phone, code); err != nil {
+		log.Println("set code for user sms in redis error", err)
+		// 如果redis写不进去，就要写进其他数据库或本地存储
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"code": http.StatusOK,
+		"msg":  "send sms success",
+	})
 }
 
 /*
@@ -127,7 +131,7 @@ func HandlerUserSMSLogin(ctx *gin.Context) {
 	}
 
 	/*
-		在redis中验证，从redis中取出验证码，此时会有两种情况：
+		在从redis中取出验证码，此时会有两种情况：
 		1. redis中没有这个key
 		2. redis中key对应的value不正确
 	*/
@@ -171,7 +175,6 @@ func HandlerUserSMSLogin(ctx *gin.Context) {
 			"msg":  "登录失败,请重试",
 		})
 	}
-
 }
 
 /*

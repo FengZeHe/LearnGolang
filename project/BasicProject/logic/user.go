@@ -2,7 +2,6 @@ package logic
 
 import (
 	"BasicProject/dao/mysql"
-	"BasicProject/middlewares/cache"
 	"BasicProject/models"
 	"BasicProject/pkg/bcrypt"
 	"BasicProject/pkg/snowflake"
@@ -38,27 +37,17 @@ func Login(user *models.LoginForm) (result bool, tempUser models.User, err error
 	return result, dbuser, err
 }
 
-// 处理SMS登录逻辑
-func SMSLogin(phone string) (err error) {
+// 处理SMS登录逻辑 生成验证码，并调用发送验证码的方法
+func SMSLogin(phone string) (code string, err error) {
 	// 1. 生成随机验证码
 	source := rand.NewSource(time.Now().UnixNano())
-	code := fmt.Sprintf("%06d", rand.New(source).Intn(1000000))
+	code = fmt.Sprintf("%06d", rand.New(source).Intn(1000000))
 	// 2. 发送验证码
 	if err := sms.SendSMS(phone, code); err != nil {
 		fmt.Println("SMS Send Code ERROR", err)
-		return err
+		return code, err
 	}
-	// 3. 存储验证码 将验证码存储到redis中，过期时间5分钟
-	if err := cache.SetCodeForUserSMSLogin(phone, code); err != nil {
-		fmt.Println("Set Code For User SMS Login ERROR:", err)
-		return err
-		// 如果redis写不进，就要写入本地存储
-	}
-	/*
-		查询数据库中是否有该用户
-	*/
-
-	return nil
+	return code, nil
 }
 
 // 根据邮箱查询用户信息

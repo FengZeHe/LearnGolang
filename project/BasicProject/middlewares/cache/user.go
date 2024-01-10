@@ -52,7 +52,7 @@ func VerifyCodeForUserSMSLogin(phone, code string) (key string, res bool, err er
 		if errors.Is(err, redis.Nil) {
 			return key, false, nil
 		}
-		fmt.Println("Get Redis Result ERROR", err)
+		fmt.Println("Key不存在", err)
 		return key, false, err
 	}
 	if val != code {
