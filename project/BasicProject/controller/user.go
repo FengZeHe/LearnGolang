@@ -5,12 +5,25 @@ import (
 	"BasicProject/middlewares/JWT"
 	"BasicProject/middlewares/cache"
 	"BasicProject/models"
+	_ "embed"
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
+)
+
+var (
+
+	//go:embed lua/sms_get_degree.lua
+	luaSMS string
+
+	//go:embed lua/sms_set_code.lua
+	luaSetCode string
+
+	//go:embed lua/sms_verify_code.lua
+	luaVerifyCode string
 )
 
 // 可以通过邮箱注册，需要做的步骤是首先在数据库查询是否已经有这个邮箱，有的话返回错误
@@ -78,20 +91,39 @@ func HandlerSendSMSForLogin(ctx *gin.Context) {
 		return
 	}
 
+	// 检查一下该用户是否还有剩余发送短信的次数
+	status, err := cache.CheckSMSResidualDegree(fo.Phone)
+	if err != nil {
+		log.Println("检查短信发送次数错误", err)
+		return
+	}
+	if status != true {
+		log.Println("发送短信验证码次数用完")
+		ctx.JSON(http.StatusTooManyRequests, gin.H{
+			"code": http.StatusTooManyRequests,
+			"msg":  "操作过于频繁，请稍后再试",
+		})
+		return
+	}
+
 	// 没有问题的话发送验证码，交给Logic层处理
-	if err := logic.SMSLogin(fo.Phone); err != nil {
+	code, err := logic.SMSLogin(fo.Phone)
+	if err != nil {
+		// 发送验证码失败
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"code": 404,
 			"msg":  "send code error",
 		})
-	} else {
-		// 发送验证码没问题，将验证码存储到redis中，设置过期时间5分钟
-		ctx.JSON(http.StatusOK, gin.H{
-			"code": 200,
-			"msg":  "success",
-		})
 	}
-
+	// 发送验证码没问题，将验证码存储到redis中，设置过期时间5分钟
+	if err = cache.SetCodeForUserSMSLogin(fo.Phone, code); err != nil {
+		log.Println("set code for user sms in redis error", err)
+		// 如果redis写不进去，就要写进其他数据库或本地存储
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"code": http.StatusOK,
+		"msg":  "send sms success",
+	})
 }
 
 /*
@@ -110,9 +142,10 @@ func HandlerUserSMSLogin(ctx *gin.Context) {
 		})
 		ctx.Abort()
 	}
+
 	/*
-		在redis中验证，从redis中取出验证码，此时会有两种情况：
-		1. redis中根本没有这个key
+		在从redis中取出验证码，此时会有两种情况：
+		1. redis中没有这个key
 		2. redis中key对应的value不正确
 	*/
 	key, verify, err := cache.VerifyCodeForUserSMSLogin(fo.Phone, fo.Code)
@@ -139,6 +172,7 @@ func HandlerUserSMSLogin(ctx *gin.Context) {
 			ctx.Abort()
 		}
 	}
+	// 如果验证码正确且用户手机不为空
 	if verify == true && user.Phone != "" {
 		strToken, _ := JWT.GenToken(user.Id)
 		fmt.Println("SMS验证通过,清除redis中的sms cache")
@@ -148,7 +182,130 @@ func HandlerUserSMSLogin(ctx *gin.Context) {
 			"msg":   "登录成功",
 			"token": strToken,
 		})
+	} else if verify == false {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"code": http.StatusNotFound,
+			"msg":  "登录失败,请重试",
+		})
+	}
+}
 
+/*
+使用lua脚本处理发送验证码的请求
+*/
+func HandlerUserSMSForLoginV2(ctx *gin.Context) {
+	var fo *models.SMS
+	if err := ctx.ShouldBindJSON(&fo); err != nil {
+		zap.L().Error("Sign In with invalid params", zap.Error(err))
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"code": 400,
+			"msg":  "bad request",
+		})
+		return
+	}
+	// 使用lua脚本
+	result, err := cache.EvalLuaScript(fo.Phone, "", luaSMS)
+	if err != nil {
+		log.Println("Eval Lua Script ERROR", err)
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"code": http.StatusNotFound,
+			"msg":  "系统错误",
+		})
+		ctx.Abort()
+		return
+	}
+	intres := result.(int64)
+	switch intres {
+	case -1:
+		ctx.JSON(http.StatusTooManyRequests, gin.H{
+			"code": http.StatusTooManyRequests,
+			"msg":  "操作太频繁，请稍后再试",
+		})
+		ctx.Abort()
+		return
+	case 1:
+		// 没有问题的话发送验证码，交给Logic层处理
+		code, err := logic.SMSLogin(fo.Phone)
+		if err != nil {
+			// 发送验证码失败
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"code": 404,
+				"msg":  "send code error",
+			})
+			ctx.Abort()
+			return
+		}
+		// 使用lua脚本 将验证码保存到redis中
+		_, err = cache.EvalLuaScript(fo.Phone, code, luaSetCode)
+		if err != nil {
+			// 存储验证码失败
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"code": http.StatusInternalServerError,
+				"msg":  "send code error",
+			})
+			ctx.Abort()
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{
+			"code": http.StatusOK,
+			"msg":  "send sms success",
+		})
+	}
+
+}
+
+func HandlerUserSMSLoginV2(ctx *gin.Context) {
+	var fo *models.VerifySMSLogin
+	if err := ctx.ShouldBindJSON(&fo); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"code": 400,
+			"msg":  "请求参数错误",
+		})
+		ctx.Abort()
+		return
+	}
+
+	result, err := cache.EvalLuaScript(fo.Phone, fo.Code, luaVerifyCode)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"code": http.StatusInternalServerError,
+			"msg":  "系统错误",
+		})
+	}
+	intres := result.(int64)
+	switch intres {
+	case -1:
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"code": http.StatusNotFound,
+			"msg":  "验证码错误",
+		})
+		ctx.Abort()
+		return
+	case 1:
+		user, err := logic.GetUserProfileByPhone(fo.Phone)
+		if err != nil {
+			fmt.Println("查询Mysql数据库错误")
+		}
+		if user.Phone == "" {
+			// 创建用户
+			if err := logic.CreateUserByPhone(fo.Phone); err != nil {
+				fmt.Println("创建用户失败 返回系统错误")
+				ctx.JSON(http.StatusBadRequest, gin.H{
+					"code": http.StatusBadRequest,
+					"msg":  "系统错误",
+				})
+				ctx.Abort()
+				return
+			}
+		}
+		strToken, _ := JWT.GenToken(user.Id)
+		ctx.JSON(http.StatusOK, gin.H{
+			"code":  http.StatusOK,
+			"msg":   "登录成功",
+			"token": strToken,
+		})
+		ctx.Abort()
+		return
 	}
 
 }

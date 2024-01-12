@@ -79,3 +79,12 @@ func DeleteKey(key string) (err error) {
 
 	return nil
 }
+
+// 执行lua脚本的函数
+func EvalLuaScript(key string, value string, luaScript string) (interface{}, error) {
+	result, err := rdb.Eval(ctx, luaScript, []string{key}, value).Result()
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
