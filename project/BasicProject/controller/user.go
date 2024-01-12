@@ -5,12 +5,25 @@ import (
 	"BasicProject/middlewares/JWT"
 	"BasicProject/middlewares/cache"
 	"BasicProject/models"
+	_ "embed"
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
+)
+
+var (
+
+	//go:embed lua/sms_get_degree.lua
+	luaSMS string
+
+	//go:embed lua/sms_set_code.lua
+	luaSetCode string
+
+	//go:embed lua/sms_verify_code.lua
+	luaVerifyCode string
 )
 
 // 可以通过邮箱注册，需要做的步骤是首先在数据库查询是否已经有这个邮箱，有的话返回错误
@@ -178,9 +191,122 @@ func HandlerUserSMSLogin(ctx *gin.Context) {
 }
 
 /*
-使用lua脚本处理验证码登录请求
+使用lua脚本处理发送验证码的请求
 */
+func HandlerUserSMSForLoginV2(ctx *gin.Context) {
+	var fo *models.SMS
+	if err := ctx.ShouldBindJSON(&fo); err != nil {
+		zap.L().Error("Sign In with invalid params", zap.Error(err))
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"code": 400,
+			"msg":  "bad request",
+		})
+		return
+	}
+	// 使用lua脚本
+	result, err := cache.EvalLuaScript(fo.Phone, "", luaSMS)
+	if err != nil {
+		log.Println("Eval Lua Script ERROR", err)
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"code": http.StatusNotFound,
+			"msg":  "系统错误",
+		})
+		ctx.Abort()
+		return
+	}
+	intres := result.(int64)
+	switch intres {
+	case -1:
+		ctx.JSON(http.StatusTooManyRequests, gin.H{
+			"code": http.StatusTooManyRequests,
+			"msg":  "操作太频繁，请稍后再试",
+		})
+		ctx.Abort()
+		return
+	case 1:
+		// 没有问题的话发送验证码，交给Logic层处理
+		code, err := logic.SMSLogin(fo.Phone)
+		if err != nil {
+			// 发送验证码失败
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"code": 404,
+				"msg":  "send code error",
+			})
+			ctx.Abort()
+			return
+		}
+		// 使用lua脚本 将验证码保存到redis中
+		_, err = cache.EvalLuaScript(fo.Phone, code, luaSetCode)
+		if err != nil {
+			// 存储验证码失败
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"code": http.StatusInternalServerError,
+				"msg":  "send code error",
+			})
+			ctx.Abort()
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{
+			"code": http.StatusOK,
+			"msg":  "send sms success",
+		})
+	}
+
+}
+
 func HandlerUserSMSLoginV2(ctx *gin.Context) {
+	var fo *models.VerifySMSLogin
+	if err := ctx.ShouldBindJSON(&fo); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"code": 400,
+			"msg":  "请求参数错误",
+		})
+		ctx.Abort()
+		return
+	}
+
+	result, err := cache.EvalLuaScript(fo.Phone, fo.Code, luaVerifyCode)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"code": http.StatusInternalServerError,
+			"msg":  "系统错误",
+		})
+	}
+	intres := result.(int64)
+	switch intres {
+	case -1:
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"code": http.StatusNotFound,
+			"msg":  "验证码错误",
+		})
+		ctx.Abort()
+		return
+	case 1:
+		user, err := logic.GetUserProfileByPhone(fo.Phone)
+		if err != nil {
+			fmt.Println("查询Mysql数据库错误")
+		}
+		if user.Phone == "" {
+			// 创建用户
+			if err := logic.CreateUserByPhone(fo.Phone); err != nil {
+				fmt.Println("创建用户失败 返回系统错误")
+				ctx.JSON(http.StatusBadRequest, gin.H{
+					"code": http.StatusBadRequest,
+					"msg":  "系统错误",
+				})
+				ctx.Abort()
+				return
+			}
+		}
+		strToken, _ := JWT.GenToken(user.Id)
+		ctx.JSON(http.StatusOK, gin.H{
+			"code":  http.StatusOK,
+			"msg":   "登录成功",
+			"token": strToken,
+		})
+		ctx.Abort()
+		return
+	}
 
 }
 

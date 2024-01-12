@@ -32,7 +32,8 @@ func SetupRouter(mode string) *gin.Engine {
 	{
 		v2.GET("/getsession", controller.HandleGetSession)
 		v2.GET("/login", session.SessionMiddleware(), controller.HandleTestSession)
-		v2.POST("/sendSMS", controller.HandlerUserSMSLoginV2)
+		v2.POST("/sendSMS", controller.HandlerUserSMSForLoginV2)
+		v2.POST("/smsLogin", controller.HandlerUserSMSLoginV2)
 	}
 	r.GET("/hello", controller.HandleHello)
 

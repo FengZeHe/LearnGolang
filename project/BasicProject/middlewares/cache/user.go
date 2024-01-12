@@ -95,9 +95,7 @@ func CheckSMSResidualDegree(phone string) (status bool, err error) {
 			}
 			return true, nil
 		} else {
-			/*
-				获取key的ttl剩余时间，并将value置为 -1
-			*/
+			//获取key的ttl剩余时间，并将value置为 -1
 			ttl, err := rdb.TTL(ctx, tempKey).Result()
 			if err != nil {
 				return false, err
