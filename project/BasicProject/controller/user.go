@@ -27,20 +27,18 @@ var (
 )
 
 // 可以通过邮箱注册，需要做的步骤是首先在数据库查询是否已经有这个邮箱，有的话返回错误
-func HandleUserSiginIn(ctx *gin.Context) {
+func HandleUserSignIn(ctx *gin.Context) {
 	// 1.获取请求参数
-	var fo *models.RegisterForm
-
-	// 2.校验数据的有效性
-	if err := ctx.ShouldBindJSON(&fo); err != nil {
-		zap.L().Error("Sign In with invalid params", zap.Error(err))
+	var form models.RegisterFormByEmail
+	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "请求参数错误",
+			"error": err.Error(),
 		})
 		return
 	}
+
 	// 3. 交给logic层
-	if err := logic.SignIn(fo); err != nil {
+	if err := logic.SignIn(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": err.Error(),
 		})
@@ -56,15 +54,20 @@ func HandleUserSiginIn(ctx *gin.Context) {
 // 处理登录业务
 func HanlerUserLogin(ctx *gin.Context) {
 	// 1.获取请求参数
-	var fo *models.LoginForm
+	var fo models.LoginForm
 
 	// 2.校验数据的有效性
 	if err := ctx.ShouldBindJSON(&fo); err != nil {
 		zap.L().Error("Sign In with invalid params", zap.Error(err))
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"message": "请求参数有误",
+		})
 		return
 	}
+
 	// 3. 交给Logic层
-	result, tempuser, _ := logic.Login(fo)
+	result, tempuser, _ := logic.Login(&fo)
+
 	if result == true {
 		// 登录成功
 		strToken, _ := JWT.GenToken(tempuser.Id)
@@ -331,6 +334,12 @@ func HandlerUserProfile(ctx *gin.Context) {
 
 }
 
+// 处理获取用户信息 V2
+func HandleUserProfileV2(ctx *gin.Context) {
+
+}
+
+// 处理用户编辑信息请求
 func HandleEditProfile(ctx *gin.Context) {
 
 	// 1.获取请求参数
@@ -351,6 +360,11 @@ func HandleEditProfile(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "success",
 	})
+}
+
+// 处理用户编辑信息请求 V2
+func HandleEditProfileV2(ctx *gin.Context) {
+
 }
 
 func HandleTestSession(c *gin.Context) {

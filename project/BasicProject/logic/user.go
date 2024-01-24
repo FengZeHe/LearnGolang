@@ -14,12 +14,13 @@ import (
 )
 
 // 处理注册逻辑
-func SignIn(user *models.RegisterForm) (err error) {
+func SignIn(user *models.RegisterFormByEmail) (err error) {
 	err = mysql.CheckUserExist(user.Email)
 	if err == nil {
 		// 用户不存在 允许注册
 		encipherPassword, _ := bcrypt.GetPwd(user.Password)
-		user := models.User{Email: user.Email, Password: encipherPassword, Id: snowflake.GenId(), Ctime: time.Now().Unix()}
+		objemail := mysql.StringToSqlNullString(user.Email)
+		user := models.User{Email: &objemail, Password: encipherPassword, Id: snowflake.GenId(), Ctime: time.Now().Unix()}
 		if err = mysql.CreateUser(&user); err != nil {
 			return err
 		}
@@ -30,7 +31,8 @@ func SignIn(user *models.RegisterForm) (err error) {
 
 // 处理登录逻辑
 func Login(user *models.LoginForm) (result bool, tempUser models.User, err error) {
-	tempuser := models.User{Email: user.Email, Password: user.Password}
+	objemail := mysql.StringToSqlNullString(user.Email)
+	tempuser := models.User{Email: &objemail, Password: user.Password}
 	dbuser, err := mysql.FindByEmail(&tempuser)
 	log.Println(dbuser)
 	result = bcrypt.ComparePwd(dbuser.Password, tempuser.Password)
@@ -52,8 +54,8 @@ func SMSLogin(phone string) (code string, err error) {
 
 // 根据邮箱查询用户信息
 func GetUserProfileByEmail(email sql.NullString) (user models.User, err error) {
-	tempUser := models.User{Email: email}
-	user, err = mysql.FindByEmail(&tempUser)
+	//tempUser := models.User{Email: email}
+	//user, err = mysql.FindByEmail(&tempUser)
 	return user, err
 }
 
