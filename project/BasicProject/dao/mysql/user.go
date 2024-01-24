@@ -8,9 +8,10 @@ import (
 )
 
 // 查询是否已经存在该用户
-func CheckUserExist(email sql.NullString) (err error) {
+func CheckUserExist(email string) (err error) {
 	var user models.User
-	result := db.Find(&user, models.User{Email: email})
+	objemail := StringToSqlNullString(email)
+	result := db.Find(&user, models.User{Email: &objemail})
 	if result.RowsAffected > 0 {
 		// 存在 不能注册
 		err = errors.New(ErrorUserExit)
@@ -64,4 +65,12 @@ func UpdateUserProfile(userid string, user *models.EditUserProfile) (err error) 
 		return err
 	}
 	return nil
+}
+
+// string转Sql.NullString
+func StringToSqlNullString(str string) sql.NullString {
+	if str == "" {
+		return sql.NullString{}
+	}
+	return sql.NullString{String: str, Valid: true}
 }

@@ -5,6 +5,7 @@ go 1.21
 
 require (
 	github.com/bwmarrin/snowflake v0.3.0
+	github.com/coocood/freecache v1.2.4
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/sessions v0.0.5

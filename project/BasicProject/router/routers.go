@@ -21,7 +21,7 @@ func SetupRouter(mode string) *gin.Engine {
 
 	v1 := r.Group("/api/v1")
 	{
-		v1.POST("/signin", controller.HandleUserSiginIn)
+		v1.POST("/signin", controller.HandleUserSignIn)
 		v1.POST("/login", controller.HanlerUserLogin)
 		v1.GET("/user/profile", JWT.JWTAuth(), cache.CacheMiddleWare(cache.KeyUserIdSet), controller.HandlerUserProfile)
 		v1.POST("/user/edit", JWT.JWTAuth(), controller.HandleEditProfile)
@@ -34,6 +34,14 @@ func SetupRouter(mode string) *gin.Engine {
 		v2.GET("/login", session.SessionMiddleware(), controller.HandleTestSession)
 		v2.POST("/sendSMS", controller.HandlerUserSMSForLoginV2)
 		v2.POST("/smsLogin", controller.HandlerUserSMSLoginV2)
+	}
+	v3 := r.Group("/api/v3")
+	{
+		/*
+			设置本地缓存为一个中间件
+		*/
+		v3.POST("/user/profile", controller.HandleUserProfileV2)
+		v3.POST("/user/edit", controller.HandleEditProfileV2)
 	}
 	r.GET("/hello", controller.HandleHello)
 
