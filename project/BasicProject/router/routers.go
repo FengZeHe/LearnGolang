@@ -42,6 +42,7 @@ func SetupRouter(mode string) *gin.Engine {
 			设置本地缓存为一个中间件
 		*/
 		v3.POST("/user/profile", JWT.JWTAuth(), localcache.LocalCacheMiddleware(), cache.RedisCacheMiddleWare(), controller.HandleUserProfileV2)
+		v3.POST("/user/edit", JWT.JWTAuth(), controller.HandleEditProfileV2)
 	}
 	r.GET("/hello", controller.HandleHello)
 

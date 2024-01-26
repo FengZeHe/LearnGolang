@@ -35,8 +35,8 @@ type User struct {
 }
 
 type EditUserProfile struct {
-	Email    sql.NullString `json:"email"`
-	Birthday int64          `json:"birthday"`
-	Nickname string         `json:"nickname"`
-	Aboutme  string         `json:"aboutme"`
+	Email    string `json:"email"`
+	Birthday int64  `json:"birthday"`
+	Nickname string `json:"nickname"`
+	Aboutme  string `json:"aboutme"`
 }

@@ -52,3 +52,11 @@ func GetCache(key string) (value []byte, err error) {
 	}
 	return value, nil
 }
+
+func DelCache(key string) (affected bool) {
+	/*
+		freeCache如果使用Del()方法删除指定key，返回一个bool值
+	*/
+	affected = LocalCache.Del([]byte(key))
+	return affected
+}

@@ -370,7 +370,6 @@ func HandleUserProfileV2(ctx *gin.Context) {
 
 // 处理用户编辑信息请求
 func HandleEditProfile(ctx *gin.Context) {
-
 	// 1.获取请求参数
 	var fo *models.EditUserProfile
 	// 2.校验数据的有效性
@@ -393,7 +392,35 @@ func HandleEditProfile(ctx *gin.Context) {
 
 // 处理用户编辑信息请求 V2
 func HandleEditProfileV2(ctx *gin.Context) {
+	// 1.获取请求参数
+	var fo *models.EditUserProfile
+	// 2.校验数据的有效性
+	if err := ctx.ShouldBindJSON(&fo); err != nil {
+		zap.L().Error("Sign In with invalid params", zap.Error(err))
+		return
+	}
+	// 3.logic层
+	userId, _ := ctx.Get("userid")
+	userStr, _ := userId.(string)
+	if err := logic.EditUserProfile(userStr, fo); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": err,
+		})
+	}
 
+	//修改完成后清除LocalCache
+	if err := localcache.DelLocalCacheByUserId(userStr); err != nil {
+		log.Println("Del Local Cache By UserId ERROR ", err)
+	}
+
+	//删除redis缓存
+	if err := cache.DelCacheByUserId(userStr); err != nil {
+		log.Println("Del Redis Cache By UserId ERROR ", err)
+	}
+	// 返回成功
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "success",
+	})
 }
 
 func HandleTestSession(c *gin.Context) {

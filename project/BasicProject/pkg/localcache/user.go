@@ -8,6 +8,7 @@ import (
 	"log"
 )
 
+// 根据userid设置localcache
 func SetLocalCacheByUserId(data *models.User, userid string) (err error) {
 	strdata, _ := json.Marshal(data)
 	key := fmt.Sprintf("%s%s", cache.KeyUserIdSet, userid)
@@ -19,6 +20,7 @@ func SetLocalCacheByUserId(data *models.User, userid string) (err error) {
 	return nil
 }
 
+// 通过userid获取缓存
 func GetLocalCacheByUserId(key string) (data *models.User, err error) {
 	strKey := fmt.Sprintf("%s%s", cache.KeyUserIdSet, key)
 	res, err := GetCache(strKey)
@@ -27,5 +29,15 @@ func GetLocalCacheByUserId(key string) (data *models.User, err error) {
 	}
 	err = json.Unmarshal(res, &data)
 	return data, nil
+}
 
+// 通过userid删除缓存
+func DelLocalCacheByUserId(key string) (err error) {
+	strKey := fmt.Sprintf("%s%s", cache.KeyUserIdSet, key)
+	affected := DelCache(strKey)
+	if affected != true {
+		// 删除失败？
+		log.Println("没有删除条目")
+	}
+	return nil
 }
