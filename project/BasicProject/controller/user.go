@@ -5,6 +5,7 @@ import (
 	"BasicProject/middlewares/JWT"
 	"BasicProject/middlewares/cache"
 	"BasicProject/models"
+	"BasicProject/pkg/localcache"
 	_ "embed"
 	"fmt"
 	"github.com/gin-contrib/sessions"
@@ -323,11 +324,12 @@ func HandlerUserProfile(ctx *gin.Context) {
 		})
 	}
 	userinfo, _ := logic.GetUserProfileById(userIdStr)
-	// 设置userinfo到redis中缓存
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"message":     "success",
 		"userprofile": userinfo,
 	})
+	// 设置userinfo到redis中缓存
 	if err := cache.SetCacheByUserId(&userinfo, userinfo.Id); err != nil {
 		log.Println("Set User Profile Cache ERROR", err)
 	}
@@ -336,6 +338,33 @@ func HandlerUserProfile(ctx *gin.Context) {
 
 // 处理获取用户信息 V2
 func HandleUserProfileV2(ctx *gin.Context) {
+	userId, _ := ctx.Get("userid")
+	userIdStr := fmt.Sprintf("%v", userId)
+	if len(userIdStr) <= 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": "Get User Profile Error",
+		})
+	}
+	/*
+		1. 请求一级缓存 LocalCache；如果LocalCache中不存在数据，那么向redis请求
+		2. 请求二级缓存 Redis； 如果Redis中不存在数据，那么向MySQL中发送请求
+		3. Mysql中如果获取数据成功，那么将数据设置到本地缓存和redis中去
+	*/
+	userinfo, _ := logic.GetUserProfileById(userIdStr)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message":     "success",
+		"userprofile": userinfo,
+	})
+	// 设置userinfo到本地缓存
+	if err := localcache.SetLocalCacheByUserId(&userinfo, userinfo.Id); err != nil {
+		log.Println("Set User Profile Local Cache ERROR", err)
+	}
+
+	// 设置userinfo到redis中缓存
+	if err := cache.SetCacheByUserId(&userinfo, userinfo.Id); err != nil {
+		log.Println("Set User Profile Redis Cache ERROR", err)
+	}
 
 }
 

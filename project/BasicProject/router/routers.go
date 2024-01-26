@@ -6,6 +6,7 @@ import (
 	"BasicProject/middlewares/cache"
 	"BasicProject/middlewares/cors"
 	"BasicProject/middlewares/session"
+	"BasicProject/pkg/localcache"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,7 +24,7 @@ func SetupRouter(mode string) *gin.Engine {
 	{
 		v1.POST("/signin", controller.HandleUserSignIn)
 		v1.POST("/login", controller.HanlerUserLogin)
-		v1.GET("/user/profile", JWT.JWTAuth(), cache.CacheMiddleWare(cache.KeyUserIdSet), controller.HandlerUserProfile)
+		v1.GET("/user/profile", JWT.JWTAuth(), cache.RedisCacheMiddleWare(), controller.HandlerUserProfile)
 		v1.POST("/user/edit", JWT.JWTAuth(), controller.HandleEditProfile)
 		v1.POST("/sendSMS", controller.HandlerSendSMSForLogin) // 发送验证码
 		v1.POST("/smsLogin", controller.HandlerUserSMSLogin)   // 使用验证码登录
@@ -40,8 +41,7 @@ func SetupRouter(mode string) *gin.Engine {
 		/*
 			设置本地缓存为一个中间件
 		*/
-		v3.POST("/user/profile", controller.HandleUserProfileV2)
-		v3.POST("/user/edit", controller.HandleEditProfileV2)
+		v3.POST("/user/profile", JWT.JWTAuth(), localcache.LocalCacheMiddleware(), cache.RedisCacheMiddleWare(), controller.HandleUserProfileV2)
 	}
 	r.GET("/hello", controller.HandleHello)
 

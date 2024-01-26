@@ -30,7 +30,7 @@ func SetCacheByUserId(data *models.User, userid string) (err error) {
 		log.Println("set Cache ERROR:", err)
 		return err
 	}
-	log.Println("set cache success!")
+	log.Println("Set Redis cache success!")
 	return nil
 }
 
