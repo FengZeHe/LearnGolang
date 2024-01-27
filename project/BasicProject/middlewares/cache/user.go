@@ -30,7 +30,7 @@ func SetCacheByUserId(data *models.User, userid string) (err error) {
 		log.Println("set Cache ERROR:", err)
 		return err
 	}
-	log.Println("set cache success!")
+	log.Println("Set Redis cache success!")
 	return nil
 }
 
@@ -107,4 +107,15 @@ func CheckSMSResidualDegree(phone string) (status bool, err error) {
 			return false, nil
 		}
 	}
+}
+
+// 根据用户id删除缓存
+func DelCacheByUserId(userid string) (err error) {
+	key := fmt.Sprintf("%s%s", KeyUserIdSet, userid)
+	err = rdb.Del(ctx, key).Err()
+	if err != nil {
+		log.Println("Delete Redis Cache ERROR", err)
+		return err
+	}
+	return nil
 }

@@ -47,7 +47,7 @@ func ExistKey(key string) bool {
 }
 
 // 缓存的中间件
-func CacheMiddleWare(kind string) gin.HandlerFunc {
+func RedisCacheMiddleWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 首先要获取上下文拿到email,先判断 Key是否存在 ，如果存在则redis中查找，如果不存在则 c.Next
 		userid, _ := c.Get("userid")
@@ -59,12 +59,14 @@ func CacheMiddleWare(kind string) gin.HandlerFunc {
 				log.Println("Get Cache Error", err)
 				c.Next()
 			}
+			log.Println("Hit Redis Cache ")
 			c.JSON(http.StatusOK, gin.H{
 				"message":     "success",
 				"userprofile": res,
 			})
 			c.Abort()
 		} else {
+			log.Println("Miss Redis Cache")
 			c.Next()
 		}
 	}
