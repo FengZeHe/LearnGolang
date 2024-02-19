@@ -29,7 +29,7 @@ func JWTAuth() gin.HandlerFunc {
 
 		token := c.Request.Header.Get("Authorization")
 		if token == "" {
-			c.JSON(http.StatusOK, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "请求未携带token, 无法访问",
 			})
 			c.Abort()

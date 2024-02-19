@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	cacheSize  = 100 * 1024 * 1024
-	LocalCache = freecache.NewCache(cacheSize)
+	cacheSize  = 100 * 1024 * 1024             // 定义缓存的大小 100MB
+	LocalCache = freecache.NewCache(cacheSize) //初始化freeCache，函数会返回一个*freecahe.Cahe类型的指针
 )
 
 // 本次缓存中间件

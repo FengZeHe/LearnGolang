@@ -3,16 +3,14 @@ kind: Ingress
 metadata:
   name: ingress-demo
 spec:
-  ingressClassName: nginx
   rules:
     - host: basicproject.me.com
       http:
         paths:
-          - backend:
+          - pathType: Prefix
+            path: "/"
+            backend:
               service:
-                name: basic
+                name: basic-project
                 port:
                   number: 8085
-            pathType: Prefix
-            path: /
-

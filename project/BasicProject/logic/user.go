@@ -89,4 +89,5 @@ func EditUserProfile(userid string, user *models.EditUserProfile) (err error) {
 	} else {
 		return nil
 	}
+
 }
