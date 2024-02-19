@@ -7,6 +7,7 @@ import (
 	Cors "github.com/websocketdemo/Middleware/cors"
 	"log"
 	"net/http"
+	"time"
 )
 
 var upgrader = websocket.Upgrader{
@@ -14,7 +15,6 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-// var UpGrader= websocket.Upgrader{CheckOrigin: func (r *http.Request) bool {return true}
 var UpGrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
@@ -22,6 +22,9 @@ var UpGrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 }
+
+// 存储连接的映射
+var connections = make(map[string]*websocket.Conn)
 
 func WebSocketHandler(c *gin.Context) {
 	// 获取WebSocket连接 下面这行代码使用的方法已经被弃用
@@ -38,12 +41,12 @@ func WebSocketHandler(c *gin.Context) {
 			break
 		}
 
-		fmt.Println("messageType:--?", messageType)
-		fmt.Println("msg--:", string(p))
+		fmt.Println("msg:", string(p))
+		clientId := ws.RemoteAddr().String()
+		connections[clientId] = ws
 
-		// 输出WebSocket消息内容
-		//c.Writer.Write(p)
-
+		token := c.GetHeader("token")
+		log.Println("token -->", token)
 		err = ws.WriteMessage(messageType, []byte("copy"))
 		if err != nil {
 			log.Println("websocket write Message ERROR")
@@ -64,5 +67,20 @@ func main() {
 	})
 
 	r.GET("/ws", WebSocketHandler)
+
+	go NotificationService()
+
 	r.Run(":8899") // 在0.0.0.0:8899上监听并服务
+}
+
+// 定时发送
+func NotificationService() {
+	for range time.Tick(5 * time.Second) {
+		for clientID, conn := range connections {
+			fmt.Println(clientID)
+			_ = conn.WriteMessage(1, []byte("Notification Service Msg"))
+		}
+		fmt.Println("Send Message")
+	}
+
 }
