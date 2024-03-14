@@ -7,13 +7,9 @@ import (
 	Cors "github.com/websocketdemo/Middleware/cors"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 )
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
 
 var UpGrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -25,8 +21,13 @@ var UpGrader = websocket.Upgrader{
 
 // 存储连接的映射
 var connections = make(map[string]*websocket.Conn)
+var mu sync.Mutex
 
 func WebSocketHandler(c *gin.Context) {
+	//clientId := ws.RemoteAddr().String()
+	//token := c.GetHeader("auth")
+	userID := c.Query("userid")
+	log.Println("userID->", userID)
 	// 获取WebSocket连接 下面这行代码使用的方法已经被弃用
 	//ws, err := websocket.Upgrade(c.Writer, c.Request, nil, 1024, 1024)
 	ws, err := UpGrader.Upgrade(c.Writer, c.Request, nil)
@@ -40,13 +41,11 @@ func WebSocketHandler(c *gin.Context) {
 		if err != nil {
 			break
 		}
-
 		fmt.Println("msg:", string(p))
-		clientId := ws.RemoteAddr().String()
-		connections[clientId] = ws
 
-		token := c.GetHeader("token")
-		log.Println("token -->", token)
+		mu.Lock()
+		connections[userID] = ws
+		mu.Unlock()
 		err = ws.WriteMessage(messageType, []byte("copy"))
 		if err != nil {
 			log.Println("websocket write Message ERROR")

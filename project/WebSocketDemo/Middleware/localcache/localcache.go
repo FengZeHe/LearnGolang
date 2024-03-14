@@ -9,8 +9,8 @@ var (
 )
 
 // 设置缓存
-func SetCache(key, value string, expire int) (err error) {
-	err = LocalCache.Set([]byte(key), []byte(value), expire)
+func SetCache(key string, value []byte, expire int) (err error) {
+	err = LocalCache.Set([]byte(key), value, expire)
 	if err != nil {
 		return err
 	}
