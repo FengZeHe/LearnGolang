@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+<<<<<<< HEAD
     <data-source source="LOCAL" name="0@localhost" uuid="61d9edaf-9ac7-4cb3-a05b-2eefb583357f">
       <driver-ref>redis</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>jdbc.RedisDriver</jdbc-driver>
       <jdbc-url>jdbc:redis://localhost:16380/0</jdbc-url>
+=======
+    <data-source source="LOCAL" name="0@127.0.0.1" uuid="24148bf6-a7bb-41cf-a9ce-aba5b14b3612">
+      <driver-ref>redis</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>jdbc.RedisDriver</jdbc-driver>
+      <jdbc-url>jdbc:redis://127.0.0.1:16380/0</jdbc-url>
+>>>>>>> ce8285579819a1fb448d47a5e2f11410f2684ad2
       <jdbc-additional-properties>
         <property name="com.intellij.clouds.kubernetes.db.host.port" />
         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
