@@ -1,0 +1,17 @@
+name: "basicprojectv2"
+mode: "dev"
+port: 8082
+version: "v0.0.1"
+
+mysql:
+  host: 127.0.0.1
+  port: 3306
+  user: "root"
+  password: "12345678"
+  dbname: webook
+  max_open_conns: 200
+  max_idle_conns: 50
+
+redis:
+  host: 127.0.0.1
+  port: 6379
