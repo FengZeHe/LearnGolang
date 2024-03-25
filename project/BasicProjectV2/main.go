@@ -23,6 +23,5 @@ func main() {
 	userService := service.NewUserService(userRepository)
 	userHandler := web.NewUserHandler(userService)
 	engine := ioc.InitWebServer(v, userHandler)
-
 	engine.Run(":8088")
 }
