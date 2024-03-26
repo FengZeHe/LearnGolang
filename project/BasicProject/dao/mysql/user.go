@@ -5,7 +5,16 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
+
+type UserDao struct {
+	db *gorm.DB
+}
+
+func NewUserDao(db *gorm.DB) *UserDao {
+	return &UserDao{db: db}
+}
 
 // 查询是否已经存在该用户
 func CheckUserExist(email string) (err error) {

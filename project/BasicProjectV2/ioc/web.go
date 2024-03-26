@@ -11,6 +11,7 @@ import (
 func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler) *gin.Engine {
 	server := gin.Default()
 	server.Use(mdls...)
+	userHdl.RegisterRoutes(server)
 	return server
 }
 
@@ -34,7 +35,8 @@ func InitGinMiddlewares() []gin.HandlerFunc {
 			//	}
 			//	return strings.Contains(origin, "your_company.com")
 			//},
-			MaxAge: 12 * time.Hour,
+			AllowAllOrigins: true,
+			MaxAge:          12 * time.Hour,
 		}),
 	}
 }

@@ -13,6 +13,14 @@ import (
 	"time"
 )
 
+type UserLogic struct {
+	userDao *mysql.UserDao
+}
+
+func NewUserLogic(userDao *mysql.UserDao) *UserLogic {
+	return &UserLogic{userDao: userDao}
+}
+
 // 处理注册逻辑
 func SignIn(user *models.RegisterFormByEmail) (err error) {
 	err = mysql.CheckUserExist(user.Email)

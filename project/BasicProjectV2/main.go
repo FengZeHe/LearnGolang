@@ -8,10 +8,10 @@ import (
 	"github.com/basicprojectv2/internal/service/web"
 	"github.com/basicprojectv2/ioc"
 	"github.com/basicprojectv2/settings"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-
 	redisConf := settings.InitRedisConfig()
 	cmdable := ioc.InitRedis(redisConf)
 	v := ioc.InitGinMiddlewares()
@@ -23,5 +23,10 @@ func main() {
 	userService := service.NewUserService(userRepository)
 	userHandler := web.NewUserHandler(userService)
 	engine := ioc.InitWebServer(v, userHandler)
+
+	engine.GET("/hi", func(c *gin.Context) {
+		c.JSON(200, "hello")
+	})
 	engine.Run(":8088")
+
 }

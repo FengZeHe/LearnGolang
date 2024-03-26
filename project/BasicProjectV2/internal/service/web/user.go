@@ -14,8 +14,8 @@ func NewUserHandler(svc service.UserService) *UserHandler {
 }
 
 func (h *UserHandler) RegisterRoutes(server *gin.Engine) {
-	ug := server.Group("/users")
-	ug.POST("/hi", h.Hi)
+	ug := server.Group("/v2/users/")
+	ug.GET("/hi", h.Hi)
 }
 
 func (h *UserHandler) Hi(ctx *gin.Context) {
