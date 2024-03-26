@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/redis/go-redis/v9"
+	"strconv"
 	"time"
 )
 
@@ -40,7 +41,8 @@ func (c *RedisUserCache) Get(ctx context.Context, uid int) (domain.User, error) 
 }
 
 func (c *RedisUserCache) Set(ctx context.Context, du domain.User) error {
-	key := c.key(du.ID)
+	intId, err := strconv.Atoi(du.ID)
+	key := c.key(intId)
 	data, err := json.Marshal(du)
 	if err != nil {
 		return err
