@@ -1,7 +1,7 @@
 package ioc
 
 import (
-	"github.com/basicprojectv2/internal/service/web"
+	"github.com/basicprojectv2/internal/web"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"time"
@@ -11,6 +11,7 @@ import (
 func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler) *gin.Engine {
 	server := gin.Default()
 	server.Use(mdls...)
+	userHdl.RegisterRoutes(server)
 	return server
 }
 
@@ -27,14 +28,15 @@ func InitGinMiddlewares() []gin.HandlerFunc {
 			ExposeHeaders: []string{"x-jwt-token"},
 			//AllowHeaders: []string{"content-type"},
 			//AllowMethods: []string{"POST"},
-			AllowOriginFunc: func(origin string) bool {
-				if strings.HasPrefix(origin, "http://localhost") {
-					//if strings.Contains(origin, "localhost") {
-					return true
-				}
-				return strings.Contains(origin, "your_company.com")
-			},
-			MaxAge: 12 * time.Hour,
+			//AllowOriginFunc: func(origin string) bool {
+			//	if strings.HasPrefix(origin, "http://localhost") {
+			//		//if strings.Contains(origin, "localhost") {
+			//		return true
+			//	}
+			//	return strings.Contains(origin, "your_company.com")
+			//},
+			AllowAllOrigins: true,
+			MaxAge:          12 * time.Hour,
 		}),
 	}
 }

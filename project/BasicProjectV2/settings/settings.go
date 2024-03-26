@@ -46,7 +46,6 @@ func InitMysqlConfig() (mysqlConfig *MysqlConfig) {
 
 func InitRedisConfig() (redisConfig *RedisConfig) {
 	viper.SetConfigFile("./config/config.yaml")
-	///Users/mac/Desktop/LearnGolang/project/BasicProjectV2/config/config.yaml
 	if err := viper.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("Read Config failed %v", err))
 	}

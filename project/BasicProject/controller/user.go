@@ -27,6 +27,18 @@ var (
 	luaVerifyCode string
 )
 
+type UserController struct {
+	userLogic *logic.UserLogic
+}
+
+func NewUserController(userLogic *logic.UserLogic) *UserController {
+	return &UserController{userLogic: userLogic}
+}
+
+func (userController *UserController) Hello(c *gin.Context) {
+	c.JSON(200, "hello")
+}
+
 // 可以通过邮箱注册，需要做的步骤是首先在数据库查询是否已经有这个邮箱，有的话返回错误
 func HandleUserSignIn(ctx *gin.Context) {
 	// 1.获取请求参数

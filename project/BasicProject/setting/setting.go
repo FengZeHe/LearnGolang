@@ -60,3 +60,17 @@ func Init(env string) error {
 
 	return nil
 }
+
+func InitMysqlConf() (mysqlconf *Mysql) {
+	viper.SetConfigFile("./config/config.yaml")
+	if err := viper.ReadInConfig(); err != nil {
+		panic(fmt.Errorf("Read config failed err %v", err))
+	}
+	var appconf AppConfig
+	if err := viper.Unmarshal(&appconf); err != nil {
+		panic(fmt.Errorf("unmarshal to Conf failed ,err %v", err))
+	}
+	mysqlconf = appconf.Mysql
+	log.Println("load config file success!", mysqlconf)
+	return mysqlconf
+}

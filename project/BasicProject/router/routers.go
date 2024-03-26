@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// 初始化功能
+
 func SetupRouter(mode string) *gin.Engine {
 	if mode == gin.ReleaseMode {
 		gin.SetMode(gin.ReleaseMode)
