@@ -26,8 +26,7 @@ type MysqlConfig struct {
 }
 
 type RedisConfig struct {
-	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
+	Addr string `mapstructure:"addr"`
 }
 
 func InitMysqlConfig() (mysqlConfig *MysqlConfig) {

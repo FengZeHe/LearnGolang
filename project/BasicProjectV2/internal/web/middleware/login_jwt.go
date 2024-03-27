@@ -17,8 +17,8 @@ func (m *LoginJWTMiddlewareBuilder) CheckLogin() gin.HandlerFunc {
 		// 如果是登录/注册/短信登录/发送短信 这几个接口不需要校验jwt token
 		if path == "/v2/users/loginin" ||
 			path == "/v2/users/signin" ||
-			path == "v2/users/loginsms/code/send" ||
-			path == "v2/users/loginsms" {
+			path == "/v2/users/loginsms/code/send" ||
+			path == "/v2/users/loginsms" {
 			return
 		}
 		// 获取jwt token

@@ -20,7 +20,12 @@ func main() {
 	userCache := cache.NewUserCache(cmdable)
 	userRepository := repository.NewCacheUserRepository(userDAO, userCache)
 	userService := service.NewUserService(userRepository)
-	userHandler := web.NewUserHandler(userService)
+
+	codeCache := cache.NewCodeCache(cmdable)
+	smsService := ioc.InitSMSService()
+	codeService := service.NewCodeService(codeCache, smsService)
+
+	userHandler := web.NewUserHandler(userService, codeService)
 	engine := ioc.InitWebServer(v, userHandler)
 
 	engine.Run(":8088")
