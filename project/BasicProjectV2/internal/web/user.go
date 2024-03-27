@@ -5,17 +5,26 @@ import (
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/basicprojectv2/pkg/jwt"
+	"github.com/basicprojectv2/pkg/snowflake"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type UserHandler struct {
-	svc service.UserService
+	svc     service.UserService
+	codeSvc service.CodeService
 }
 
-func NewUserHandler(svc service.UserService) *UserHandler {
-	return &UserHandler{svc: svc}
+const (
+	emailRegexPattern    = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
+	passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$`
+	bizLogin             = "login"
+)
+
+func NewUserHandler(svc service.UserService, codeSvc service.CodeService) *UserHandler {
+	return &UserHandler{svc: svc, codeSvc: codeSvc}
 }
 
 // 注册路由
@@ -24,6 +33,8 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine) {
 	ug.GET("/hi", h.Hi)
 	ug.POST("/signin", h.SignIn)
 	ug.POST("/loginin", h.Login)
+	ug.POST("/loginsms/code/send", h.SendSMS)
+	ug.POST("/loginsms", h.VerifySMS)
 }
 
 func (h *UserHandler) Hi(ctx *gin.Context) {
@@ -78,5 +89,75 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 		"msg":   "登录成功",
 		"token": token,
 	})
+
+}
+
+// 处理sms请求
+func (h *UserHandler) SendSMS(ctx *gin.Context) {
+	var form domain.SMSRequest
+	if err := ctx.ShouldBindJSON(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"msg": "请求参数错误",
+		})
+		return
+	}
+
+	if form.Phone == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"msg": "手机号为空",
+		})
+		return
+	}
+
+	// 开始交给code svc
+	if err := h.codeSvc.SendCode(ctx, bizLogin, form.Phone); err != nil {
+		log.Println("发送短信失败", err)
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "发送成功",
+	})
+
+}
+
+// 处理验证sms登录
+func (h *UserHandler) VerifySMS(ctx *gin.Context) {
+	var form domain.SMSLogin
+	if err := ctx.ShouldBindJSON(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"msg": "请求参数错误",
+		})
+		// 可以交给code svc了
+	}
+	ok, err := h.codeSvc.VerifyCode(ctx, bizLogin, form.Phone, form.Code)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"msg": "系统错误",
+		})
+	}
+	if ok != true {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"msg": "验证失败",
+		})
+	} else {
+		/*
+			数据库中查询是否有该手机号，如果没有的话帮用户注册
+		*/
+
+		// 返回一个token
+		id := snowflake.GenId()
+		u, err := h.svc.FindOrCreate(ctx, form.Phone, strconv.Itoa(id))
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"msg": "系统错误",
+			})
+			return
+		}
+		token, err := jwt.GenToken(u.ID)
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"msg":   "登录成功",
+			"token": token,
+		})
+	}
 
 }

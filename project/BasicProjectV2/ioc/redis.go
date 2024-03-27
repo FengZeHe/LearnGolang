@@ -7,7 +7,7 @@ import (
 
 func InitRedis(Conf *settings.RedisConfig) (rdb redis.Cmdable) {
 	rdb = redis.NewClient(&redis.Options{
-		Addr: Conf.Host,
+		Addr: Conf.Addr,
 	})
 	return rdb
 }

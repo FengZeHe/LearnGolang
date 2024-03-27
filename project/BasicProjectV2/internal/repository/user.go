@@ -7,9 +7,15 @@ import (
 	"github.com/basicprojectv2/internal/repository/dao"
 )
 
+var (
+	ErrDuplicateUser = dao.ErrDuplicateEmail
+	ErrUserNotFound  = dao.ErrRecordNotFound
+)
+
 type UserRepository interface {
 	Create(ctx context.Context, u domain.User) error
 	FindByEmail(ctx context.Context, email string) (domain.User, error)
+	FindByPhone(ctx context.Context, phone string) (domain.User, error)
 }
 
 type CacheUserRepository struct {
@@ -30,4 +36,8 @@ func (repo *CacheUserRepository) Create(ctx context.Context, u domain.User) (err
 
 func (repo *CacheUserRepository) FindByEmail(ctx context.Context, email string) (u domain.User, err error) {
 	return repo.dao.FindByEmail(ctx, email)
+}
+
+func (repo *CacheUserRepository) FindByPhone(ctx context.Context, phone string) (domain.User, error) {
+	return repo.dao.FindByPhone(ctx, phone)
 }

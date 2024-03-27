@@ -2,6 +2,7 @@ package ioc
 
 import (
 	"github.com/basicprojectv2/internal/web"
+	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"time"
@@ -38,6 +39,7 @@ func InitGinMiddlewares() []gin.HandlerFunc {
 			AllowAllOrigins: true,
 			MaxAge:          12 * time.Hour,
 		}),
+		(&middleware.LoginJWTMiddlewareBuilder{}).CheckLogin(), // 什么写法？
 	}
 }
 

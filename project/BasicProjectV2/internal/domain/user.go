@@ -22,3 +22,12 @@ type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type SMSRequest struct {
+	Phone string `json:"phone"`
+}
+
+type SMSLogin struct {
+	Phone string `json:"phone"`
+	Code  string `json:"code"`
+}
