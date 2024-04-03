@@ -12,6 +12,7 @@ import (
 func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler) *gin.Engine {
 	server := gin.Default()
 	server.Use(mdls...)
+	// userHandler 注册user的路由
 	userHdl.RegisterRoutes(server)
 	return server
 }

@@ -13,14 +13,14 @@ var (
 	ErrRecordNotFound = gorm.ErrRecordNotFound
 )
 
-type GORMUserDAO struct {
-	db *gorm.DB
-}
-
 type UserDAO interface {
 	Insert(ctx context.Context, u domain.User) error
 	FindByEmail(ctx context.Context, email string) (domain.User, error)
 	FindByPhone(ctx context.Context, phone string) (domain.User, error)
+}
+
+type GORMUserDAO struct {
+	db *gorm.DB
 }
 
 func NewUserDAO(db *gorm.DB) UserDAO {
