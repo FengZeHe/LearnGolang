@@ -23,7 +23,10 @@ func NewUserLogic(userDao *mysql.UserDao) *UserLogic {
 
 // 处理注册逻辑
 func SignIn(user *models.RegisterFormByEmail) (err error) {
-	err = mysql.CheckUserExist(user.Email)
+	tempEmail := sql.NullString{String: user.Email, Valid: true}
+	var tempUser models.User
+	tempUser.Email = &tempEmail
+	err = mysql.CheckUserExist(&tempUser)
 	if err == nil {
 		// 用户不存在 允许注册
 		encipherPassword, _ := bcrypt.GetPwd(user.Password)
@@ -98,4 +101,26 @@ func EditUserProfile(userid string, user *models.EditUserProfile) (err error) {
 		return nil
 	}
 
+}
+
+func MockSignIn(user models.RegisterFormByEmail) error {
+	return nil
+}
+
+var signInLogic SignInLogic
+
+// SetSignInLogic 设置logic层的SignIn逻辑
+func SetSignInLogic(l SignInLogic) {
+	signInLogic = l
+}
+
+// SignInLogic 是logic层的接口，用于定义SignIn方法
+type SignInLogic interface {
+	SignIn(user *models.RegisterFormByEmail) error
+}
+
+type MockSignInLogic struct{}
+
+func (m *MockSignInLogic) SignIn(user *models.RegisterFormByEmail) error {
+	return nil
 }
