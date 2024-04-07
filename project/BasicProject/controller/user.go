@@ -52,7 +52,7 @@ func HandleUserSignIn(ctx *gin.Context) {
 
 	// 3. 交给logic层
 	if err := logic.SignIn(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
 		})
 	} else {
@@ -61,7 +61,6 @@ func HandleUserSignIn(ctx *gin.Context) {
 			"message": "success",
 		})
 	}
-
 }
 
 // 处理登录业务
