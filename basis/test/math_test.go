@@ -3,18 +3,41 @@ package test
 import "testing"
 
 func TestAdd(t *testing.T) {
-	result := Add(3, 5)
-	expected := 8
-
-	if result != expected {
-		t.Errorf("Add(3,5) returned %d, expected %d", result, expected)
+	testCases := []struct {
+		intputA int
+		intputB int
+		want    int
+	}{
+		{1, 1, 2},
+		{2, 3, 5},
+		{3, 4, 7},
 	}
+
+	for _, tc := range testCases {
+		t.Run("Add", func(t *testing.T) {
+			if got := Add(tc.intputA, tc.intputB); got != tc.want {
+				t.Errorf("got %d ,want %d", got, tc.want)
+			}
+		})
+	}
+
 }
 
 func TestSubtract(t *testing.T) {
-	result := Subtract(5, 3)
-	expected := 2
-	if result != expected {
-		t.Errorf("Subtract(5,3) returned %d, expected %d", result, expected)
+	testCases := []struct {
+		intputA int
+		intputB int
+		want    int
+	}{
+		{1, 1, 0},
+		{3, 2, 1},
+	}
+
+	for _, tc := range testCases {
+		t.Run("Subtract", func(t *testing.T) {
+			if got := Subtract(tc.intputA, tc.intputB); got != tc.want {
+				t.Errorf("got %d ,want %d", got, tc.want)
+			}
+		})
 	}
 }
