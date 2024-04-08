@@ -1,15 +1,13 @@
 package domain
 
-import "database/sql"
-
 type User struct {
-	ID       string         `json:"id"`
-	Email    sql.NullString `json:"email"`
-	Password string         `json:"password"`
-	Phone    sql.NullString `json:"phone"`
-	Birthday int            `json:"birthday"`
-	Nickname string         `json:"nickname"`
-	Aboutme  string         `json:"aboutme"`
+	ID       string `json:"id"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Phone    string `json:"phone"`
+	Birthday int    `json:"birthday"`
+	Nickname string `json:"nickname"`
+	Aboutme  string `json:"aboutme"`
 }
 
 type SignInRequest struct {

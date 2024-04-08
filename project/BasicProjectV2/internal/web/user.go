@@ -1,7 +1,6 @@
 package web
 
 import (
-	"database/sql"
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/basicprojectv2/pkg/jwt"
@@ -18,9 +17,9 @@ type UserHandler struct {
 }
 
 const (
-	emailRegexPattern    = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
-	passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$`
-	bizLogin             = "login"
+	//emailRegexPattern    = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
+	//passwordRegexPattern = `^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$`
+	bizLogin = "login"
 )
 
 func NewUserHandler(svc service.UserService, codeSvc service.CodeService) *UserHandler {
@@ -32,7 +31,7 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine) {
 	ug := server.Group("/v2/users/")
 	ug.GET("/hi", h.Hi)
 	ug.POST("/signin", h.SignIn)
-	ug.POST("/loginin", h.Login)
+	ug.POST("/login", h.Login)
 	ug.POST("/loginsms/code/send", h.SendSMS)
 	ug.POST("/loginsms", h.VerifySMS)
 }
@@ -56,8 +55,8 @@ func (h *UserHandler) SignIn(ctx *gin.Context) {
 			"msg": "两次密码输入不一致",
 		})
 	}
-	email := sql.NullString{String: form.Email, Valid: true}
-	err := h.svc.Signup(ctx, domain.User{Email: email, Password: form.Password})
+
+	err := h.svc.Signup(ctx, domain.User{Email: form.Email, Password: form.Password})
 	switch err {
 	case nil:
 		ctx.JSON(http.StatusOK, "msg:注册成功")
