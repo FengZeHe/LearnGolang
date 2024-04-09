@@ -4,9 +4,12 @@ import "testing"
 
 func TestAdd(t *testing.T) {
 	testCases := []struct {
+		// 输入值
 		intputA int
 		intputB int
-		want    int
+
+		// 预期值
+		want int
 	}{
 		{1, 1, 2},
 		{2, 3, 5},

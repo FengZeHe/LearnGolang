@@ -49,12 +49,13 @@ func TestUserHandler_Login(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// 新建一个控制器，用于管理模拟对象
 			ctrl := gomock.NewController(t)
+			// 在函数结束时确保资源被正确释放
 			defer ctrl.Finish()
 
-			// 登录函数
-			userSvc, codeSvc := tc.mock(ctrl)
-			hdl := NewUserHandler(userSvc, codeSvc)
+			userSvc, codeSvc := tc.mock(ctrl)       // 用控制器模拟userSvc和codeSvc
+			hdl := NewUserHandler(userSvc, codeSvc) // 创建一个userHandler
 
 			// 注册路由
 			serve := gin.Default()

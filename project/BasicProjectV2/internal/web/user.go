@@ -88,7 +88,6 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 		"msg":   "登录成功",
 		"token": token,
 	})
-
 }
 
 // 处理sms请求
