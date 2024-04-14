@@ -17,10 +17,10 @@ func NewUserDao(db *gorm.DB) *UserDao {
 }
 
 // 查询是否已经存在该用户
-func CheckUserExist(email string) (err error) {
-	var user models.User
-	objemail := StringToSqlNullString(email)
-	result := db.Find(&user, models.User{Email: &objemail})
+func CheckUserExist(user *models.User) (err error) {
+	//var user models.User
+	//objemail := StringToSqlNullString(email)
+	result := db.Find(&user)
 	if result.RowsAffected > 0 {
 		// 存在 不能注册
 		err = errors.New(ErrorUserExit)

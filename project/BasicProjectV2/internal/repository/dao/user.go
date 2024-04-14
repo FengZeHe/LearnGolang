@@ -2,10 +2,10 @@ package dao
 
 import (
 	"context"
-	"github.com/basicprojectv2/internal/domain"
+	"database/sql"
+	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"log"
 )
 
 var (
@@ -14,9 +14,10 @@ var (
 )
 
 type UserDAO interface {
-	Insert(ctx context.Context, u domain.User) error
-	FindByEmail(ctx context.Context, email string) (domain.User, error)
-	FindByPhone(ctx context.Context, phone string) (domain.User, error)
+	Insert(ctx context.Context, u User) error
+	FindByEmail(ctx context.Context, email string) (User, error)
+	FindByPhone(ctx context.Context, phone string) (User, error)
+	FindById(ctx context.Context, id string) (User, error)
 }
 
 type GORMUserDAO struct {
@@ -29,20 +30,44 @@ func NewUserDAO(db *gorm.DB) UserDAO {
 	}
 }
 
-func (dao *GORMUserDAO) Insert(ctx context.Context, u domain.User) (err error) {
-	if err = dao.db.WithContext(ctx).Create(&u).Error; err != nil {
-		log.Println(err)
-		return err
+func (dao *GORMUserDAO) Insert(ctx context.Context, u User) (err error) {
+	//if err = dao.db.WithContext(ctx).Create(&u).Error; err != nil {
+	//	log.Println(err)
+	//	return err
+	//}
+	//return nil
+	err = dao.db.WithContext(ctx).Create(&u).Error
+	if me, ok := err.(*mysql.MySQLError); ok {
+		const duplicateErr uint16 = 1062
+		if me.Number == duplicateErr {
+			// 用户冲突，邮箱冲突
+			return ErrDuplicateEmail
+		}
 	}
-	return nil
+	return err
 }
 
-func (dao *GORMUserDAO) FindByEmail(ctx context.Context, email string) (u domain.User, err error) {
+func (dao *GORMUserDAO) FindByEmail(ctx context.Context, email string) (u User, err error) {
 	err = dao.db.WithContext(ctx).Table("users").Where("email = ?", email).First(&u).Error
 	return u, err
 }
 
-func (dao *GORMUserDAO) FindByPhone(ctx context.Context, phone string) (u domain.User, err error) {
+func (dao *GORMUserDAO) FindByPhone(ctx context.Context, phone string) (u User, err error) {
 	err = dao.db.WithContext(ctx).Table("users").Where("phone = ?", phone).First(&u).Error
 	return u, err
+}
+
+func (dao *GORMUserDAO) FindById(ctx context.Context, id string) (u User, err error) {
+	err = dao.db.WithContext(ctx).Table("users").Where("id = ?", id).First(&u).Error
+	return u, err
+}
+
+type User struct {
+	ID       string         `json:"id"`
+	Email    sql.NullString `json:"email"`
+	Password string         `json:"password"`
+	Phone    sql.NullString `json:"phone"`
+	Birthday int            `json:"birthday"`
+	Nickname string         `json:"nickname"`
+	Aboutme  string         `json:"aboutme"`
 }
