@@ -42,10 +42,10 @@ func TestGORMUserDAO_Insert(t *testing.T) {
 			sqlDB := tc.mock(t)
 			db, err := gorm.Open(mysql.New(mysql.Config{
 				Conn:                      sqlDB,
-				SkipInitializeWithVersion: true,
+				SkipInitializeWithVersion: true, // 跳过初始化
 			}), &gorm.Config{
-				DisableAutomaticPing:   true,
-				SkipDefaultTransaction: true,
+				DisableAutomaticPing:   true, // 禁止自动Ping
+				SkipDefaultTransaction: true, // 默认跳过事务
 			})
 			assert.NoError(t, err)
 			dao := NewUserDAO(db)

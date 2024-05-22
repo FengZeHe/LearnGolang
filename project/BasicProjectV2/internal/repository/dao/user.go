@@ -31,11 +31,6 @@ func NewUserDAO(db *gorm.DB) UserDAO {
 }
 
 func (dao *GORMUserDAO) Insert(ctx context.Context, u User) (err error) {
-	//if err = dao.db.WithContext(ctx).Create(&u).Error; err != nil {
-	//	log.Println(err)
-	//	return err
-	//}
-	//return nil
 	err = dao.db.WithContext(ctx).Create(&u).Error
 	if me, ok := err.(*mysql.MySQLError); ok {
 		const duplicateErr uint16 = 1062

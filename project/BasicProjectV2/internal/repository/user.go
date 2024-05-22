@@ -68,7 +68,6 @@ func (repo *CacheUserRepository) FindById(ctx context.Context, id string) (domai
 
 	if err = repo.cache.Set(ctx, du); err != nil {
 		log.Println("set cache error", err)
-		//return domain.User{}, err
 	}
 	return du, nil
 }
