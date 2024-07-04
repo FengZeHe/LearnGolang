@@ -29,8 +29,8 @@ func main() {
 	fmt.Println("get=", get)
 
 	v := viper.New()
-	v.SetConfigType("yaml")
 	v.AddRemoteProvider("etcd3", "https://127.0.0.1:2379", "/config/mysql")
+	v.SetConfigType("yaml")
 
 	if err := v.ReadRemoteConfig(); err != nil {
 		log.Fatal("ReadRemoteConfig", err)
