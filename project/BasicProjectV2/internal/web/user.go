@@ -42,6 +42,7 @@ func (h *UserHandler) Hi(ctx *gin.Context) {
 
 // 处理注册请求
 func (h *UserHandler) SignIn(ctx *gin.Context) {
+
 	// 验证请求参数是否正确
 	var form domain.SignInRequest
 	if err := ctx.ShouldBindJSON(&form); err != nil {

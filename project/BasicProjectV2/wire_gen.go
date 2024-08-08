@@ -34,6 +34,10 @@ func InitializeApp() *gin.Engine {
 	smsService := ioc.InitSMSService()
 	codeService := service.NewCodeService(codeRepository, smsService)
 	userHandler := web.NewUserHandler(userService, codeService)
-	engine := ioc.InitWebServer(v, userHandler)
+	sysDAO := dao.NewSysDAO(db)
+	sysRepository := repository.NewSysRepository(sysDAO)
+	sysService := service.NewSysService(sysRepository)
+	sysHandler := web.NewSysHandler(sysService)
+	engine := ioc.InitWebServer(v, userHandler, sysHandler)
 	return engine
 }
