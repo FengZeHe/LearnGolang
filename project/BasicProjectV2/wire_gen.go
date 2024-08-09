@@ -12,6 +12,7 @@ import (
 	"github.com/basicprojectv2/internal/repository/dao"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/basicprojectv2/internal/web"
+	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/basicprojectv2/ioc"
 	"github.com/basicprojectv2/settings"
 	"github.com/gin-gonic/gin"
@@ -20,20 +21,26 @@ import (
 // Injectors from wire.go:
 
 func InitializeApp() *gin.Engine {
-	v := ioc.InitGinMiddlewares()
 	mysqlConfig := settings.InitMysqlConfig()
 	db := ioc.InitDB(mysqlConfig)
+	enforcer := ioc.InitMysqlCasbinEnforcer(db)
 	userDAO := dao.NewUserDAO(db)
 	redisConfig := settings.InitRedisConfig()
 	cmdable := ioc.InitRedis(redisConfig)
 	userCache := cache.NewUserCache(cmdable)
 	userRepository := repository.NewCacheUserRepository(userDAO, userCache)
+	casbinRoleCheck := middleware.NewCasbinRoleCheck(enforcer, userRepository)
+	v := ioc.InitGinMiddlewares(casbinRoleCheck)
 	userService := service.NewUserService(userRepository)
 	codeCache := cache.NewCodeCache(cmdable)
 	codeRepository := repository.NewCodeRepository(codeCache)
 	smsService := ioc.InitSMSService()
 	codeService := service.NewCodeService(codeRepository, smsService)
 	userHandler := web.NewUserHandler(userService, codeService)
-	engine := ioc.InitWebServer(v, userHandler)
+	sysDAO := dao.NewSysDAO(db)
+	sysRepository := repository.NewSysRepository(sysDAO)
+	sysService := service.NewSysService(sysRepository)
+	sysHandler := web.NewSysHandler(sysService)
+	engine := ioc.InitWebServer(v, userHandler, sysHandler)
 	return engine
 }

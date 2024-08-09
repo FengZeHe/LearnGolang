@@ -82,6 +82,7 @@ func (repo *CacheUserRepository) toDomain(u dao.User) domain.User {
 		Aboutme:  u.Aboutme,
 		Nickname: u.Nickname,
 		Birthday: u.Birthday,
+		Role:     u.Role,
 	}
 }
 

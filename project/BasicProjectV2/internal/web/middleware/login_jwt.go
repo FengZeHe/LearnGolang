@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/basicprojectv2/pkg/jwt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -42,6 +43,8 @@ func (m *LoginJWTMiddlewareBuilder) CheckLogin() gin.HandlerFunc {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		ctx.Set("userid", claims.UserId)
+		userId := claims.UserId
+		userIdStr := fmt.Sprintf("%v", userId)
+		ctx.Set("userid", userIdStr)
 	}
 }
