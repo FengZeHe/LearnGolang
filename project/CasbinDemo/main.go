@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"github.com/casbin/casbin/v2"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
-	"github.com/casbindemo/models"
 	"github.com/casbindemo/settings"
 	"log"
 )
@@ -13,23 +13,13 @@ func main() {
 	//if err != nil {
 	//	log.Fatal(err)
 	//}
-	// 初始化 Mysql 然后自动建表
 	mysqlConf := settings.InitMysqlConfig()
 
 	db, err := settings.InitDB(mysqlConf)
-	if err = db.AutoMigrate(&models.RoleLink{}, &models.AccessControlPolicy{}); err != nil {
-		log.Fatal(err)
-	}
-
-	adapter, err := gormadapter.NewAdapterByDBUseTableName(db, "", "casbin_rules")
+	adapter, err := gormadapter.NewAdapterByDB(db)
 	if err != nil {
 		panic("failed to initialize adapter")
 	}
-	log.Println("111")
-	//adapter, err := gormadapter.NewAdapterByDB(db)
-	//if err != nil {
-	//	panic("failed to initialize adapter")
-	//}
 
 	// 初始化Enforcer
 	enforcer, err := casbin.NewEnforcer("./rbac_model.conf", adapter)
@@ -42,9 +32,20 @@ func main() {
 		panic("failed to load policy failed")
 	}
 
+	err = enforcer.SavePolicy()
+	if err != nil {
+		panic(err)
+	}
+
+	res, err := enforcer.RemovePolicy("alice", "data1", "read")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(res)
+
 	// 权限检查，创建请求
-	sub := "bob"
-	obj := "data"
+	sub := "alice"
+	obj := "data1"
 	act := "read"
 	ok, err := enforcer.Enforce(sub, obj, act)
 	if err != nil {
