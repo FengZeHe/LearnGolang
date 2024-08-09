@@ -65,4 +65,5 @@ type User struct {
 	Birthday int            `json:"birthday"`
 	Nickname string         `json:"nickname"`
 	Aboutme  string         `json:"aboutme"`
+	Role     string         `json:"role"`
 }

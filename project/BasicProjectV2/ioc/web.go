@@ -2,6 +2,7 @@ package ioc
 
 import (
 	"github.com/basicprojectv2/internal/web"
+	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"time"
@@ -10,15 +11,15 @@ import (
 // 初始化gin Engine
 func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web.SysHandler) *gin.Engine {
 	server := gin.Default()
-	server.Use(mdls...)
+	server.Use(mdls[0])
 	userHdl.RegisterRoutes(server)
-	sysHdl.RegisterRoutes(server)
+	sysHdl.RegisterRoutes(server, mdls[1], mdls[2])
 
 	return server
 }
 
 // 初始化中间件
-func InitGinMiddlewares() []gin.HandlerFunc {
+func InitGinMiddlewares(ca *middleware.CasbinRoleCheck) []gin.HandlerFunc {
 	return []gin.HandlerFunc{
 		cors.New(cors.Config{
 			//AllowAllOrigins: true,
@@ -40,7 +41,8 @@ func InitGinMiddlewares() []gin.HandlerFunc {
 			AllowAllOrigins: true,
 			MaxAge:          12 * time.Hour,
 		}),
-		//(&middleware.LoginJWTMiddlewareBuilder{}).CheckLogin(), // 什么写法？
+		ca.CheckRole(),
+		(&middleware.LoginJWTMiddlewareBuilder{}).CheckLogin(),
 	}
 }
 
