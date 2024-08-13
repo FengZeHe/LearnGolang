@@ -4,6 +4,7 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/gorm-adapter/v3"
 	"gorm.io/gorm"
+	"log"
 )
 
 // 初始化enforcer
@@ -15,6 +16,7 @@ func InitMysqlCasbinEnforcer(db *gorm.DB) *casbin.Enforcer {
 
 	enforcer, err := casbin.NewEnforcer("./config/rbac_model.conf", ad)
 	if err != nil {
+		log.Println("failed to init enforcer", err)
 		panic("failed to init enforcer")
 	}
 	//加载策略

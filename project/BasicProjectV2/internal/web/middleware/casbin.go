@@ -1,11 +1,11 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/basicprojectv2/internal/repository"
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 )
 
 type CasbinRoleCheck struct {
@@ -31,8 +31,8 @@ func (c *CasbinRoleCheck) CheckRole() gin.HandlerFunc {
 			ctx.Abort()
 		}
 		methods := ctx.Request.Method
-		url := ctx.Request.URL
-		log.Println(user.Role, url, methods)
+		url := ctx.Request.URL.String()
+		log.Println(user.Email, url, methods)
 
 		err = c.Enforcer.LoadPolicy()
 		if err != nil {
@@ -40,13 +40,15 @@ func (c *CasbinRoleCheck) CheckRole() gin.HandlerFunc {
 		}
 
 		// 检查权限
-		ok, err := c.Enforcer.Enforce(user.Role, url, methods)
+		ok, err := c.Enforcer.Enforce(user.Email, url, methods)
 		if err != nil {
 			log.Println("Enforce failed", err)
 			ctx.Abort()
 		}
-		fmt.Println("检查权限的结果", ok)
-
-		ctx.Next()
+		if ok != true {
+			ctx.AbortWithStatus(http.StatusBadRequest)
+		} else {
+			ctx.Next()
+		}
 	}
 }
