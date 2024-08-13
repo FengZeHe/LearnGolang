@@ -22,6 +22,7 @@ type UserService interface {
 	Login(ctx context.Context, email string, password string) (domain.User, error)
 	FindOrCreate(ctx context.Context, phone string, id string) (domain.User, error)
 	FindById(ctx context.Context, id string) (domain.User, error)
+	GetUserList(ctx context.Context, req domain.UserListRequest) (domain.UserListResponse, error)
 }
 type userService struct {
 	repo repository.UserRepository
@@ -31,6 +32,17 @@ func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{
 		repo: repo,
 	}
+}
+
+// 返回用户列表
+func (svc *userService) GetUserList(ctx context.Context, req domain.UserListRequest) (ul domain.UserListResponse, err error) {
+	l, c, err := svc.repo.GetUserList(ctx, req)
+	ul.Users = l
+	ul.Count = c
+	if err != nil {
+		return ul, err
+	}
+	return ul, nil
 }
 
 func (svc *userService) Signup(ctx context.Context, u domain.User) (err error) {

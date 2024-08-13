@@ -34,6 +34,25 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine) {
 	ug.POST("/login", h.Login)
 	ug.POST("/loginsms/code/send", h.SendSMS)
 	ug.POST("/loginsms", h.VerifySMS)
+	ug.POST("/userList", h.HandleUserList)
+}
+
+// 处理获取用户列表
+func (h *UserHandler) HandleUserList(ctx *gin.Context) {
+	// 验证请求参数是否正确
+	var form domain.UserListRequest
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "bad request"})
+	}
+
+	// 交给service层
+	data, err := h.svc.GetUserList(ctx, form)
+	if err != nil {
+		log.Println("user service get user list error", err)
+	}
+	log.Println(data)
+	ctx.JSON(http.StatusOK, gin.H{"data": data})
+
 }
 
 func (h *UserHandler) Hi(ctx *gin.Context) {

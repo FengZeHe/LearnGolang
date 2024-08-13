@@ -3,9 +3,11 @@ package dao
 import (
 	"context"
 	"database/sql"
+	"github.com/basicprojectv2/internal/domain"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+	"log"
 )
 
 var (
@@ -22,12 +24,24 @@ type UserDAO interface {
 	FindByEmail(ctx context.Context, email string) (User, error)
 	FindByPhone(ctx context.Context, phone string) (User, error)
 	FindById(ctx context.Context, id string) (User, error)
+	GetUserList(ctx context.Context, req domain.UserListRequest) ([]User, int, error)
 }
 
 func NewUserDAO(db *gorm.DB) UserDAO {
 	return &GORMUserDAO{
 		db: db,
 	}
+}
+
+func (dao *GORMUserDAO) GetUserList(ctx context.Context, req domain.UserListRequest) (ul []User, count int, err error) {
+	// 在gorm中实现分页， Limit用户设置每页的记录数，offset用于跳过指定数量的记录
+	// 计算offset
+	offset := (req.PageIndex - 1) * req.PageSize
+	if err = dao.db.WithContext(ctx).Limit(req.PageSize).Offset(offset).Find(&ul).Error; err != nil {
+		log.Println("dao Get User List ERROR", err)
+		return ul, count, err
+	}
+	return ul, len(ul), nil
 }
 
 func (dao *GORMUserDAO) Insert(ctx context.Context, u User) (err error) {
