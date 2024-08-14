@@ -23,6 +23,7 @@ type UserService interface {
 	FindOrCreate(ctx context.Context, phone string, id string) (domain.User, error)
 	FindById(ctx context.Context, id string) (domain.User, error)
 	GetUserList(ctx context.Context, req domain.UserListRequest) (domain.UserListResponse, error)
+	UpdateUser(ctx context.Context, req domain.User) error
 }
 type userService struct {
 	repo repository.UserRepository
@@ -32,6 +33,15 @@ func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{
 		repo: repo,
 	}
+}
+
+func (s *userService) UpdateUser(ctx context.Context, req domain.User) error {
+
+	err := s.repo.UpdateUser(ctx, req)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // 返回用户列表

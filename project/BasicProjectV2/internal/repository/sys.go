@@ -8,14 +8,38 @@ import (
 )
 
 type SysRepository interface {
-	GetMenu(ctx context.Context, id string) ([]domain.Menu, error)
+	GetMenuByUserID(ctx context.Context, id string) ([]domain.Menu, error)
+	GetMenu(ctx context.Context) ([]domain.SimplifyMenu, error)
+	GetRole(ctx context.Context) ([]domain.Role, error)
+	GetAPI(ctx context.Context) ([]domain.API, error)
 }
 
 type sysRepository struct {
 	dao dao.SysDAO
 }
 
-func (s sysRepository) GetMenu(ctx context.Context, id string) ([]domain.Menu, error) {
+func (s sysRepository) GetAPI(ctx context.Context) (al []domain.API, err error) {
+	al, err = s.dao.GetAPI(ctx)
+	return al, nil
+}
+
+func (s sysRepository) GetRole(ctx context.Context) (rl []domain.Role, err error) {
+	rl, err = s.dao.GetRole(ctx)
+	if err != nil {
+		return rl, err
+	}
+	return rl, nil
+}
+
+func (s sysRepository) GetMenu(ctx context.Context) (sm []domain.SimplifyMenu, err error) {
+	sm, err = s.dao.GetMenu(ctx)
+	if err != nil {
+		return sm, err
+	}
+	return sm, nil
+}
+
+func (s sysRepository) GetMenuByUserID(ctx context.Context, id string) ([]domain.Menu, error) {
 	user, err := s.dao.FindUserByID(ctx, id)
 	// todo 通过userID查询到Role
 	menus, err := s.dao.FindMenusByRole(ctx, user.Role)

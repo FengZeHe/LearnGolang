@@ -25,12 +25,33 @@ type UserDAO interface {
 	FindByPhone(ctx context.Context, phone string) (User, error)
 	FindById(ctx context.Context, id string) (User, error)
 	GetUserList(ctx context.Context, req domain.UserListRequest) ([]User, int, error)
+	UpdateUserByID(ctx context.Context, u User) error
 }
 
 func NewUserDAO(db *gorm.DB) UserDAO {
 	return &GORMUserDAO{
 		db: db,
 	}
+}
+
+func (dao *GORMUserDAO) UpdateUserByID(ctx context.Context, u User) (err error) {
+	var user User
+	if err = dao.db.First(&user, u.ID).Error; err != nil {
+		log.Println("User not found", err)
+		return err
+	}
+
+	user.Email = u.Email
+	user.Phone = u.Phone
+	user.Role = u.Role
+	user.Aboutme = u.Aboutme
+	user.Birthday = u.Birthday
+	user.Nickname = u.Nickname
+
+	if err = dao.db.WithContext(ctx).Save(&user).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func (dao *GORMUserDAO) GetUserList(ctx context.Context, req domain.UserListRequest) (ul []User, count int, err error) {

@@ -35,6 +35,22 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine) {
 	ug.POST("/loginsms/code/send", h.SendSMS)
 	ug.POST("/loginsms", h.VerifySMS)
 	ug.POST("/userList", h.HandleUserList)
+	ug.POST("/updateUser", h.updateUser)
+}
+
+func (h *UserHandler) updateUser(ctx *gin.Context) {
+	var form domain.User
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "bad request"})
+	}
+
+	//交给service层
+	if err := h.svc.UpdateUser(ctx, form); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "系统错误"})
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "更新成功",
+	})
 }
 
 // 处理获取用户列表

@@ -21,6 +21,16 @@ type UserListResponse struct {
 	Users []User `json:"list"`
 }
 
+type UpdateUserRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Phone    string `json:"phone"`
+	Birthday int    `json:"birthday"`
+	Nickname string `json:"nickname"`
+	Aboutme  string `json:"aboutme"`
+	Role     string `json:"role"`
+}
+
 type SignInRequest struct {
 	Email           string `json:"email"`
 	Password        string `json:"password"`

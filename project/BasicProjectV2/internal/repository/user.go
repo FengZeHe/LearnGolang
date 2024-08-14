@@ -20,6 +20,7 @@ type UserRepository interface {
 	FindByPhone(ctx context.Context, phone string) (domain.User, error)
 	FindById(ctx context.Context, id string) (domain.User, error)
 	GetUserList(ctx context.Context, req domain.UserListRequest) ([]domain.User, int, error)
+	UpdateUser(ctx context.Context, req domain.User) error
 }
 
 type CacheUserRepository struct {
@@ -32,6 +33,13 @@ func NewCacheUserRepository(dao dao.UserDAO, c cache.UserCache) UserRepository {
 		dao:   dao,
 		cache: c,
 	}
+}
+
+func (repo *CacheUserRepository) UpdateUser(ctx context.Context, u domain.User) (err error) {
+	if err = repo.dao.UpdateUserByID(ctx, repo.toEntity(u)); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (repo *CacheUserRepository) GetUserList(ctx context.Context, req domain.UserListRequest) (ul []domain.User, count int, err error) {
@@ -115,5 +123,6 @@ func (repo *CacheUserRepository) toEntity(u domain.User) dao.User {
 		Birthday: u.Birthday,
 		Aboutme:  u.Aboutme,
 		Nickname: u.Nickname,
+		Role:     u.Role,
 	}
 }

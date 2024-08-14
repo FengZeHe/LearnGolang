@@ -15,12 +15,39 @@ type SysDAO interface {
 	FindByEmail(ctx context.Context) error
 	FindMenusByRole(ctx context.Context, role string) (menuItems []domain.Menu, err error)
 	FindUserByID(ctx context.Context, id string) (user domain.User, err error)
+	GetMenu(ctx context.Context) ([]domain.SimplifyMenu, error)
+	GetRole(ctx context.Context) ([]domain.Role, error)
+	GetAPI(ctx context.Context) ([]domain.API, error)
 }
 
 func NewSysDAO(db *gorm.DB) SysDAO {
 	return &GORMSysDAO{
 		db: db,
 	}
+}
+
+func (dao *GORMSysDAO) GetAPI(ctx context.Context) (al []domain.API, err error) {
+	if err := dao.db.Table("api").Find(&al).Error; err != nil {
+		return al, err
+	}
+	return al, nil
+}
+
+func (dao *GORMSysDAO) GetRole(ctx context.Context) (rl []domain.Role, err error) {
+	if err := dao.db.Table("roles").Find(&rl).Error; err != nil {
+		log.Println("DAO Get Roles ERROR", err)
+		return rl, err
+	}
+	return rl, nil
+}
+
+func (dao *GORMSysDAO) GetMenu(ctx context.Context) (sm []domain.SimplifyMenu, err error) {
+	if err := dao.db.Table("menu").Find(&sm).Error; err != nil {
+		log.Println("DAO Get Menu ERROR", err)
+		return sm, err
+	}
+
+	return sm, nil
 }
 
 func (dao *GORMSysDAO) FindUserByID(ctx context.Context, id string) (user domain.User, err error) {

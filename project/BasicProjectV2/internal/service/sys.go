@@ -7,7 +7,10 @@ import (
 )
 
 type SysService interface {
-	GetMenu(ctx context.Context, userid string) (menus []domain.Menu, err error)
+	GetMenuByUserID(ctx context.Context, userid string) (menus []domain.Menu, err error)
+	GetMenu(ctx context.Context) ([]domain.SimplifyMenu, error)
+	GetRole(ctx context.Context) ([]domain.Role, error)
+	GetAPI(ctx context.Context) ([]domain.API, error)
 }
 
 type sysService struct {
@@ -18,9 +21,23 @@ func NewSysService(repo repository.SysRepository) SysService {
 	return &sysService{repo: repo}
 }
 
-func (s *sysService) GetMenu(ctx context.Context, userid string) (menus []domain.Menu, err error) {
+func (s *sysService) GetRole(ctx context.Context) ([]domain.Role, error) {
+	rl, err := s.repo.GetRole(ctx)
+	return rl, err
+}
 
-	menus, err = s.repo.GetMenu(ctx, userid)
+func (s *sysService) GetAPI(ctx context.Context) ([]domain.API, error) {
+	rl, err := s.repo.GetAPI(ctx)
+	return rl, err
+}
+
+func (s *sysService) GetMenu(ctx context.Context) (menus []domain.SimplifyMenu, err error) {
+	menus, err = s.repo.GetMenu(ctx)
+	return menus, err
+}
+
+func (s *sysService) GetMenuByUserID(ctx context.Context, userid string) (menus []domain.Menu, err error) {
+	menus, err = s.repo.GetMenuByUserID(ctx, userid)
 	if err != nil {
 		return nil, err
 	}
