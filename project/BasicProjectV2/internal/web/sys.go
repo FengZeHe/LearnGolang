@@ -3,21 +3,18 @@ package web
 import (
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/service"
-	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 )
 
 type SysHandler struct {
-	svc      service.SysService
-	enforcer *casbin.Enforcer
+	svc service.SysService
 }
 
-func NewSysHandler(svc service.SysService, enforcer *casbin.Enforcer) *SysHandler {
+func NewSysHandler(svc service.SysService) *SysHandler {
 	return &SysHandler{
-		svc:      svc,
-		enforcer: enforcer,
+		svc: svc,
 	}
 }
 
@@ -47,44 +44,33 @@ func (h *SysHandler) HandleAddPolicy(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		log.Println(err)
 	}
-	ok, err := h.enforcer.AddPolicy(req.NewPolicy)
+	err := h.svc.AddCasbinPolicy(ctx, req)
 	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, "error")
 		return
 	}
-	if ok {
-		log.Println("add policy success")
-		ctx.JSON(http.StatusOK, "success")
-	} else {
-		log.Println("add policy failed")
-		ctx.JSON(http.StatusInternalServerError, "failed")
-	}
+	ctx.JSON(http.StatusOK, "success")
 
 }
 
-// todo  更新casbin策略
+// 更新casbin策略
 func (h *SysHandler) HandleUpdatePolicy(ctx *gin.Context) {
 	//先删除，再添加
 	var req domain.UpdateCasbinPolicyReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		log.Println(err)
+		ctx.JSON(http.StatusBadRequest, "error")
 		return
 	}
 
-	ok, err := h.enforcer.RemovePolicy(req.OldPolicy)
+	err := h.svc.UpdateCasbinPolicy(ctx, req)
 	if err != nil {
-		log.Println("remove policy fail", err)
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, "error")
 		return
 	}
-	ok, err = h.enforcer.AddPolicy(req.NewPolicy)
-	if err != nil {
-		log.Println("add policy fail", err)
-		return
-	}
-
-	if ok {
-		log.Println("update policy success")
-		ctx.JSON(http.StatusOK, "success")
-	}
+	ctx.JSON(http.StatusOK, "success")
 
 }
 
@@ -93,20 +79,15 @@ func (h *SysHandler) HandleDeletePolicy(ctx *gin.Context) {
 	var req domain.RemoveCasbinPolicyReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		log.Println(err)
-	}
-	ok, err := h.enforcer.RemovePolicy(req.RemovePolicy)
-	if err != nil {
+		ctx.JSON(http.StatusBadRequest, "error")
 		return
 	}
-	if ok {
-		log.Println("remove policy success")
-		ctx.JSON(http.StatusOK, "success")
-
-	} else {
-		log.Println("remove policy failed")
-		ctx.JSON(http.StatusInternalServerError, "failed")
-
+	err := h.svc.DeleteCasbinPolicy(ctx, req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, "error")
+		return
 	}
+	ctx.JSON(http.StatusOK, "success")
 
 }
 

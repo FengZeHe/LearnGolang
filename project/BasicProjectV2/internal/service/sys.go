@@ -2,8 +2,11 @@ package service
 
 import (
 	"context"
+	"errors"
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository"
+	"github.com/casbin/casbin/v2"
+	"log"
 )
 
 type SysService interface {
@@ -11,14 +14,65 @@ type SysService interface {
 	GetMenu(ctx context.Context) ([]domain.SimplifyMenu, error)
 	GetRole(ctx context.Context) ([]domain.Role, error)
 	GetAPI(ctx context.Context) ([]domain.API, error)
+
+	AddCasbinPolicy(ctx context.Context, req domain.AddCasbinRulePolicyReq) error
+	UpdateCasbinPolicy(ctx context.Context, req domain.UpdateCasbinPolicyReq) error
+	DeleteCasbinPolicy(ctx context.Context, req domain.RemoveCasbinPolicyReq) error
 }
 
 type sysService struct {
-	repo repository.SysRepository
+	repo     repository.SysRepository
+	enforcer *casbin.Enforcer
 }
 
-func NewSysService(repo repository.SysRepository) SysService {
-	return &sysService{repo: repo}
+func NewSysService(repo repository.SysRepository, enforcer *casbin.Enforcer) SysService {
+	return &sysService{repo: repo, enforcer: enforcer}
+}
+
+func (s *sysService) AddCasbinPolicy(ctx context.Context, policy domain.AddCasbinRulePolicyReq) (err error) {
+	ok, err := s.enforcer.AddPolicy(policy.NewPolicy)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return err
+	}
+	return nil
+}
+
+func (s *sysService) UpdateCasbinPolicy(ctx context.Context, req domain.UpdateCasbinPolicyReq) (err error) {
+	// 先删除 再添加
+	ok, err := s.enforcer.RemovePolicy(req.OldPolicy)
+	if err != nil {
+		log.Println("remove policy fail", err)
+		return err
+	}
+	ok, err = s.enforcer.AddPolicy(req.NewPolicy)
+	if err != nil {
+		log.Println("add policy fail", err)
+		return err
+	}
+
+	if ok {
+		log.Println("update policy success")
+		return nil
+	}
+
+	return nil
+}
+
+func (s *sysService) DeleteCasbinPolicy(ctx context.Context, req domain.RemoveCasbinPolicyReq) (err error) {
+	ok, err := s.enforcer.RemovePolicy(req.RemovePolicy)
+	if err != nil {
+		log.Println("remove policy fail", err)
+		return err
+	}
+	if !ok {
+		log.Println("delete policy fail")
+		err = errors.New("deletePolicyFail")
+		return err
+	}
+	return nil
 }
 
 func (s *sysService) GetRole(ctx context.Context) ([]domain.Role, error) {
