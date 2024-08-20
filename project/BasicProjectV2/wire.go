@@ -32,21 +32,25 @@ func InitializeApp() *gin.Engine {
 		// DAO部分
 		dao.NewUserDAO,
 		dao.NewSysDAO,
+		dao.NewMenuDAO,
 
 		// repository部分
 		repository.NewCacheUserRepository,
 		repository.NewCodeRepository,
 		repository.NewSysRepository,
+		repository.NewMenuRepository,
 
 		// service部分
 		ioc.InitSMSService,
 		service.NewCodeService,
 		service.NewUserService,
 		service.NewSysService,
+		service.NewMenuService,
 
 		//handler部分
 		web.NewUserHandler,
 		web.NewSysHandler,
+		web.NewMenuHandler,
 
 		// 中间件和路由
 		ioc.InitGinMiddlewares,

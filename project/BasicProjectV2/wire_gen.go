@@ -41,6 +41,10 @@ func InitializeApp() *gin.Engine {
 	sysRepository := repository.NewSysRepository(sysDAO)
 	sysService := service.NewSysService(sysRepository, enforcer)
 	sysHandler := web.NewSysHandler(sysService)
-	engine := ioc.InitWebServer(v, userHandler, sysHandler)
+	gormMenuDAO := dao.NewMenuDAO(db)
+	menuRepository := repository.NewMenuRepository(gormMenuDAO)
+	menuService := service.NewMenuService(menuRepository)
+	menuHandler := web.NewMenuHandler(menuService)
+	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler)
 	return engine
 }

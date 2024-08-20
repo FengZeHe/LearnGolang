@@ -9,11 +9,12 @@ import (
 )
 
 // 初始化gin Engine
-func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web.SysHandler) *gin.Engine {
+func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web.SysHandler, menuHdl *web.MenuHandler) *gin.Engine {
 	server := gin.Default()
 	server.Use(mdls[0])
 	userHdl.RegisterRoutes(server)
 	sysHdl.RegisterRoutes(server, mdls[1], mdls[2])
+	menuHdl.RegisterRoutes(server, mdls[2])
 
 	return server
 }

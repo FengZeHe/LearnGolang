@@ -21,8 +21,8 @@ func NewSysHandler(svc service.SysService) *SysHandler {
 // 注册路由
 func (h *SysHandler) RegisterRoutes(server *gin.Engine, roleCheck, loginCheck gin.HandlerFunc) {
 	ug := server.Group("/v2/sys/")
-	ug.GET("/menu", loginCheck, h.HandleUserGetMenu)
 	ug.GET("/hi", loginCheck, roleCheck, h.Hi)
+	ug.GET("/menu", loginCheck, h.HandleUserGetMenu)
 	ug.GET("/menuList", loginCheck, h.HandleGetMenu)
 	ug.GET("/roleList", loginCheck, h.HandleGetRole)
 	ug.GET("/apiList", loginCheck, h.HandleGetAPI)
@@ -31,7 +31,7 @@ func (h *SysHandler) RegisterRoutes(server *gin.Engine, roleCheck, loginCheck gi
 	ug.POST("/addPolicy", loginCheck, h.HandleAddPolicy)
 	ug.POST("/updatePolicy", loginCheck, h.HandleUpdatePolicy)
 	ug.POST("/deletePolicy", loginCheck, h.HandleDeletePolicy)
-
+ 
 }
 
 func (h *SysHandler) Hi(ctx *gin.Context) {
