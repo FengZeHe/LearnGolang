@@ -5,13 +5,6 @@ type SimplifyMenu struct {
 	Name string `gorm:"size:255;not null" json:"name"`
 }
 
-type Role struct {
-	ID       uint   `gorm:"primaryKey" json:"id"`
-	RoleName string `gorm:"size:255;" json:"role_name"`
-	Desc     string `gorm:"size:255;" json:"desc"`
-	Status   string `gorm:"size:255;" json:"status"`
-}
-
 type API struct {
 	ID      uint   `gorm:"primaryKey" json:"id"`
 	Name    string `gorm:"size:255;" json:"name"`

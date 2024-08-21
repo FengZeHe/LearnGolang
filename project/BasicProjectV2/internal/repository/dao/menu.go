@@ -2,7 +2,6 @@ package dao
 
 import (
 	"gorm.io/gorm"
-	"log"
 )
 
 type GORMMenuDAO struct {
@@ -23,7 +22,6 @@ func (dao *GORMMenuDAO) GetMenuList() (menus []Menu, err error) {
 	if err = dao.db.Table("menu").Find(&menus).Error; err != nil {
 		return menus, err
 	}
-	log.Println("dao", menus)
 	return menus, nil
 }
 
