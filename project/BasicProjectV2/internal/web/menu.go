@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -30,7 +31,16 @@ func (h *MenuHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.HandlerF
 }
 
 func (h *MenuHandler) GetMenus(ctx *gin.Context) {
-	menu, err := h.svc.GetMenus(ctx)
+	userid, exists := ctx.Get("userid")
+	userIdStr := fmt.Sprintf("%v", userid)
+	if !exists {
+		ctx.JSON(400, gin.H{
+			"msg": "用户未登录",
+		})
+		return
+	}
+
+	menu, err := h.svc.GetMenuByUserID(ctx, userIdStr)
 	if err != nil {
 		log.Println("错误", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{

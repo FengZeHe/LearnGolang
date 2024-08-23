@@ -19,6 +19,12 @@ func (r *RoleHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.HandlerF
 
 	rg.Use(loginCheck)
 	rg.GET("/list", r.HandleGetRoles)
+	rg.POST("/updateRoles")
+}
+
+// todo 批量更新规则
+func (r *RoleHandler) HandleUpdateRoles(c *gin.Context) {
+
 }
 
 func (r *RoleHandler) HandleGetRoles(ctx *gin.Context) {

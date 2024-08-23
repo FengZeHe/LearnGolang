@@ -1,12 +1,15 @@
 package repository
 
 import (
+	"context"
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository/dao"
+	"log"
 )
 
 type MenuRepository interface {
-	GetList() ([]domain.Menu, error)
+	GetMenuByID(role string) ([]domain.Menu, error)
+	GetMenuByUserID(ctx context.Context, userID string) ([]domain.Menu, error)
 }
 
 type menuRepository struct {
@@ -19,8 +22,18 @@ func NewMenuRepository(dao dao.GORMMenuDAO) MenuRepository {
 	}
 }
 
-func (repo *menuRepository) GetList() (menu []domain.Menu, err error) {
-	temp, err := repo.dao.GetMenuList()
+func (repo *menuRepository) GetMenuByUserID(ctx context.Context, id string) ([]domain.Menu, error) {
+	user, err := repo.dao.FindUserByID(ctx, id)
+	menus, err := repo.dao.FindMenusByRole(ctx, user.Role)
+	if err != nil {
+		log.Println("repo Get Menus By Role Error", err)
+	}
+	return menus, err
+}
+
+func (repo *menuRepository) GetMenuByID(id string) (menu []domain.Menu, err error) {
+
+	temp, err := repo.dao.GetMenuListByRole(id)
 	if err != nil {
 		return nil, err
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 type MenuService interface {
-	GetMenus(ctx context.Context) ([]domain.Menu, error)
+	GetMenuByUserID(ctx context.Context, userid string) ([]domain.Menu, error)
 }
 
 type menuService struct {
@@ -20,10 +20,11 @@ func NewMenuService(repo repository.MenuRepository) MenuService {
 	}
 }
 
-func (m *menuService) GetMenus(ctx context.Context) (menu []domain.Menu, err error) {
-	menu, err = m.repo.GetList()
+func (s *menuService) GetMenuByUserID(ctx context.Context, userid string) (menus []domain.Menu, err error) {
+	menus, err = s.repo.GetMenuByUserID(ctx, userid)
 	if err != nil {
-		return menu, err
+		return nil, err
 	}
-	return menu, nil
+	//处理用户返回菜单
+	return menus, err
 }

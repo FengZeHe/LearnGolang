@@ -8,14 +8,27 @@ import (
 )
 
 type SysRepository interface {
+	GetApiByUserID(ctx context.Context, id string) ([]domain.API, error)
 	GetMenuByUserID(ctx context.Context, id string) ([]domain.Menu, error)
-	GetMenu(ctx context.Context) ([]domain.SimplifyMenu, error)
+	GetMenuByRole(ctx context.Context, role string) ([]domain.Menu, error)
+	GetMenu(ctx context.Context) ([]domain.Menu, error)
 	GetRole(ctx context.Context) ([]domain.Role, error)
 	GetAPI(ctx context.Context) ([]domain.API, error)
 }
 
 type sysRepository struct {
 	dao dao.SysDAO
+}
+
+func (s sysRepository) GetApiByUserID(ctx context.Context, id string) (apis []domain.API, err error) {
+	user, err := s.dao.FindUserByID(ctx, id)
+	// todo 通过userID查询到Role
+	apis, err = s.dao.FindApisByRole(ctx, user.Role)
+	if err != nil {
+		log.Println("repo Get Menus By Role Error", err)
+		return nil, err
+	}
+	return apis, nil
 }
 
 func (s sysRepository) GetAPI(ctx context.Context) (al []domain.API, err error) {
@@ -31,7 +44,7 @@ func (s sysRepository) GetRole(ctx context.Context) (rl []domain.Role, err error
 	return rl, nil
 }
 
-func (s sysRepository) GetMenu(ctx context.Context) (sm []domain.SimplifyMenu, err error) {
+func (s sysRepository) GetMenu(ctx context.Context) (sm []domain.Menu, err error) {
 	sm, err = s.dao.GetMenu(ctx)
 	if err != nil {
 		return sm, err
@@ -43,6 +56,14 @@ func (s sysRepository) GetMenuByUserID(ctx context.Context, id string) ([]domain
 	user, err := s.dao.FindUserByID(ctx, id)
 	// todo 通过userID查询到Role
 	menus, err := s.dao.FindMenusByRole(ctx, user.Role)
+	if err != nil {
+		log.Println("repo Get Menus By Role Error", err)
+	}
+	return menus, err
+}
+
+func (s sysRepository) GetMenuByRole(ctx context.Context, role string) ([]domain.Menu, error) {
+	menus, err := s.dao.FindMenusByRole(ctx, role)
 	if err != nil {
 		log.Println("repo Get Menus By Role Error", err)
 	}

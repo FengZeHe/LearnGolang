@@ -47,7 +47,7 @@ func InitializeApp() *gin.Engine {
 	menuHandler := web.NewMenuHandler(menuService)
 	gormRoleDAO := dao.NewRoleDAO(db)
 	roleRepository := repository.NewRoleRepository(gormRoleDAO)
-	roleService := service.NewRoleService(roleRepository)
+	roleService := service.NewRoleService(roleRepository, enforcer)
 	roleHandler := web.NewRoleHandler(roleService)
 	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler)
 	return engine

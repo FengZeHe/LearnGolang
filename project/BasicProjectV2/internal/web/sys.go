@@ -22,20 +22,59 @@ func NewSysHandler(svc service.SysService) *SysHandler {
 func (h *SysHandler) RegisterRoutes(server *gin.Engine, roleCheck, loginCheck gin.HandlerFunc) {
 	ug := server.Group("/v2/sys/")
 	ug.GET("/hi", loginCheck, roleCheck, h.Hi)
-	ug.GET("/menu", loginCheck, h.HandleUserGetMenu)
-	ug.GET("/menuList", loginCheck, h.HandleGetMenu)
-	ug.GET("/roleList", loginCheck, h.HandleGetRole)
+	ug.POST("/RoleMenuList", loginCheck, h.HandleUserGetMenu)
+	ug.GET("/AllMenuList", loginCheck, h.HandleGetMenu)
+
+	//获取该用户角色的api
+	ug.GET("/api", loginCheck, h.HandleUserGetApi)
+	//获取全部api
 	ug.GET("/apiList", loginCheck, h.HandleGetAPI)
+	ug.GET("/roleList", loginCheck, h.HandleGetRole)
 
 	// 管理casbin策略
 	ug.POST("/addPolicy", loginCheck, h.HandleAddPolicy)
 	ug.POST("/updatePolicy", loginCheck, h.HandleUpdatePolicy)
 	ug.POST("/deletePolicy", loginCheck, h.HandleDeletePolicy)
- 
+
+	ug.POST("/updatePolicies", loginCheck, h.HandleUpdatePolicies)
 }
 
 func (h *SysHandler) Hi(ctx *gin.Context) {
 	ctx.JSON(200, "Hi!!!")
+}
+
+func (h *SysHandler) HandleUserGetApi(ctx *gin.Context) {
+	userid, exists := ctx.Get("userid")
+	if !exists {
+		ctx.JSON(400, gin.H{
+			"msg": "用户未登录",
+		})
+	}
+	strUserid := userid.(string)
+	apis, err := h.svc.GetApiByUserID(ctx, strUserid)
+	if err != nil {
+		log.Println("svc GetMenuByUserID err:", err)
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": apis,
+	})
+}
+
+func (h *SysHandler) HandleUpdatePolicies(ctx *gin.Context) {
+	req := domain.TransactionPolicyReq{}
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(400, gin.H{"msg": "请求参数错误"})
+		return
+	}
+	err := h.svc.UpdateCasbinPolicies(ctx, req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "success",
+	})
+
 }
 
 // 添加Casbin策略
@@ -124,14 +163,21 @@ func (h *SysHandler) HandleGetMenu(ctx *gin.Context) {
 
 // 处理获取菜单请求
 func (h *SysHandler) HandleUserGetMenu(ctx *gin.Context) {
-	userid, exists := ctx.Get("userid")
+	req := domain.GetRoleMenuListReq{}
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, "请求参数错误")
+		log.Println(err)
+		return
+	}
+
+	_, exists := ctx.Get("userid")
 	if !exists {
 		ctx.JSON(400, gin.H{
 			"msg": "用户未登录",
 		})
+		return
 	}
-	strUserid := userid.(string)
-	menus, err := h.svc.GetMenuByUserID(ctx, strUserid)
+	menus, err := h.svc.GetMenuByRole(ctx, req.RoleName)
 	if err != nil {
 		log.Println("svc GetMenuByUserID err:", err)
 	}

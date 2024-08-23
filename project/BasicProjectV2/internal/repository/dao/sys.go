@@ -14,8 +14,9 @@ type GORMSysDAO struct {
 type SysDAO interface {
 	FindByEmail(ctx context.Context) error
 	FindMenusByRole(ctx context.Context, role string) (menuItems []domain.Menu, err error)
+	FindApisByRole(ctx context.Context, role string) (apiItems []domain.API, err error)
 	FindUserByID(ctx context.Context, id string) (user domain.User, err error)
-	GetMenu(ctx context.Context) ([]domain.SimplifyMenu, error)
+	GetMenu(ctx context.Context) ([]domain.Menu, error)
 	GetRole(ctx context.Context) ([]domain.Role, error)
 	GetAPI(ctx context.Context) ([]domain.API, error)
 }
@@ -24,6 +25,19 @@ func NewSysDAO(db *gorm.DB) SysDAO {
 	return &GORMSysDAO{
 		db: db,
 	}
+}
+
+func (dao *GORMSysDAO) FindApisByRole(ctx context.Context, role string) (apiItems []domain.API, err error) {
+	err = dao.db.Table("api").
+		Select("api.id, api.name, api.url, api.methods ,api.desc").
+		Joins("JOIN casbin_rule ON casbin_rule.v1 = api.url").
+		Where("casbin_rule.v0 = ?", role).
+		Scan(&apiItems).Error
+	if err != nil {
+		log.Println("dao get menu error", err)
+		return nil, err
+	}
+	return apiItems, nil
 }
 
 func (dao *GORMSysDAO) GetAPI(ctx context.Context) (al []domain.API, err error) {
@@ -41,7 +55,7 @@ func (dao *GORMSysDAO) GetRole(ctx context.Context) (rl []domain.Role, err error
 	return rl, nil
 }
 
-func (dao *GORMSysDAO) GetMenu(ctx context.Context) (sm []domain.SimplifyMenu, err error) {
+func (dao *GORMSysDAO) GetMenu(ctx context.Context) (sm []domain.Menu, err error) {
 	if err := dao.db.Table("menu").Find(&sm).Error; err != nil {
 		log.Println("DAO Get Menu ERROR", err)
 		return sm, err
@@ -61,14 +75,13 @@ func (dao *GORMSysDAO) FindUserByID(ctx context.Context, id string) (user domain
 
 func (dao *GORMSysDAO) FindMenusByRole(ctx context.Context, role string) (menuItems []domain.Menu, err error) {
 	err = dao.db.Table("menu").
-		Select("menu.id, menu.name, menu.path, menu.parentid,menu.orderno").
-		Joins("JOIN casbin_rule ON casbin_rule.v1 = menu.path").
+		Select("menu.id, menu.name, menu.path, menu.parentid,menu.orderno,menu.methods").
+		Joins("JOIN casbin_rule ON casbin_rule.v1 = menu.path AND casbin_rule.v2 = menu.methods").
 		Where("casbin_rule.v0 = ?", role).
 		Order("menu.orderno").Scan(&menuItems).Error
 	if err != nil {
 		log.Println("dao get menu error", err)
 	}
-
 	return menuItems, nil
 }
 
