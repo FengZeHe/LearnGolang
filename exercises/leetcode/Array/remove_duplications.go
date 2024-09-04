@@ -3,6 +3,8 @@ package main
 import "log"
 
 /*
+移除元素
+
 给你一个 升序排列 的数组 nums ，请你 原地 删除重复出现的元素，使每个元素 只出现一次，返回删除后数组的新长度。元素的 相对顺序 应该保持一致 。
 
 由于在某些语言中不能改变数组的长度，所以必须将结果放在数组nums的第一部分。更规范地说，如果在删除重复项之后有 k 个元素，那么nums的前 k 个元素应该保存最终结果。
@@ -48,28 +50,21 @@ nums 已按 升序 排列
 func main() {
 	var nums []int = []int{1, 1, 1}
 	res := removeDuplicates(nums)
-	log.Println(res)
+	log.Println("res", res)
 }
 
-/*
-思路：
-1. 如果自己是第一个，检查自己后面是否与自己一致，如果一直则直接删掉
-
-将这些数组切割出来，循环分别取数组的第一个值
-
-	但是数组的下标会改变，改变后
-*/
 func removeDuplicates(nums []int) int {
-
-	for i := 0; i < len(nums); i++ {
-		if i+1 < len(nums) && nums[i] == nums[i+1] {
-			nums = append(nums[:i], nums[i+1:]...)
-			i = 0
-		}
-
-		log.Println("nums", nums)
+	if len(nums) == 0 {
+		return 0
 	}
-	k := len(nums)
+	slow := 1
+	// 使用双指针的做法，快指针用于快速扫描，慢指针用于覆盖位置
+	for fast := 1; fast < len(nums); fast++ {
+		if nums[fast] != nums[fast-1] {
+			nums[slow] = nums[fast]
+			slow++
+		}
+	}
 
-	return k
+	return slow
 }
