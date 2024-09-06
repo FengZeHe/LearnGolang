@@ -12,6 +12,7 @@ import (
 type SysService interface {
 	GetMenuByUserID(ctx context.Context, userid string) (menus []domain.Menu, err error)
 	GetMenuByRole(ctx context.Context, role string) (menus []domain.Menu, err error)
+	GetAPIByRole(ctx context.Context, role string) (apis []domain.API, err error)
 
 	GetApiByUserID(ctx context.Context, userid string) (apis []domain.API, err error)
 	GetMenu(ctx context.Context) ([]domain.Menu, error)
@@ -34,31 +35,36 @@ func NewSysService(repo repository.SysRepository, enforcer *casbin.Enforcer) Sys
 }
 
 func (s *sysService) UpdateCasbinPolicies(ctx context.Context, req domain.TransactionPolicyReq) (err error) {
-	log.Println(req.NewPolicies, req.OldPolicies)
+	log.Println("removePolicy=>", req.OldPolicies, "addPolicy=>", req.NewPolicies)
+
+	if len(req.OldPolicies) > 0 {
+		for _, v := range req.OldPolicies {
+			exists, _ := s.enforcer.HasPolicy(v)
+			if exists {
+				ok, err := s.enforcer.RemovePolicy(v)
+				if err != nil || !ok {
+					log.Println(ok, err, v)
+				} else {
+					log.Println(ok, v)
+				}
+			}
+		}
+	}
+
 	if len(req.NewPolicies) > 0 {
 		for _, v := range req.NewPolicies {
 			exists, _ := s.enforcer.HasPolicy(v)
 			if !exists {
-				ok, err := s.enforcer.AddPolicies(req.NewPolicies)
+				ok, err := s.enforcer.AddPolicy(v)
 				if err != nil || !ok {
-					log.Println(err, ok)
+					log.Println(err, ok, v)
+				} else {
+					log.Println(ok, v)
 				}
 			}
 		}
 	}
 
-	if len(req.OldPolicies) > 0 {
-		for _, v := range req.OldPolicies {
-			exists, _ := s.enforcer.RemovePolicy(v)
-			if !exists {
-				ok, err := s.enforcer.RemovePolicies(req.OldPolicies)
-				if err != nil || !ok {
-					log.Println(ok, err)
-				}
-			}
-		}
-
-	}
 	err = s.enforcer.SavePolicy()
 
 	err = s.enforcer.LoadPolicy()
@@ -74,6 +80,14 @@ func (s *sysService) GetMenuByRole(ctx context.Context, role string) (menus []do
 		return nil, err
 	}
 	return menus, nil
+}
+
+func (s *sysService) GetAPIByRole(ctx context.Context, role string) (apis []domain.API, err error) {
+	apis, err = s.repo.GetAPIByRole(ctx, role)
+	if err != nil {
+		return nil, err
+	}
+	return apis, nil
 }
 
 func (s *sysService) GetApiByUserID(ctx context.Context, userid string) (apis []domain.API, err error) {

@@ -9,6 +9,10 @@ type GetRoleMenuListReq struct {
 	RoleName string `json:"role_name"`
 }
 
+type GetRoleApiListReq struct {
+	RoleName string `json:"role_name"`
+}
+
 type API struct {
 	ID      uint   `gorm:"primaryKey" json:"id"`
 	Name    string `gorm:"size:255;" json:"name"`

@@ -23,19 +23,18 @@ func (h *SysHandler) RegisterRoutes(server *gin.Engine, roleCheck, loginCheck gi
 	ug := server.Group("/v2/sys/")
 	ug.GET("/hi", loginCheck, roleCheck, h.Hi)
 	ug.POST("/RoleMenuList", loginCheck, h.HandleUserGetMenu)
+	ug.POST("/RoleAPIList", loginCheck, h.HandleUserGetAPI)
 	ug.GET("/AllMenuList", loginCheck, h.HandleGetMenu)
+	ug.GET("/AllApiList", loginCheck, h.HandleGetAPI)
 
 	//获取该用户角色的api
 	ug.GET("/api", loginCheck, h.HandleUserGetApi)
-	//获取全部api
-	ug.GET("/apiList", loginCheck, h.HandleGetAPI)
 	ug.GET("/roleList", loginCheck, h.HandleGetRole)
 
 	// 管理casbin策略
 	ug.POST("/addPolicy", loginCheck, h.HandleAddPolicy)
 	ug.POST("/updatePolicy", loginCheck, h.HandleUpdatePolicy)
 	ug.POST("/deletePolicy", loginCheck, h.HandleDeletePolicy)
-
 	ug.POST("/updatePolicies", loginCheck, h.HandleUpdatePolicies)
 }
 
@@ -161,7 +160,26 @@ func (h *SysHandler) HandleGetMenu(ctx *gin.Context) {
 	})
 }
 
-// 处理获取菜单请求
+func (h *SysHandler) HandleUserGetAPI(ctx *gin.Context) {
+	req := domain.GetRoleApiListReq{}
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, "请求参数错误")
+		log.Println(err)
+		return
+	}
+
+	apis, err := h.svc.GetAPIByRole(ctx, req.RoleName)
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, "系统错误")
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": apis,
+	})
+
+}
+
+// 获取该用户角色下的菜单列表
 func (h *SysHandler) HandleUserGetMenu(ctx *gin.Context) {
 	req := domain.GetRoleMenuListReq{}
 	if err := ctx.ShouldBindJSON(&req); err != nil {

@@ -11,6 +11,7 @@ type SysRepository interface {
 	GetApiByUserID(ctx context.Context, id string) ([]domain.API, error)
 	GetMenuByUserID(ctx context.Context, id string) ([]domain.Menu, error)
 	GetMenuByRole(ctx context.Context, role string) ([]domain.Menu, error)
+	GetAPIByRole(ctx context.Context, role string) ([]domain.API, error)
 	GetMenu(ctx context.Context) ([]domain.Menu, error)
 	GetRole(ctx context.Context) ([]domain.Role, error)
 	GetAPI(ctx context.Context) ([]domain.API, error)
@@ -68,6 +69,14 @@ func (s sysRepository) GetMenuByRole(ctx context.Context, role string) ([]domain
 		log.Println("repo Get Menus By Role Error", err)
 	}
 	return menus, err
+}
+
+func (s sysRepository) GetAPIByRole(ctx context.Context, role string) ([]domain.API, error) {
+	apis, err := s.dao.FindApisByRole(ctx, role)
+	if err != nil {
+		log.Println("repo Get Apis By Role Error", err)
+	}
+	return apis, err
 }
 
 func NewSysRepository(dao dao.SysDAO) SysRepository {
