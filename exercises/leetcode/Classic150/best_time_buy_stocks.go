@@ -16,3 +16,23 @@ package main
 输出：0
 解释：在这种情况下, 没有交易完成, 所以最大利润为 0。
 */
+
+func main() {
+	prices := []int{7, 1, 5, 3, 6, 4}
+	bestTimeBuyStocks(prices)
+
+}
+
+/*
+思路：
+1.题目的意图是找出两数相减的最大值，而且有顺序关系，小值元素位置要在大值元素之前。
+笨方法，枚举法，从后往前相减，找出值最小的数
+*/
+func bestTimeBuyStocks(prices []int) (ans int) {
+	minPrice := prices[0]
+	for _, p := range prices {
+		ans = max(ans, p-minPrice)
+		minPrice = min(minPrice, p)
+	}
+	return ans
+}
