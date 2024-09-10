@@ -39,7 +39,7 @@ func (h *SysHandler) RegisterRoutes(server *gin.Engine, roleCheck, loginCheck gi
 }
 
 func (h *SysHandler) Hi(ctx *gin.Context) {
-	ctx.JSON(200, "Hi!!!")
+	ctx.JSON(200, "AddArticle!!!")
 }
 
 func (h *SysHandler) HandleUserGetApi(ctx *gin.Context) {

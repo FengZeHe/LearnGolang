@@ -49,6 +49,10 @@ func InitializeApp() *gin.Engine {
 	roleRepository := repository.NewRoleRepository(gormRoleDAO)
 	roleService := service.NewRoleService(roleRepository, enforcer)
 	roleHandler := web.NewRoleHandler(roleService)
-	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler)
+	draftDAO := dao.NewDraftDAO(db)
+	draftRepository := repository.NewDraftRepository(draftDAO)
+	draftService := service.NewDraftService(draftRepository)
+	draftHandler := web.NewDraftHandler(draftService)
+	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler)
 	return engine
 }
