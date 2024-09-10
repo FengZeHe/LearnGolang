@@ -1,8 +1,10 @@
 package web
 
 import (
+	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type DraftHandler struct {
@@ -26,9 +28,18 @@ func (r *DraftHandler) GetArticles(c *gin.Context) {
 }
 
 func (r *DraftHandler) AddArticle(c *gin.Context) {
-	// todo 检查请求参数是否正确
-
-	// todo 请求参数正确，往service层执行
+	var req domain.AddDraftReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "请求参数错误"})
+		return
+	}
+	if err := r.svc.AddArticle(c, req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"msg": "保存成功",
+	})
 }
 
 func (r *DraftHandler) UpdateArticle(c *gin.Context) {

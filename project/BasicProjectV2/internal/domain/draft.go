@@ -11,3 +11,9 @@ type Draft struct {
 	UpdatedAt  string `json:"updatedAt"`
 	DeletedAt  string `json:"deletedAt"`
 }
+
+type AddDraftReq struct {
+	AuthorName string `json:"authorName"`
+	Title      string `json:"title"`
+	Content    string `json:"content"`
+}
