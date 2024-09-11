@@ -14,6 +14,9 @@ type GORMDraftDAO struct {
 type DraftDAO interface {
 	Insert(ctx context.Context, d Draft) (err error)
 	FindUserByID(id string) (u domain.User, err error)
+	FindDraftByAuthorID(authorID string) (d []domain.Draft, err error)
+	UpdateDraftByAuthorID(d Draft) (err error)
+	DeleteDraftByID(id string) (err error)
 }
 
 func NewDraftDAO(db *gorm.DB) DraftDAO {
@@ -42,6 +45,33 @@ func (dao *GORMDraftDAO) FindUserByID(id string) (u domain.User, err error) {
 	return u, nil
 }
 
+func (dao *GORMDraftDAO) FindDraftByAuthorID(authorID string) (d []domain.Draft, err error) {
+	if err = dao.db.Table("draft").Where("author_id = ?", authorID).Find(&d).Error; err != nil {
+		return d, err
+	}
+	return d, nil
+}
+
+func (dao *GORMDraftDAO) UpdateDraftByAuthorID(d Draft) (err error) {
+	u := UpdateDraft{
+		Title:   d.Title,
+		Content: d.Content,
+		Status:  d.Status,
+	}
+
+	if err = dao.db.Table("draft").Where("id = ? AND author_id = ?", d.ID, d.AuthorID).Updates(&u).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (dao *GORMDraftDAO) DeleteDraftByID(id string) (err error) {
+	if err = dao.db.Table("draft").Where("id = ?", id).Delete(&Draft{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 type Draft struct {
 	ID         string `json:"id"`
 	AuthorName string `json:"authorName"`
@@ -52,4 +82,10 @@ type Draft struct {
 	CreatedAt  string `json:"createdAt"`
 	UpdatedAt  string `json:"updatedAt"`
 	DeletedAt  string `json:"deletedAt"`
+}
+
+type UpdateDraft struct {
+	Title   string `json:"title" column:"title"`
+	Content string `json:"content"`
+	Status  string `json:"status"`
 }

@@ -17,3 +17,15 @@ type AddDraftReq struct {
 	Title      string `json:"title"`
 	Content    string `json:"content"`
 }
+
+type UpdateDraftReq struct {
+	DraftID  string `json:"draftID"`
+	AuthorID string `json:"authorID"`
+	Title    string `json:"title"`
+	Content  string `json:"content"`
+	Status   string `json:"status"`
+}
+
+type DeleteDraftReq struct {
+	DraftID string `json:"draftID"`
+}

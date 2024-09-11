@@ -93,7 +93,7 @@ func (repo *CacheUserRepository) FindById(ctx context.Context, id string) (domai
 	return du, nil
 }
 
-// toDomain 将dao.User转为 domain.User
+// addReqToDomain 将dao.User转为 domain.User
 func (repo *CacheUserRepository) toDomain(u dao.User) domain.User {
 	return domain.User{
 		ID:       u.ID,
