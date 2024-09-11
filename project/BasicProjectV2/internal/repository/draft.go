@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository/dao"
+	"github.com/basicprojectv2/pkg/snowflake"
+	"strconv"
 )
 
 type draftRepository struct {
@@ -12,7 +14,7 @@ type draftRepository struct {
 
 type DraftRepository interface {
 	GetDraft()
-	AddDraft(ctx context.Context, draft domain.AddDraftReq) error
+	AddDraft(ctx context.Context, draft domain.AddDraftReq, authorID string) error
 }
 
 func NewDraftRepository(dao dao.DraftDAO) DraftRepository {
@@ -21,9 +23,12 @@ func NewDraftRepository(dao dao.DraftDAO) DraftRepository {
 
 func (r *draftRepository) GetDraft() {}
 
-func (r *draftRepository) AddDraft(ctx context.Context, draft domain.AddDraftReq) error {
+func (r *draftRepository) AddDraft(ctx context.Context, draft domain.AddDraftReq, authorID string) error {
 	req := toDomain(draft)
-	if err := r.dao.Insert(req); err != nil {
+	req.ID = strconv.Itoa(snowflake.GenId())
+	req.AuthorID = authorID
+	req.Status = "0"
+	if err := r.dao.Insert(ctx, req); err != nil {
 		return err
 	}
 	return nil

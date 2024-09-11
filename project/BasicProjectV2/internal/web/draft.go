@@ -33,7 +33,15 @@ func (r *DraftHandler) AddArticle(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "请求参数错误"})
 		return
 	}
-	if err := r.svc.AddArticle(c, req); err != nil {
+	userid, exists := c.Get("userid")
+	if !exists {
+		c.JSON(400, gin.H{
+			"msg": "用户未登录",
+		})
+		return
+	}
+	useridStr := userid.(string)
+	if err := r.svc.AddArticle(c, req, useridStr); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

@@ -11,15 +11,15 @@ type draftService struct {
 }
 
 type DraftService interface {
-	AddArticle(ctx context.Context, req domain.AddDraftReq) error
+	AddArticle(ctx context.Context, req domain.AddDraftReq, authorID string) error
 }
 
 func NewDraftService(repo repository.DraftRepository) DraftService {
 	return &draftService{repo: repo}
 }
 
-func (s *draftService) AddArticle(ctx context.Context, req domain.AddDraftReq) (err error) {
-	if err := s.repo.AddDraft(ctx, req); err != nil {
+func (s *draftService) AddArticle(ctx context.Context, req domain.AddDraftReq, authorID string) (err error) {
+	if err := s.repo.AddDraft(ctx, req, authorID); err != nil {
 		return err
 	}
 	return nil
