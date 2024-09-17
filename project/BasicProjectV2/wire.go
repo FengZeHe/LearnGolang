@@ -8,6 +8,7 @@ import (
 	"github.com/basicprojectv2/internal/repository/dao"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/basicprojectv2/internal/web"
+	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/basicprojectv2/ioc"
 	"github.com/basicprojectv2/settings"
 	"github.com/gin-gonic/gin"
@@ -20,7 +21,9 @@ func InitializeApp() *gin.Engine {
 		settings.InitMysqlConfig, settings.InitRedisConfig,
 
 		// 第三方依赖部分
-		ioc.InitDB, ioc.InitRedis,
+		ioc.InitDB, ioc.InitRedis, ioc.InitMysqlCasbinEnforcer,
+
+		// 测试Enforcer
 
 		// Cache部分
 		cache.NewCodeCache,
@@ -29,25 +32,38 @@ func InitializeApp() *gin.Engine {
 		// DAO部分
 		dao.NewUserDAO,
 		dao.NewSysDAO,
+		dao.NewMenuDAO,
+		dao.NewRoleDAO,
+		dao.NewDraftDAO,
 
 		// repository部分
 		repository.NewCacheUserRepository,
 		repository.NewCodeRepository,
 		repository.NewSysRepository,
+		repository.NewMenuRepository,
+		repository.NewRoleRepository,
+		repository.NewDraftRepository,
 
 		// service部分
 		ioc.InitSMSService,
 		service.NewCodeService,
 		service.NewUserService,
 		service.NewSysService,
+		service.NewMenuService,
+		service.NewRoleService,
+		service.NewDraftService,
 
 		//handler部分
 		web.NewUserHandler,
 		web.NewSysHandler,
+		web.NewMenuHandler,
+		web.NewRoleHandler,
+		web.NewDraftHandler,
 
 		// 中间件和路由
 		ioc.InitGinMiddlewares,
 		ioc.InitWebServer,
+		middleware.NewCasbinRoleCheck,
 	)
 	return gin.Default()
 

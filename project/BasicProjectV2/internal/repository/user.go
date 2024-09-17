@@ -19,6 +19,8 @@ type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (domain.User, error)
 	FindByPhone(ctx context.Context, phone string) (domain.User, error)
 	FindById(ctx context.Context, id string) (domain.User, error)
+	GetUserList(ctx context.Context, req domain.UserListRequest) ([]domain.User, int, error)
+	UpdateUser(ctx context.Context, req domain.User) error
 }
 
 type CacheUserRepository struct {
@@ -31,6 +33,25 @@ func NewCacheUserRepository(dao dao.UserDAO, c cache.UserCache) UserRepository {
 		dao:   dao,
 		cache: c,
 	}
+}
+
+func (repo *CacheUserRepository) UpdateUser(ctx context.Context, u domain.User) (err error) {
+	if err = repo.dao.UpdateUserByID(ctx, repo.toEntity(u)); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *CacheUserRepository) GetUserList(ctx context.Context, req domain.UserListRequest) (ul []domain.User, count int, err error) {
+	list, c, err := repo.dao.GetUserList(ctx, req)
+	count = int(c)
+	if err != nil {
+		log.Println("dao get user list error", err)
+	}
+	for _, u := range list {
+		ul = append(ul, repo.toDomain(u))
+	}
+	return ul, count, err
 }
 
 func (repo *CacheUserRepository) Create(ctx context.Context, u domain.User) (err error) {
@@ -72,7 +93,7 @@ func (repo *CacheUserRepository) FindById(ctx context.Context, id string) (domai
 	return du, nil
 }
 
-// toDomain 将dao.User转为 domain.User
+// addReqToDomain 将dao.User转为 domain.User
 func (repo *CacheUserRepository) toDomain(u dao.User) domain.User {
 	return domain.User{
 		ID:       u.ID,
@@ -82,6 +103,7 @@ func (repo *CacheUserRepository) toDomain(u dao.User) domain.User {
 		Aboutme:  u.Aboutme,
 		Nickname: u.Nickname,
 		Birthday: u.Birthday,
+		Role:     u.Role,
 	}
 }
 
@@ -101,5 +123,6 @@ func (repo *CacheUserRepository) toEntity(u domain.User) dao.User {
 		Birthday: u.Birthday,
 		Aboutme:  u.Aboutme,
 		Nickname: u.Nickname,
+		Role:     u.Role,
 	}
 }
