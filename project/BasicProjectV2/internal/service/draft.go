@@ -13,6 +13,7 @@ type draftService struct {
 type DraftService interface {
 	AddArticle(ctx context.Context, req domain.AddDraftReq, authorID string) error
 	GetArticles(ctx context.Context, authorID string) ([]domain.Draft, error)
+	GetDraft(ctx context.Context, draftID, authorID string) (domain.Draft, error)
 	UpdateArticle(ctx context.Context, req domain.UpdateDraftReq) error
 	DeleteArticle(ctx context.Context, req domain.DeleteDraftReq) error
 }
@@ -32,6 +33,14 @@ func (s *draftService) GetArticles(ctx context.Context, authorID string) (d []do
 	d, err = s.repo.GetDraft(ctx, authorID)
 	if err != nil {
 		return nil, err
+	}
+	return d, nil
+}
+
+func (s *draftService) GetDraft(ctx context.Context, draftID, authorID string) (d domain.Draft, err error) {
+	d, err = s.repo.GetDraftByID(ctx, draftID, authorID)
+	if err != nil {
+		return d, err
 	}
 	return d, nil
 }

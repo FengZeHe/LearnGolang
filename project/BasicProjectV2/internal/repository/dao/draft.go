@@ -15,6 +15,7 @@ type DraftDAO interface {
 	Insert(ctx context.Context, d Draft) (err error)
 	FindUserByID(id string) (u domain.User, err error)
 	FindDraftByAuthorID(authorID string) (d []domain.Draft, err error)
+	FindDraftByID(id, authorID string) (d domain.Draft, err error)
 	UpdateDraftByAuthorID(d Draft) (err error)
 	DeleteDraftByID(id string) (err error)
 }
@@ -45,8 +46,15 @@ func (dao *GORMDraftDAO) FindUserByID(id string) (u domain.User, err error) {
 	return u, nil
 }
 
+func (dao *GORMDraftDAO) FindDraftByID(id, authorID string) (d domain.Draft, err error) {
+	if err = dao.db.Table("draft").Where("id = ? AND author_id = ?", id, authorID).Find(&d).Error; err != nil {
+		return d, err
+	}
+	return d, nil
+}
+
 func (dao *GORMDraftDAO) FindDraftByAuthorID(authorID string) (d []domain.Draft, err error) {
-	if err = dao.db.Table("draft").Where("author_id = ?", authorID).Find(&d).Error; err != nil {
+	if err = dao.db.Table("draft").Where("author_id = ?", authorID).Order("created_at desc").Find(&d).Error; err != nil {
 		return d, err
 	}
 	return d, nil

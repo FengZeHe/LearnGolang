@@ -19,6 +19,7 @@ func (r *DraftHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.Handler
 	rg := server.Group("/v2/draft/")
 	rg.Use(loginCheck)
 	rg.GET("/getArticles", r.GetArticles)
+	rg.POST("/getDraft", r.getDraft)
 	rg.POST("/addArticle", r.AddArticle)
 	rg.POST("/updateArticle", r.UpdateArticle)
 	rg.POST("/deleteArticle", r.DeleteArticle)
@@ -43,6 +44,24 @@ func (r *DraftHandler) GetArticles(c *gin.Context) {
 		"data": articles,
 	})
 
+}
+
+func (r *DraftHandler) getDraft(c *gin.Context) {
+	var req domain.GetDraftReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "请求参数错误"})
+		return
+	}
+	draft, err := r.svc.GetDraft(c, req.DraftID, req.AuthorID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data": draft,
+	})
 }
 
 func (r *DraftHandler) AddArticle(c *gin.Context) {

@@ -15,7 +15,7 @@ type UserClaims struct {
 
 // 生成token
 func GenToken(userId string) (tokenStr string, err error) {
-	expirationTime := time.Now().Add(7 * 24 * 60 * time.Minute)
+	expirationTime := time.Now().Add(7 * 24 * 60 * time.Hour)
 	claims := &UserClaims{UserId: userId, RegisteredClaims: jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(expirationTime),
 	}}
