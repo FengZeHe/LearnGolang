@@ -13,10 +13,10 @@ type Draft struct {
 }
 
 type AddDraftReq struct {
-	AuthorName string `json:"authorName"`
-	Title      string `json:"title"`
-	Content    string `json:"content"`
-	Status     string `json:"status"`
+	//AuthorName string `json:"authorName"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	Status  string `json:"status"`
 }
 
 type GetDraftReq struct {

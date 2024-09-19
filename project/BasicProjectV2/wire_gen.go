@@ -53,6 +53,10 @@ func InitializeApp() *gin.Engine {
 	draftRepository := repository.NewDraftRepository(draftDAO)
 	draftService := service.NewDraftService(draftRepository)
 	draftHandler := web.NewDraftHandler(draftService)
-	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler)
+	articleDAO := dao.NewArticleDAO(db)
+	articleRepository := repository.NewArticleRepository(articleDAO)
+	articleService := service.NewArticleService(articleRepository)
+	articleHandler := web.NewArticleHandler(articleService)
+	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler)
 	return engine
 }

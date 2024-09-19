@@ -23,8 +23,18 @@ func NewDraftService(repo repository.DraftRepository) DraftService {
 }
 
 func (s *draftService) AddArticle(ctx context.Context, req domain.AddDraftReq, authorID string) (err error) {
-	if err := s.repo.AddDraft(ctx, req, authorID); err != nil {
-		return err
+	// todo 在service层区分status
+	switch req.Status {
+	case "0": //只保存，不发表
+		if err := s.repo.AddDraft(ctx, req, authorID); err != nil {
+			return err
+		}
+		return nil
+	case "1": //新建保存并发表
+		if err := s.repo.AddDraftWithPublished(ctx, req, authorID); err != nil {
+			return err
+		}
+		return nil
 	}
 	return nil
 }
@@ -46,8 +56,18 @@ func (s *draftService) GetDraft(ctx context.Context, draftID, authorID string) (
 }
 
 func (s *draftService) UpdateArticle(ctx context.Context, req domain.UpdateDraftReq) (err error) {
-	if err = s.repo.UpdateDraft(ctx, req); err != nil {
-		return err
+	// todo 区分是保存还是保存并发表
+	switch req.Status {
+	case "0":
+		if err = s.repo.UpdateDraft(ctx, req); err != nil {
+			return err
+		}
+		return nil
+	case "1":
+		if err = s.repo.UpdateDraftWithPublished(ctx, req, req.AuthorID); err != nil {
+			return err
+		}
+		return nil
 	}
 	return nil
 }

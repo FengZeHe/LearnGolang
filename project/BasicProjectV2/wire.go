@@ -35,6 +35,7 @@ func InitializeApp() *gin.Engine {
 		dao.NewMenuDAO,
 		dao.NewRoleDAO,
 		dao.NewDraftDAO,
+		dao.NewArticleDAO,
 
 		// repository部分
 		repository.NewCacheUserRepository,
@@ -43,6 +44,7 @@ func InitializeApp() *gin.Engine {
 		repository.NewMenuRepository,
 		repository.NewRoleRepository,
 		repository.NewDraftRepository,
+		repository.NewArticleRepository,
 
 		// service部分
 		ioc.InitSMSService,
@@ -52,6 +54,7 @@ func InitializeApp() *gin.Engine {
 		service.NewMenuService,
 		service.NewRoleService,
 		service.NewDraftService,
+		service.NewArticleService,
 
 		//handler部分
 		web.NewUserHandler,
@@ -59,6 +62,7 @@ func InitializeApp() *gin.Engine {
 		web.NewMenuHandler,
 		web.NewRoleHandler,
 		web.NewDraftHandler,
+		web.NewArticleHandler,
 
 		// 中间件和路由
 		ioc.InitGinMiddlewares,

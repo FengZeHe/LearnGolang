@@ -20,9 +20,9 @@ func (r *DraftHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.Handler
 	rg.Use(loginCheck)
 	rg.GET("/getArticles", r.GetArticles)
 	rg.POST("/getDraft", r.getDraft)
-	rg.POST("/addArticle", r.AddArticle)
-	rg.POST("/updateArticle", r.UpdateArticle)
-	rg.POST("/deleteArticle", r.DeleteArticle)
+	rg.POST("/addArticle", r.AddArticle)       // 添加保存草稿，可选是否发布
+	rg.POST("/updateArticle", r.UpdateArticle) // 保存草稿，可选是否发布
+	rg.POST("/deleteArticle", r.DeleteArticle) //删除草稿
 }
 
 func (r *DraftHandler) GetArticles(c *gin.Context) {
