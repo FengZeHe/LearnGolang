@@ -10,7 +10,7 @@ import (
 
 // 初始化gin Engine
 func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web.SysHandler,
-	menuHdl *web.MenuHandler, roleHdl *web.RoleHandler, draftHdl *web.DraftHandler) *gin.Engine {
+	menuHdl *web.MenuHandler, roleHdl *web.RoleHandler, draftHdl *web.DraftHandler, articleHdl *web.ArticleHandler) *gin.Engine {
 	server := gin.Default()
 	server.Use(mdls[0])
 	userHdl.RegisterRoutes(server)
@@ -18,6 +18,7 @@ func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web
 	menuHdl.RegisterRoutes(server, mdls[2])
 	roleHdl.RegisterRoutes(server, mdls[2])
 	draftHdl.RegisterRoutes(server, mdls[2])
+	articleHdl.RegisterRoutes(server, mdls[2])
 
 	return server
 }
