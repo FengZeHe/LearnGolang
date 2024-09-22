@@ -1,6 +1,7 @@
 package web
 
 import (
+	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -19,10 +20,18 @@ func (r *ArticleHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.Handl
 	rg := server.Group("/v2/article/")
 	rg.Use(loginCheck)
 
-	rg.GET("", r.GetArticles)
+	rg.POST("/getArticles", r.GetArticles)
 }
 
 func (r *ArticleHandler) GetArticles(c *gin.Context) {
+	req := domain.QueryArticlesReq{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": "请求参数错误",
+		})
+		return
+	}
+
 	_, exists := c.Get("userid")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -31,7 +40,7 @@ func (r *ArticleHandler) GetArticles(c *gin.Context) {
 		return
 	}
 
-	data, err := r.svc.GetArticles(c)
+	data, err := r.svc.GetArticles(c, req)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{

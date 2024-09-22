@@ -90,6 +90,7 @@ func (dao *GORMDraftDAO) UpdateDraftAndArticle(ctx context.Context, d domain.Dra
 				"title":      d.Title,
 				"content":    d.Content,
 				"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+				"status":     d.Status,
 			}).Error; err != nil {
 			return err
 		}
