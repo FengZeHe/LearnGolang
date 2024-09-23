@@ -46,3 +46,8 @@ type QueryArticlesReq struct {
 	PageIndex int `json:"pageIndex"`
 	PageSize  int `json:"pageSize"`
 }
+
+type QueryAuthorArticlesReq struct {
+	PageIndex int `json:"pageIndex"`
+	PageSize  int `json:"pageSize"`
+}

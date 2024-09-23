@@ -12,6 +12,7 @@ type articleService struct {
 
 type ArticleService interface {
 	GetArticles(ctx context.Context, req domain.QueryArticlesReq) (domain.ArticleRepoResponse, error)
+	GetAuthorArticles(ctx context.Context, req domain.QueryAuthorArticlesReq, userid string) (domain.ArticleRepoResponse, error)
 }
 
 func NewArticleService(repo repository.ArticleRepository) ArticleService {
@@ -25,4 +26,12 @@ func (s *articleService) GetArticles(ctx context.Context, req domain.QueryArticl
 	}
 
 	return l, err
+}
+
+func (s *articleService) GetAuthorArticles(ctx context.Context, req domain.QueryAuthorArticlesReq, userid string) (l domain.ArticleRepoResponse, err error) {
+	l, err = s.repo.GetAuthorArticles(ctx, req, userid)
+	if err != nil {
+		return l, err
+	}
+	return l, nil
 }
