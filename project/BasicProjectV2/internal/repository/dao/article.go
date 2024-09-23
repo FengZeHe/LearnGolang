@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/basicprojectv2/internal/domain"
 	"gorm.io/gorm"
+	"math"
 	"time"
 )
 
@@ -14,7 +15,7 @@ type GORMArticle struct {
 type ArticleDAO interface {
 	InsertArticle(ctx context.Context, a domain.Article) error
 	UpdateArticleByID(ctx context.Context, a domain.Article) error
-	GetArticles(ctx context.Context) ([]domain.Article, error)
+	GetArticles(ctx context.Context, pageIndex, pageSize int) (domain.ArticlesDAOResponse, error)
 }
 
 func NewArticleDAO(db *gorm.DB) ArticleDAO {
@@ -38,9 +39,30 @@ func (dao *GORMArticle) UpdateArticleByID(ctx context.Context, a domain.Article)
 	return nil
 }
 
-func (dao *GORMArticle) GetArticles(ctx context.Context) (a []domain.Article, err error) {
-	if err = dao.db.WithContext(ctx).Table("article").Order("created_at desc").Find(&a).Error; err != nil {
-		return nil, err
+func (dao *GORMArticle) GetArticles(ctx context.Context, pageIndex, pageSize int) (a domain.ArticlesDAOResponse, err error) {
+	var data []domain.Article
+
+	// 计算偏移量
+	offset := (pageIndex - 1) * pageSize
+
+	// 查询总记录数
+	var totalCount int64
+	dao.db.Model(&domain.Article{}).Table("article").Count(&totalCount)
+
+	//执行分页查询
+	if err = dao.db.WithContext(ctx).Table("article").Limit(pageSize).Offset(offset).Order("created_at desc").Find(&data).Error; err != nil {
+		return a, err
 	}
+
+	// 计算总页数
+	totalPages := int(math.Ceil(float64(totalCount) / float64(pageSize)))
+	if totalCount == 0 || totalPages == 0 {
+		totalPages = 1
+	}
+
+	a.Articles = data
+	a.PageIndex = pageIndex
+	a.PageCount = totalPages
+	a.TotalCount = totalCount
 	return a, nil
 }

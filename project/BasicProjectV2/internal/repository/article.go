@@ -11,19 +11,31 @@ type articleRepository struct {
 }
 
 type ArticleRepository interface {
-	GetArticles(ctx context.Context) ([]domain.ArticleResponse, error)
+	GetArticles(ctx context.Context, req domain.QueryArticlesReq) (domain.ArticleRepoResponse, error)
 }
 
 func NewArticleRepository(dao dao.ArticleDAO) ArticleRepository {
 	return &articleRepository{articleDAO: dao}
 }
 
-func (a *articleRepository) GetArticles(ctx context.Context) (l []domain.ArticleResponse, err error) {
-	res, err := a.articleDAO.GetArticles(ctx)
+func (a *articleRepository) GetArticles(ctx context.Context, req domain.QueryArticlesReq) (l domain.ArticleRepoResponse, err error) {
+	if req.PageSize <= 0 {
+		req.PageSize = 10
+	}
+	if req.PageIndex <= 0 {
+		req.PageIndex = 1
+	}
+
+	res, err := a.articleDAO.GetArticles(ctx, req.PageIndex, req.PageSize)
 	if err != nil {
 		return l, err
 	}
-	l = ArticleToEntity(res)
+	t := ArticleToEntity(res.Articles)
+	l.Articles = t
+	l.PageIndex = res.PageIndex
+	l.PageCount = res.PageCount
+	l.TotalCount = int(res.TotalCount)
+
 	return l, err
 }
 
