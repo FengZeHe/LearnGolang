@@ -19,7 +19,7 @@ func (r *ArticleHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.Handl
 	rg := server.Group("/v2/article/")
 	rg.Use(loginCheck)
 
-	rg.GET("", r.GetArticles)
+	rg.GET("/getArticles", r.GetArticles)
 }
 
 func (r *ArticleHandler) GetArticles(c *gin.Context) {
