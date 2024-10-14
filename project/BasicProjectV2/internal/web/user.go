@@ -6,6 +6,7 @@ import (
 	"github.com/basicprojectv2/pkg/jwt"
 	"github.com/basicprojectv2/pkg/snowflake"
 	"github.com/gin-gonic/gin"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"log"
 	"net/http"
 	"strconv"
@@ -27,9 +28,9 @@ func NewUserHandler(svc service.UserService, codeSvc service.CodeService) *UserH
 }
 
 // 注册路由
-func (h *UserHandler) RegisterRoutes(server *gin.Engine) {
+func (h *UserHandler) RegisterRoutes(server *gin.Engine, i18n gin.HandlerFunc) {
 	ug := server.Group("/v2/users/")
-	ug.GET("/hi", h.Hi)
+	ug.GET("/hi", i18n, h.Hi)
 	ug.POST("/signin", h.SignIn)
 	ug.POST("/login", h.Login)
 	ug.POST("/loginsms/code/send", h.SendSMS)
@@ -72,7 +73,11 @@ func (h *UserHandler) HandleUserList(ctx *gin.Context) {
 }
 
 func (h *UserHandler) Hi(ctx *gin.Context) {
-	ctx.JSON(200, "msg:hello")
+	localizer, _ := ctx.Get("localizer")
+	welcomeMsg := localizer.(*i18n.Localizer).MustLocalize(&i18n.LocalizeConfig{
+		MessageID: "welcome_message",
+	})
+	ctx.JSON(200, welcomeMsg)
 }
 
 // 处理注册请求

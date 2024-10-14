@@ -4,6 +4,7 @@ import (
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/gin-gonic/gin"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"log"
 	"net/http"
 )
@@ -19,9 +20,9 @@ func NewSysHandler(svc service.SysService) *SysHandler {
 }
 
 // 注册路由
-func (h *SysHandler) RegisterRoutes(server *gin.Engine, roleCheck, loginCheck gin.HandlerFunc) {
+func (h *SysHandler) RegisterRoutes(server *gin.Engine, roleCheck, loginCheck, i18n gin.HandlerFunc) {
 	ug := server.Group("/v2/sys/")
-	ug.GET("/hi", loginCheck, roleCheck, h.Hi)
+	ug.GET("/hi", loginCheck, roleCheck, i18n, h.Hi)
 	ug.POST("/RoleMenuList", loginCheck, h.HandleUserGetMenu)
 	ug.POST("/RoleAPIList", loginCheck, h.HandleUserGetAPI)
 	ug.GET("/AllMenuList", loginCheck, h.HandleGetMenu)
@@ -39,7 +40,11 @@ func (h *SysHandler) RegisterRoutes(server *gin.Engine, roleCheck, loginCheck gi
 }
 
 func (h *SysHandler) Hi(ctx *gin.Context) {
-	ctx.JSON(200, "AddArticle!!!")
+	localizer, _ := ctx.Get("localizer")
+	welcomeMessage := localizer.(*i18n.Localizer).MustLocalize(&i18n.LocalizeConfig{
+		MessageID: "welcome_message",
+	})
+	ctx.JSON(200, welcomeMessage)
 }
 
 func (h *SysHandler) HandleUserGetApi(ctx *gin.Context) {

@@ -21,7 +21,7 @@ func InitializeApp() *gin.Engine {
 		settings.InitMysqlConfig, settings.InitRedisConfig,
 
 		// 第三方依赖部分
-		ioc.InitDB, ioc.InitRedis, ioc.InitMysqlCasbinEnforcer,
+		ioc.InitDB, ioc.InitRedis, ioc.InitMysqlCasbinEnforcer, ioc.LoadI18nBundle,
 
 		// 测试Enforcer
 
