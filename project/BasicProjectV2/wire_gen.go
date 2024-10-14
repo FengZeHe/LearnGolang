@@ -30,7 +30,8 @@ func InitializeApp() *gin.Engine {
 	userCache := cache.NewUserCache(cmdable)
 	userRepository := repository.NewCacheUserRepository(userDAO, userCache)
 	casbinRoleCheck := middleware.NewCasbinRoleCheck(enforcer, userRepository)
-	v := ioc.InitGinMiddlewares(casbinRoleCheck)
+	bundle := ioc.LoadI18nBundle()
+	v := ioc.InitGinMiddlewares(casbinRoleCheck, bundle)
 	userService := service.NewUserService(userRepository)
 	codeCache := cache.NewCodeCache(cmdable)
 	codeRepository := repository.NewCodeRepository(codeCache)
@@ -53,6 +54,10 @@ func InitializeApp() *gin.Engine {
 	draftRepository := repository.NewDraftRepository(draftDAO)
 	draftService := service.NewDraftService(draftRepository)
 	draftHandler := web.NewDraftHandler(draftService)
-	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler)
+	articleDAO := dao.NewArticleDAO(db)
+	articleRepository := repository.NewArticleRepository(articleDAO)
+	articleService := service.NewArticleService(articleRepository)
+	articleHandler := web.NewArticleHandler(articleService)
+	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler)
 	return engine
 }
