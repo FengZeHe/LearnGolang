@@ -18,6 +18,7 @@ type SysService interface {
 	GetMenu(ctx context.Context) ([]domain.Menu, error)
 	GetRole(ctx context.Context) ([]domain.Role, error)
 	GetAPI(ctx context.Context) ([]domain.API, error)
+	GetUserProfile(ctx context.Context)
 
 	AddCasbinPolicy(ctx context.Context, req domain.AddCasbinRulePolicyReq) error
 	UpdateCasbinPolicy(ctx context.Context, req domain.UpdateCasbinPolicyReq) error

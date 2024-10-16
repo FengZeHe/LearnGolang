@@ -20,6 +20,9 @@ type API struct {
 	Methods string `gorm:"size:255;" json:"methods"`
 }
 
+type UserProfile struct {
+}
+
 type UpdateCasbinPolicyReq struct {
 	OldPolicy []string `gorm:"size:255;" json:"old_policy"`
 	NewPolicy []string `gorm:"size:255;" json:"new_policy"`

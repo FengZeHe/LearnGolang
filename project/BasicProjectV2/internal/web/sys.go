@@ -32,6 +32,9 @@ func (h *SysHandler) RegisterRoutes(server *gin.Engine, roleCheck, loginCheck, i
 	ug.GET("/api", loginCheck, h.HandleUserGetApi)
 	ug.GET("/roleList", loginCheck, h.HandleGetRole)
 
+	//获取用户信息
+	ug.GET("/userProfile",loginCheck,h.)
+
 	// 管理casbin策略
 	ug.POST("/addPolicy", loginCheck, h.HandleAddPolicy)
 	ug.POST("/updatePolicy", loginCheck, h.HandleUpdatePolicy)
@@ -152,6 +155,10 @@ func (h *SysHandler) HandleGetRole(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"data": rl,
 	})
+}
+
+func (h *SysHandler) HandleGetUserProfile(ctx *gin.Context) {
+
 }
 
 // 返回菜单目录
