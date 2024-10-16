@@ -74,9 +74,12 @@ func (h *UserHandler) HandleUserList(ctx *gin.Context) {
 
 func (h *UserHandler) Hi(ctx *gin.Context) {
 	localizer, _ := ctx.Get("localizer")
-	welcomeMsg := localizer.(*i18n.Localizer).MustLocalize(&i18n.LocalizeConfig{
-		MessageID: "welcome_message",
-	})
+	localizeConfig := &i18n.LocalizeConfig{MessageID: "welcome_msg"}
+	welcomeMsg, err := localizer.(*i18n.Localizer).Localize(localizeConfig)
+	if err != nil {
+		log.Println("localize welcome error", err)
+		welcomeMsg = "default welcome message"
+	}
 	ctx.JSON(200, welcomeMsg)
 }
 
