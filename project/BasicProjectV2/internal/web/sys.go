@@ -158,7 +158,23 @@ func (h *SysHandler) HandleGetRole(ctx *gin.Context) {
 }
 
 func (h *SysHandler) HandleGetUserProfile(ctx *gin.Context) {
-	h.svc.GetUserProfile(ctx)
+	userid, exists := ctx.Get("userid")
+	if !exists {
+		ctx.JSON(400, gin.H{
+			"msg": "用户未登录",
+		})
+		return
+	}
+	strUserid := userid.(string)
+	user, err := h.svc.GetUserProfileByUserID(ctx, strUserid)
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, "error")
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": user,
+	})
 }
 
 // 返回菜单目录

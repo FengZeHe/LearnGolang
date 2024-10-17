@@ -30,6 +30,7 @@ func NewSysDAO(db *gorm.DB) SysDAO {
 
 func (dao *GORMSysDAO) FindUserProfileByUserID(ctx context.Context, id string) (user domain.UserProfile, err error) {
 	// todo 联合查询
+	return user, err
 }
 
 func (dao *GORMSysDAO) FindApisByRole(ctx context.Context, role string) (apiItems []domain.API, err error) {

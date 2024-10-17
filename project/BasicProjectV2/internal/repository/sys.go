@@ -35,7 +35,7 @@ func (s sysRepository) GetApiByUserID(ctx context.Context, id string) (apis []do
 
 func (s sysRepository) GetUserProfileByUserID(ctx context.Context, id string) (user domain.UserProfile, err error) {
 	// todo gorm联合查询
-	user,err = s.dao.
+	//user,err = s.dao.
 	return user, err
 }
 
