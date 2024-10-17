@@ -18,6 +18,7 @@ type SysService interface {
 	GetMenu(ctx context.Context) ([]domain.Menu, error)
 	GetRole(ctx context.Context) ([]domain.Role, error)
 	GetAPI(ctx context.Context) ([]domain.API, error)
+	GetUserProfileByUserID(ctx context.Context, userid string) (domain.UserProfile, error)
 
 	AddCasbinPolicy(ctx context.Context, req domain.AddCasbinRulePolicyReq) error
 	UpdateCasbinPolicy(ctx context.Context, req domain.UpdateCasbinPolicyReq) error
@@ -34,8 +35,16 @@ func NewSysService(repo repository.SysRepository, enforcer *casbin.Enforcer) Sys
 	return &sysService{repo: repo, enforcer: enforcer}
 }
 
+func (s *sysService) GetUserProfileByUserID(ctx context.Context, userid string) (userProfile domain.UserProfile, err error) {
+	userProfile, err = s.repo.GetUserProfileByUserID(ctx, userid)
+	if err != nil {
+		return userProfile, err
+	}
+	return userProfile, nil
+}
+
 func (s *sysService) UpdateCasbinPolicies(ctx context.Context, req domain.TransactionPolicyReq) (err error) {
-	log.Println("removePolicy=>", req.OldPolicies, "addPolicy=>", req.NewPolicies)
+	//log.Println("removePolicy=>", req.OldPolicies, "addPolicy=>", req.NewPolicies)
 
 	if len(req.OldPolicies) > 0 {
 		for _, v := range req.OldPolicies {

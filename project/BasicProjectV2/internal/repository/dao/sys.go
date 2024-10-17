@@ -16,6 +16,7 @@ type SysDAO interface {
 	FindMenusByRole(ctx context.Context, role string) (menuItems []domain.Menu, err error)
 	FindApisByRole(ctx context.Context, role string) (apiItems []domain.API, err error)
 	FindUserByID(ctx context.Context, id string) (user domain.User, err error)
+	FindUserProfileByUserID(ctx context.Context, id string) (user domain.UserProfile, err error)
 	GetMenu(ctx context.Context) ([]domain.Menu, error)
 	GetRole(ctx context.Context) ([]domain.Role, error)
 	GetAPI(ctx context.Context) ([]domain.API, error)
@@ -25,6 +26,10 @@ func NewSysDAO(db *gorm.DB) SysDAO {
 	return &GORMSysDAO{
 		db: db,
 	}
+}
+
+func (dao *GORMSysDAO) FindUserProfileByUserID(ctx context.Context, id string) (user domain.UserProfile, err error) {
+	// todo 联合查询
 }
 
 func (dao *GORMSysDAO) FindApisByRole(ctx context.Context, role string) (apiItems []domain.API, err error) {
