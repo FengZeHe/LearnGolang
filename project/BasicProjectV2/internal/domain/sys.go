@@ -21,6 +21,13 @@ type API struct {
 }
 
 type UserProfile struct {
+	ID       uint   `gorm:"primaryKey" json:"userID"`
+	Email    string `gorm:"size:255;" json:"email"`
+	Role     string `gorm:"size:255;" json:"role"`
+	Phone    string `gorm:"size:255;" json:"phone"`
+	Birthday string `gorm:"size:255;" json:"-"`
+	NickName string `gorm:"size:255;" json:"nickName"`
+	AboutMe  string `gorm:"size:255;" json:"aboutMe"`
 }
 
 type UpdateCasbinPolicyReq struct {

@@ -12,6 +12,7 @@ type SysRepository interface {
 	GetMenuByUserID(ctx context.Context, id string) ([]domain.Menu, error)
 	GetMenuByRole(ctx context.Context, role string) ([]domain.Menu, error)
 	GetAPIByRole(ctx context.Context, role string) ([]domain.API, error)
+	GetUserProfileByUserID(ctx context.Context, id string) (domain.UserProfile, error)
 	GetMenu(ctx context.Context) ([]domain.Menu, error)
 	GetRole(ctx context.Context) ([]domain.Role, error)
 	GetAPI(ctx context.Context) ([]domain.API, error)
@@ -30,6 +31,12 @@ func (s sysRepository) GetApiByUserID(ctx context.Context, id string) (apis []do
 		return nil, err
 	}
 	return apis, nil
+}
+
+func (s sysRepository) GetUserProfileByUserID(ctx context.Context, id string) (user domain.UserProfile, err error) {
+	// todo gorm联合查询
+	user,err = s.dao.
+	return user, err
 }
 
 func (s sysRepository) GetAPI(ctx context.Context) (al []domain.API, err error) {
