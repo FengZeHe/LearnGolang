@@ -7,6 +7,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"log"
 )
 
@@ -26,6 +27,7 @@ type UserDAO interface {
 	FindById(ctx context.Context, id string) (User, error)
 	GetUserList(ctx context.Context, req domain.UserListRequest) ([]User, int, error)
 	UpdateUserByID(ctx context.Context, u User) error
+	UpsertUserAvatar(ctx context.Context, u domain.UserAvatar) error
 }
 
 func NewUserDAO(db *gorm.DB) UserDAO {
@@ -90,6 +92,16 @@ func (dao *GORMUserDAO) FindByPhone(ctx context.Context, phone string) (u User, 
 func (dao *GORMUserDAO) FindById(ctx context.Context, id string) (u User, err error) {
 	err = dao.db.WithContext(ctx).Table("users").Where("id = ?", id).First(&u).Error
 	return u, err
+}
+
+func (dao *GORMUserDAO) UpsertUserAvatar(ctx context.Context, u domain.UserAvatar) (err error) {
+	if err = dao.db.Table("user_avatar").Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}},                // 使用user_id作为唯一键判断冲突
+		DoUpdates: clause.AssignmentColumns([]string{"avatar_file"}), // 发生冲突时更新avatar_file
+	}).Create(&u).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 type User struct {

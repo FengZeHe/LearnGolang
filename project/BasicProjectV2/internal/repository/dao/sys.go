@@ -29,7 +29,13 @@ func NewSysDAO(db *gorm.DB) SysDAO {
 }
 
 func (dao *GORMSysDAO) FindUserProfileByUserID(ctx context.Context, id string) (user domain.UserProfile, err error) {
-	// todo 联合查询
+	if err = dao.db.Table("users").
+		Select("users.id,users.email,users.role,users.phone,users.birthday,users.nickname,users.aboutme,user_avatar.avatar_file").
+		Joins("LEFT JOIN user_avatar ON user_avatar.user_id = users.id").
+		Where("users.id = ?", id).Scan(&user).Error; err != nil {
+		return user, err
+	}
+
 	return user, err
 }
 

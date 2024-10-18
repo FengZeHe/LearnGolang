@@ -18,7 +18,7 @@ type SysService interface {
 	GetMenu(ctx context.Context) ([]domain.Menu, error)
 	GetRole(ctx context.Context) ([]domain.Role, error)
 	GetAPI(ctx context.Context) ([]domain.API, error)
-	GetUserProfileByUserID(ctx context.Context, userid string) (domain.UserProfile, error)
+	GetUserProfileByUserID(ctx context.Context, userid string) (repository.RepoUserProfile, error)
 
 	AddCasbinPolicy(ctx context.Context, req domain.AddCasbinRulePolicyReq) error
 	UpdateCasbinPolicy(ctx context.Context, req domain.UpdateCasbinPolicyReq) error
@@ -35,7 +35,7 @@ func NewSysService(repo repository.SysRepository, enforcer *casbin.Enforcer) Sys
 	return &sysService{repo: repo, enforcer: enforcer}
 }
 
-func (s *sysService) GetUserProfileByUserID(ctx context.Context, userid string) (userProfile domain.UserProfile, err error) {
+func (s *sysService) GetUserProfileByUserID(ctx context.Context, userid string) (userProfile repository.RepoUserProfile, err error) {
 	userProfile, err = s.repo.GetUserProfileByUserID(ctx, userid)
 	if err != nil {
 		return userProfile, err

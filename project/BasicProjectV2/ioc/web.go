@@ -14,7 +14,7 @@ func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web
 	menuHdl *web.MenuHandler, roleHdl *web.RoleHandler, draftHdl *web.DraftHandler, articleHdl *web.ArticleHandler) *gin.Engine {
 	server := gin.Default()
 	server.Use(mdls[0])
-	userHdl.RegisterRoutes(server, mdls[3])
+	userHdl.RegisterRoutes(server, mdls[3], mdls[2])
 	sysHdl.RegisterRoutes(server, mdls[1], mdls[2], mdls[3])
 	menuHdl.RegisterRoutes(server, mdls[2])
 	roleHdl.RegisterRoutes(server, mdls[2])

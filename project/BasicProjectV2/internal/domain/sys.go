@@ -21,13 +21,19 @@ type API struct {
 }
 
 type UserProfile struct {
-	ID       uint   `gorm:"primaryKey" json:"userID"`
-	Email    string `gorm:"size:255;" json:"email"`
-	Role     string `gorm:"size:255;" json:"role"`
-	Phone    string `gorm:"size:255;" json:"phone"`
-	Birthday string `gorm:"size:255;" json:"-"`
-	NickName string `gorm:"size:255;" json:"nickName"`
-	AboutMe  string `gorm:"size:255;" json:"aboutMe"`
+	ID         uint   `gorm:"primaryKey" json:"userID"`
+	Email      string `gorm:"size:255;" json:"email"`
+	Role       string `gorm:"size:255;" json:"role"`
+	Phone      string `gorm:"size:255;" json:"phone"`
+	Birthday   string `gorm:"size:255;" json:"-"`
+	NickName   string `gorm:"size:255;" json:"nickName"`
+	AboutMe    string `gorm:"size:255;" json:"aboutMe"`
+	AvatarFile []byte `gorm:"size:255;" json:"avatarFile"`
+}
+
+type UserAvatar struct {
+	UserID     string ` json:"userID"`
+	AvatarFile []byte ` json:"avatarFile"`
 }
 
 type UpdateCasbinPolicyReq struct {

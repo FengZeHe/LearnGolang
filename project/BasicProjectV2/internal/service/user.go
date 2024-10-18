@@ -24,6 +24,7 @@ type UserService interface {
 	FindById(ctx context.Context, id string) (domain.User, error)
 	GetUserList(ctx context.Context, req domain.UserListRequest) (domain.UserListResponse, error)
 	UpdateUser(ctx context.Context, req domain.User) error
+	UploadUserAvatar(ctx context.Context, req domain.UserAvatar) error
 }
 type userService struct {
 	repo repository.UserRepository
@@ -33,6 +34,14 @@ func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{
 		repo: repo,
 	}
+}
+
+func (s *userService) UploadUserAvatar(ctx context.Context, req domain.UserAvatar) error {
+	// upsert 操作 ，同时只能操作用户自己的数据
+	if err := s.repo.UpsertUserAvatar(ctx, req); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *userService) UpdateUser(ctx context.Context, req domain.User) error {

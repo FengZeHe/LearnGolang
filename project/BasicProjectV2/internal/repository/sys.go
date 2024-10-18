@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"encoding/base64"
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository/dao"
 	"log"
@@ -12,7 +13,7 @@ type SysRepository interface {
 	GetMenuByUserID(ctx context.Context, id string) ([]domain.Menu, error)
 	GetMenuByRole(ctx context.Context, role string) ([]domain.Menu, error)
 	GetAPIByRole(ctx context.Context, role string) ([]domain.API, error)
-	GetUserProfileByUserID(ctx context.Context, id string) (domain.UserProfile, error)
+	GetUserProfileByUserID(ctx context.Context, id string) (RepoUserProfile, error)
 	GetMenu(ctx context.Context) ([]domain.Menu, error)
 	GetRole(ctx context.Context) ([]domain.Role, error)
 	GetAPI(ctx context.Context) ([]domain.API, error)
@@ -33,9 +34,11 @@ func (s sysRepository) GetApiByUserID(ctx context.Context, id string) (apis []do
 	return apis, nil
 }
 
-func (s sysRepository) GetUserProfileByUserID(ctx context.Context, id string) (user domain.UserProfile, err error) {
-	// todo gorm联合查询
-	//user,err = s.dao.
+func (s sysRepository) GetUserProfileByUserID(ctx context.Context, id string) (user RepoUserProfile, err error) {
+	temp, err := s.dao.FindUserProfileByUserID(ctx, id)
+	// 图片二进制转base64格式
+	user = UserProfileToEntity(temp)
+	log.Println(user.AvatarFile)
 	return user, err
 }
 
@@ -89,5 +92,31 @@ func (s sysRepository) GetAPIByRole(ctx context.Context, role string) ([]domain.
 func NewSysRepository(dao dao.SysDAO) SysRepository {
 	return &sysRepository{
 		dao: dao,
+	}
+}
+
+type RepoUserProfile struct {
+	ID         uint   `gorm:"primaryKey" json:"userID"`
+	Email      string `gorm:"size:255;" json:"email"`
+	Role       string `gorm:"size:255;" json:"role"`
+	Phone      string `gorm:"size:255;" json:"phone"`
+	Birthday   string `gorm:"size:255;" json:"-"`
+	NickName   string `gorm:"size:255;" json:"nickName"`
+	AboutMe    string `gorm:"size:255;" json:"aboutMe"`
+	AvatarFile string `gorm:"size:255;" json:"avatarFile"`
+}
+
+func UserProfileToEntity(target domain.UserProfile) RepoUserProfile {
+	base64Avatar := base64.StdEncoding.EncodeToString(target.AvatarFile)
+
+	return RepoUserProfile{
+		ID:         target.ID,
+		Email:      target.Email,
+		Role:       target.Role,
+		Phone:      target.Phone,
+		Birthday:   target.Birthday,
+		NickName:   target.NickName,
+		AboutMe:    target.AboutMe,
+		AvatarFile: base64Avatar,
 	}
 }

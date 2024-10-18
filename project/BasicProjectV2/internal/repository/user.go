@@ -21,6 +21,7 @@ type UserRepository interface {
 	FindById(ctx context.Context, id string) (domain.User, error)
 	GetUserList(ctx context.Context, req domain.UserListRequest) ([]domain.User, int, error)
 	UpdateUser(ctx context.Context, req domain.User) error
+	UpsertUserAvatar(ctx context.Context, req domain.UserAvatar) error
 }
 
 type CacheUserRepository struct {
@@ -91,6 +92,13 @@ func (repo *CacheUserRepository) FindById(ctx context.Context, id string) (domai
 		log.Println("set cache error", err)
 	}
 	return du, nil
+}
+
+func (repo *CacheUserRepository) UpsertUserAvatar(ctx context.Context, req domain.UserAvatar) (err error) {
+	if err = repo.dao.UpsertUserAvatar(ctx, req); err != nil {
+		return err
+	}
+	return nil
 }
 
 // addReqToDomain 将dao.User转为 domain.User

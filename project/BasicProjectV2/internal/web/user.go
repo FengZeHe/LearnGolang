@@ -7,6 +7,7 @@ import (
 	"github.com/basicprojectv2/pkg/snowflake"
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -28,7 +29,7 @@ func NewUserHandler(svc service.UserService, codeSvc service.CodeService) *UserH
 }
 
 // 注册路由
-func (h *UserHandler) RegisterRoutes(server *gin.Engine, i18n gin.HandlerFunc) {
+func (h *UserHandler) RegisterRoutes(server *gin.Engine, i18n, loginCheck gin.HandlerFunc) {
 	ug := server.Group("/v2/users/")
 	ug.GET("/hi", i18n, h.Hi)
 	ug.POST("/signin", h.SignIn)
@@ -37,6 +38,8 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine, i18n gin.HandlerFunc) {
 	ug.POST("/loginsms", h.VerifySMS)
 	ug.POST("/userList", h.HandleUserList)
 	ug.POST("/updateUser", h.updateUser)
+	//用户上传图片
+	ug.POST("/uploadAvatar", loginCheck, h.HandleUploadAvatar)
 }
 
 func (h *UserHandler) updateUser(ctx *gin.Context) {
@@ -69,6 +72,45 @@ func (h *UserHandler) HandleUserList(ctx *gin.Context) {
 	}
 	log.Println(data)
 	ctx.JSON(http.StatusOK, gin.H{"data": data})
+}
+
+// 处理用户上传图片
+func (h *UserHandler) HandleUploadAvatar(ctx *gin.Context) {
+	userid, exists := ctx.Get("userid")
+	if !exists {
+		ctx.JSON(400, gin.H{
+			"msg": "用户未登录",
+		})
+		return
+	}
+	strUserid := userid.(string)
+	file, err := ctx.FormFile("avatar")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "bad request"})
+		return
+	}
+	// 打开文件
+	openedFile, err := file.Open()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "Failed to open file"})
+		return
+	}
+	defer openedFile.Close()
+
+	fileBytes, err := io.ReadAll(openedFile)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "Failed to read file"})
+		return
+	}
+	req := domain.UserAvatar{UserID: strUserid, AvatarFile: fileBytes}
+
+	if err := h.svc.UploadUserAvatar(ctx, req); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "Upload Avatar ERROR"})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "upload successful",
+	})
 
 }
 
