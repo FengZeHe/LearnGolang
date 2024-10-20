@@ -40,6 +40,7 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine, i18n, loginCheck gin.Ha
 	ug.POST("/updateUser", h.updateUser)
 	//用户上传图片
 	ug.POST("/uploadAvatar", loginCheck, h.HandleUploadAvatar)
+	ug.POST("/uploadFile", loginCheck, h.HandleUploadFile)
 }
 
 func (h *UserHandler) updateUser(ctx *gin.Context) {
@@ -110,6 +111,57 @@ func (h *UserHandler) HandleUploadAvatar(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"msg": "upload successful",
+	})
+
+}
+
+func (h *UserHandler) HandleUploadFile(ctx *gin.Context) {
+	userid, exists := ctx.Get("userid")
+	if !exists {
+		ctx.JSON(400, gin.H{
+			"msg": "用户未登录",
+		})
+		return
+	}
+	strUserid := userid.(string)
+	fileName := ctx.PostForm("fileName")
+
+	//获取文件
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		log.Println("upload file error", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "Failed to get file"})
+		return
+	}
+
+	// 检查文件大小
+	if file.Size > 200*1024*1024 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "file size too big"})
+		return
+	}
+
+	// 打开文件
+	openedFile, err := file.Open()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "Failed to open file"})
+		return
+	}
+	defer openedFile.Close()
+
+	fileBytes, err := io.ReadAll(openedFile)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "Failed to read file"})
+		return
+	}
+
+	req := domain.UploadFileReq{UserID: strUserid, FileName: fileName, File: fileBytes}
+
+	if err := h.svc.UploadUserFile(ctx, req); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "Upload File ERROR"})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "upload file successful",
 	})
 
 }

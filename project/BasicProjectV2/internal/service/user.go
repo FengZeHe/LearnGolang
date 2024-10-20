@@ -3,10 +3,13 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository"
 	"github.com/basicprojectv2/pkg/bcrypt"
 	"github.com/basicprojectv2/pkg/snowflake"
+	"time"
+
 	//"github.com/pkg/errors"
 	"strconv"
 )
@@ -25,6 +28,7 @@ type UserService interface {
 	GetUserList(ctx context.Context, req domain.UserListRequest) (domain.UserListResponse, error)
 	UpdateUser(ctx context.Context, req domain.User) error
 	UploadUserAvatar(ctx context.Context, req domain.UserAvatar) error
+	UploadUserFile(ctx context.Context, req domain.UploadFileReq) error
 }
 type userService struct {
 	repo repository.UserRepository
@@ -42,6 +46,19 @@ func (s *userService) UploadUserAvatar(ctx context.Context, req domain.UserAvata
 		return err
 	}
 	return nil
+}
+
+func (s *userService) UploadUserFile(ctx context.Context, req domain.UploadFileReq) (err error) {
+	uf := domain.UploadFile{File: req.File, UserID: req.UserID, FileName: req.FileName, FileURL: GenUserFileUrl(req.UserID, req.FileName), Ctime: time.Now().Format("2006-01-02 15:04:05")}
+	if err = s.repo.UploadUserFile(ctx, uf); err != nil {
+		return err
+	}
+	return nil
+}
+
+func GenUserFileUrl(userID, fileName string) (fileURL string) {
+	fileURL = fmt.Sprintf("%s/%s", userID, fileName)
+	return fileName
 }
 
 func (s *userService) UpdateUser(ctx context.Context, req domain.User) error {

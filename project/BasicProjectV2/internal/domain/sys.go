@@ -36,6 +36,20 @@ type UserAvatar struct {
 	AvatarFile []byte ` json:"avatarFile"`
 }
 
+type UploadFile struct {
+	UserID   string `json:"userID"`
+	FileURL  string `json:"fileURL"`
+	FileName string `json:"fileName"`
+	Ctime    string `json:"CTime"`
+	File     []byte `json:"file"`
+}
+
+type UploadFileReq struct {
+	UserID   string `json:"userID"`
+	FileName string `json:"fileName"`
+	File     []byte `json:"file"`
+}
+
 type UpdateCasbinPolicyReq struct {
 	OldPolicy []string `gorm:"size:255;" json:"old_policy"`
 	NewPolicy []string `gorm:"size:255;" json:"new_policy"`

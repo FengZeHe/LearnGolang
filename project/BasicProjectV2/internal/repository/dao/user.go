@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
@@ -28,6 +29,8 @@ type UserDAO interface {
 	GetUserList(ctx context.Context, req domain.UserListRequest) ([]User, int, error)
 	UpdateUserByID(ctx context.Context, u User) error
 	UpsertUserAvatar(ctx context.Context, u domain.UserAvatar) error
+	InsertUserFile(ctx context.Context, u domain.UploadFile) error
+	CheckUniqueFileName(ctx context.Context, u domain.UploadFile) (fileName string, err error)
 }
 
 func NewUserDAO(db *gorm.DB) UserDAO {
@@ -54,6 +57,68 @@ func (dao *GORMUserDAO) UpdateUserByID(ctx context.Context, u User) (err error) 
 		return err
 	}
 	return nil
+}
+
+// 插入文件存储url路径
+func (dao *GORMUserDAO) InsertUserFile(ctx context.Context, f domain.UploadFile) (err error) {
+	// todo 检查是否冲突，如果冲突则修改文件名称_1 / _2
+	baseFileName := f.FileName
+	fileName := f.FileName
+	suffix := 1
+	var count int64
+
+	for {
+		if err := dao.db.WithContext(ctx).Table("user_file").Model(&UserFile{}).Where("file_name = ? AND user_id = ?", fileName, f.UserID).Count(&count).Error; err != nil {
+			log.Println(err)
+			return err
+		}
+		if count == 0 {
+			break
+		}
+
+		fileName = fmt.Sprintf("%s_%d", baseFileName, suffix)
+		log.Println(fileName)
+		suffix++
+	}
+
+	f.FileName = fileName
+
+	u := UserFile{
+
+		UserID:   f.UserID,
+		FileUrl:  f.FileURL,
+		FileName: fileName,
+	}
+
+	if err := dao.db.WithContext(ctx).Table("user_file").Create(&u).Error; err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+
+}
+
+func (dao *GORMUserDAO) CheckUniqueFileName(ctx context.Context, f domain.UploadFile) (fileName string, err error) {
+	baseFileName := f.FileName
+	fileName = f.FileName
+	suffix := 1
+	var count int64
+
+	for {
+		if err := dao.db.WithContext(ctx).Table("user_file").Model(&UserFile{}).Where("file_name = ? AND user_id = ?", fileName, f.UserID).Count(&count).Error; err != nil {
+			log.Println(err)
+			return fileName, err
+		}
+		if count == 0 {
+			log.Println("跳出循环")
+			break
+		}
+
+		fileName = fmt.Sprintf("%s_%d", baseFileName, suffix)
+		suffix++
+	}
+
+	return fileName, nil
 }
 
 func (dao *GORMUserDAO) GetUserList(ctx context.Context, req domain.UserListRequest) (ul []User, count int, err error) {
@@ -113,4 +178,12 @@ type User struct {
 	Nickname string         `json:"nickname"`
 	Aboutme  string         `json:"aboutme"`
 	Role     string         `json:"role"`
+}
+
+type UserFile struct {
+	ID       uint   `gorm:"primaryKey"`
+	UserID   string `json:"user_id"`
+	FileUrl  string `json:"file_url"`
+	FileName string `json:"file_name"`
+	//ctime    string `json:"ctime"`
 }

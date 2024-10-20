@@ -1,12 +1,17 @@
 package repository
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository/cache"
 	"github.com/basicprojectv2/internal/repository/dao"
+	"io"
 	"log"
+	"os"
+	"path/filepath"
 )
 
 var (
@@ -22,6 +27,7 @@ type UserRepository interface {
 	GetUserList(ctx context.Context, req domain.UserListRequest) ([]domain.User, int, error)
 	UpdateUser(ctx context.Context, req domain.User) error
 	UpsertUserAvatar(ctx context.Context, req domain.UserAvatar) error
+	UploadUserFile(ctx context.Context, req domain.UploadFile) error
 }
 
 type CacheUserRepository struct {
@@ -38,6 +44,49 @@ func NewCacheUserRepository(dao dao.UserDAO, c cache.UserCache) UserRepository {
 
 func (repo *CacheUserRepository) UpdateUser(ctx context.Context, u domain.User) (err error) {
 	if err = repo.dao.UpdateUserByID(ctx, repo.toEntity(u)); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *CacheUserRepository) UploadUserFile(ctx context.Context, req domain.UploadFile) (err error) {
+	// 将文件存储到指定路径
+	uploadPath := fmt.Sprintf("/Users/mac/Desktop/%s", req.UserID)
+
+	// 检查文件夹是否存在，如果不存在则创建
+	if _, err := os.Stat(uploadPath); os.IsNotExist(err) {
+		err := os.MkdirAll(uploadPath, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	// MySQL查询不重复的fileName
+	UniqueFileName, err := repo.dao.CheckUniqueFileName(ctx, req)
+	if err != nil {
+		return err
+	}
+	UniqueFileName = fmt.Sprintf("%s.%s", UniqueFileName, "jpg")
+	filePath := filepath.Join(uploadPath, UniqueFileName)
+
+	// 创建保存文件
+	outFile, err := os.Create(filePath)
+	if err != nil {
+		log.Println("output file ERROR", err)
+		return err
+	}
+
+	defer outFile.Close()
+
+	// 将文件写入到本地文件夹
+	reader := bytes.NewReader(req.File)
+	_, err = io.Copy(outFile, reader)
+	if err != nil {
+		log.Println("Failed to save file")
+		return err
+	}
+
+	if err = repo.dao.InsertUserFile(ctx, req); err != nil {
 		return err
 	}
 	return nil
