@@ -51,7 +51,7 @@ func (repo *CacheUserRepository) UpdateUser(ctx context.Context, u domain.User) 
 
 func (repo *CacheUserRepository) UploadUserFile(ctx context.Context, req domain.UploadFile) (err error) {
 	// 将文件存储到指定路径
-	uploadPath := fmt.Sprintf("/Users/mac/Desktop/%s", req.UserID)
+	uploadPath := fmt.Sprintf("/Users/feng/Desktop/%s", req.UserID)
 
 	// 检查文件夹是否存在，如果不存在则创建
 	if _, err := os.Stat(uploadPath); os.IsNotExist(err) {

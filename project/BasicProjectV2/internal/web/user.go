@@ -161,6 +161,7 @@ func (h *UserHandler) HandleUploadFile(ctx *gin.Context) {
 	req := domain.UploadFileReq{UserID: strUserid, FileName: fileName, File: fileBytes}
 
 	if err := h.svc.UploadUserFile(ctx, req); err != nil {
+		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "Upload File ERROR"})
 		return
 	}

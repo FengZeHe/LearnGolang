@@ -49,7 +49,8 @@ func (s *userService) UploadUserAvatar(ctx context.Context, req domain.UserAvata
 }
 
 func (s *userService) UploadUserFile(ctx context.Context, req domain.UploadFileReq) (err error) {
-	uf := domain.UploadFile{File: req.File, UserID: req.UserID, FileName: req.FileName, FileURL: GenUserFileUrl(req.UserID, req.FileName), Ctime: time.Now().Format("2006-01-02 15:04:05")}
+	fileURL := GenUserFileUrl(req.UserID, req.FileName)
+	uf := domain.UploadFile{File: req.File, UserID: req.UserID, FileName: req.FileName, FileURL: fileURL, Ctime: time.Now().Format("2006-01-02 15:04:05")}
 	if err = s.repo.UploadUserFile(ctx, uf); err != nil {
 		return err
 	}
@@ -58,7 +59,7 @@ func (s *userService) UploadUserFile(ctx context.Context, req domain.UploadFileR
 
 func GenUserFileUrl(userID, fileName string) (fileURL string) {
 	fileURL = fmt.Sprintf("%s/%s", userID, fileName)
-	return fileName
+	return fileURL
 }
 
 func (s *userService) UpdateUser(ctx context.Context, req domain.User) error {
