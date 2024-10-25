@@ -134,6 +134,10 @@ func (h *UserHandler) HandleUploadFile(ctx *gin.Context) {
 		return
 	}
 
+	// 获取文件类型
+	fileType := file.Header.Get("Content-Type")
+	log.Println(fileType)
+
 	// 检查文件大小
 	if file.Size > 200*1024*1024 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "file size too big"})
