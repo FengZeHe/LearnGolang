@@ -41,6 +41,7 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine, i18n, loginCheck gin.Ha
 	//用户上传图片
 	ug.POST("/uploadAvatar", loginCheck, h.HandleUploadAvatar)
 	ug.POST("/uploadFile", loginCheck, h.HandleUploadFile)
+	ug.POST("/profile", loginCheck, h.HandleUerProfile)
 }
 
 func (h *UserHandler) updateUser(ctx *gin.Context) {
@@ -113,6 +114,19 @@ func (h *UserHandler) HandleUploadAvatar(ctx *gin.Context) {
 		"msg": "upload successful",
 	})
 
+}
+
+// 用户获取自己信息
+func (h *UserHandler) HandleUerProfile(ctx *gin.Context) {
+	userid, exists := ctx.Get("userid")
+	if !exists {
+		ctx.JSON(400, gin.H{
+			"msg": "用户未登录",
+		})
+		return
+	}
+	strUserid := userid.(string)
+	log.Println(strUserid)
 }
 
 func (h *UserHandler) HandleUploadFile(ctx *gin.Context) {
