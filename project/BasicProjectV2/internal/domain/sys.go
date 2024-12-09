@@ -40,6 +40,7 @@ type UploadFile struct {
 	UserID   string `json:"userID"`
 	FileURL  string `json:"fileURL"`
 	FileName string `json:"fileName"`
+	FileType string `json:"fileType"`
 	Ctime    string `json:"CTime"`
 	File     []byte `json:"file"`
 }
@@ -47,7 +48,13 @@ type UploadFile struct {
 type UploadFileReq struct {
 	UserID   string `json:"userID"`
 	FileName string `json:"fileName"`
+	FileType string `json:"fileType"`
 	File     []byte `json:"file"`
+}
+
+type DownloadFileReq struct {
+	UserID   string `json:"userID"`
+	FileName string `json:"fileName"`
 }
 
 type UpdateCasbinPolicyReq struct {

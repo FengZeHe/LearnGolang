@@ -8,6 +8,7 @@ import (
 	"github.com/basicprojectv2/internal/repository"
 	"github.com/basicprojectv2/pkg/bcrypt"
 	"github.com/basicprojectv2/pkg/snowflake"
+	"log"
 	"time"
 
 	//"github.com/pkg/errors"
@@ -29,6 +30,7 @@ type UserService interface {
 	UpdateUser(ctx context.Context, req domain.User) error
 	UploadUserAvatar(ctx context.Context, req domain.UserAvatar) error
 	UploadUserFile(ctx context.Context, req domain.UploadFileReq) error
+	GetUserFile(ctx context.Context, req domain.DownloadFileReq) (domain.DownloadFileResponse, error)
 }
 type userService struct {
 	repo repository.UserRepository
@@ -50,11 +52,21 @@ func (s *userService) UploadUserAvatar(ctx context.Context, req domain.UserAvata
 
 func (s *userService) UploadUserFile(ctx context.Context, req domain.UploadFileReq) (err error) {
 	fileURL := GenUserFileUrl(req.UserID, req.FileName)
-	uf := domain.UploadFile{File: req.File, UserID: req.UserID, FileName: req.FileName, FileURL: fileURL, Ctime: time.Now().Format("2006-01-02 15:04:05")}
+	uf := domain.UploadFile{File: req.File, UserID: req.UserID, FileName: req.FileName, FileURL: fileURL, FileType: req.FileType, Ctime: time.Now().Format("2006-01-02 15:04:05")}
 	if err = s.repo.UploadUserFile(ctx, uf); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (s *userService) GetUserFile(ctx context.Context, req domain.DownloadFileReq) (domain.DownloadFileResponse, error) {
+	// todo 查询并获取repo的返回
+	file, err := s.repo.GetUserFile(ctx, req)
+	if err != nil {
+		return domain.DownloadFileResponse{}, err
+	}
+	log.Println(file)
+	return file, nil
 }
 
 func GenUserFileUrl(userID, fileName string) (fileURL string) {

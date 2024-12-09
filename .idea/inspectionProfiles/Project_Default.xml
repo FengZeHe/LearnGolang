@@ -7,6 +7,7 @@
       </functions>
       <methods>
         <method importPath="github.com/basicprojectv2/internal/repository/dao" receiver="SysDAO" name="FindUserByID" />
+        <method importPath="github.com/basicprojectv2/internal/service" receiver="UserService" name="GetUserFile" />
       </methods>
     </inspection_tool>
   </profile>
