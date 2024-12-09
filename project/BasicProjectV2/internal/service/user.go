@@ -8,7 +8,6 @@ import (
 	"github.com/basicprojectv2/internal/repository"
 	"github.com/basicprojectv2/pkg/bcrypt"
 	"github.com/basicprojectv2/pkg/snowflake"
-	"log"
 	"time"
 
 	//"github.com/pkg/errors"
@@ -65,7 +64,6 @@ func (s *userService) GetUserFile(ctx context.Context, req domain.DownloadFileRe
 	if err != nil {
 		return domain.DownloadFileResponse{}, err
 	}
-	log.Println(file)
 	return file, nil
 }
 

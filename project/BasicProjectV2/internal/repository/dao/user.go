@@ -64,9 +64,11 @@ func (dao *GORMUserDAO) UpdateUserByID(ctx context.Context, u User) (err error) 
 func (dao *GORMUserDAO) GetUserFileUrl(ctx context.Context, u domain.DownloadFileReq) (fileUrl string, err error) {
 	// todo 根据user_id和file_name进行查询
 	var data UserFile
-	if err = dao.db.Table("user_file").Model(&data).Where("file_name = ? AND user_id = ?", u.FileName, u.UserID).Error; err != nil {
+	if err = dao.db.Table("user_file").Model(&data).Where("file_name = ? AND user_id = ?", u.FileName, u.UserID).Find(&data).Error; err != nil {
+		log.Println(err)
 		return "", err
 	}
+	log.Println(data)
 	fileUrl = data.FileUrl
 	if fileUrl == "" {
 		return "", ErrFileNotFound

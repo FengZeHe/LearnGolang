@@ -50,6 +50,7 @@ func (repo *CacheUserRepository) GetUserFile(ctx context.Context, req domain.Dow
 
 	url, err := repo.dao.GetUserFileUrl(ctx, req)
 	if err != nil {
+		log.Println(err)
 		return data, err
 	}
 	// todo 到这一步没报错，说明Mysql中有记录，在文件路径中取该文件
@@ -58,21 +59,18 @@ func (repo *CacheUserRepository) GetUserFile(ctx context.Context, req domain.Dow
 	if err != nil {
 		return data, err
 	}
-	fullUrl := fmt.Sprintf("%s/%s", baseFilePath, url)
+	fullUrl := fmt.Sprintf("%s/%s/%s", baseFilePath, "Desktop", url)
 
-	// todo 检查文件是否存在
 	if _, err := os.Stat(fullUrl); os.IsNotExist(err) {
 		return data, ErrFileNotFound
 	}
 
-	// todo 读取文件
 	fileContent, err := os.ReadFile(fullUrl)
 	if err != nil {
 		return data, ErrReadFile
 	}
 	data.FileName = req.FileName
 	data.File = fileContent
-	log.Println("repo data =>", data)
 
 	return data, nil
 }

@@ -136,11 +136,15 @@ func (h *UserHandler) HandlerUserDownloadFile(ctx *gin.Context) {
 	}
 	file, err := h.svc.GetUserFile(ctx, req)
 	if err != nil {
+		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"msg": "Download File Error",
 		})
+		return
 	}
-	ctx.Data(http.StatusOK, "application/octet-stream", file.File)
+
+	ctx.Header("Content-Type", "image/png")
+	ctx.Data(http.StatusOK, "image/jpeg", file.File)
 }
 
 // 用户获取自己信息
