@@ -42,8 +42,9 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine, i18n, loginCheck gin.Ha
 	ug.POST("/uploadAvatar", loginCheck, h.HandleUploadAvatar)
 	ug.POST("/uploadFile", loginCheck, h.HandleUploadFile)
 	ug.POST("/profile", loginCheck, h.HandleUerProfile)
-	//用户下载图片
-	ug.POST("/downloadFile", loginCheck)
+
+	// 用户下载文件
+	ug.POST("/downloadFile", loginCheck, h.HandlerUserDownloadFile)
 }
 
 func (h *UserHandler) updateUser(ctx *gin.Context) {
@@ -118,6 +119,30 @@ func (h *UserHandler) HandleUploadAvatar(ctx *gin.Context) {
 
 }
 
+func (h *UserHandler) HandlerUserDownloadFile(ctx *gin.Context) {
+	userid, exists := ctx.Get("userid")
+	if !exists {
+		ctx.JSON(400, gin.H{
+			"msg": "用户未登录",
+		})
+		return
+	}
+	fileName := ctx.PostForm("fileName")
+
+	// 获取文件
+	req := domain.DownloadFileReq{
+		UserID:   userid.(string),
+		FileName: fileName,
+	}
+	file, err := h.svc.GetUserFile(ctx, req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"msg": "Download File Error",
+		})
+	}
+	ctx.Data(http.StatusOK, "application/octet-stream", file.File)
+}
+
 // 用户获取自己信息
 func (h *UserHandler) HandleUerProfile(ctx *gin.Context) {
 	userid, exists := ctx.Get("userid")
@@ -129,10 +154,6 @@ func (h *UserHandler) HandleUerProfile(ctx *gin.Context) {
 	}
 	strUserid := userid.(string)
 	log.Println(strUserid)
-}
-
-func (h *UserHandler) HandlerUserDownloadFile(ctx *gin.Context) {
-
 }
 
 func (h *UserHandler) HandleUploadFile(ctx *gin.Context) {
@@ -178,7 +199,7 @@ func (h *UserHandler) HandleUploadFile(ctx *gin.Context) {
 		return
 	}
 
-	req := domain.UploadFileReq{UserID: strUserid, FileName: fileName, File: fileBytes}
+	req := domain.UploadFileReq{UserID: strUserid, FileName: fileName, File: fileBytes, FileType: fileType}
 
 	if err := h.svc.UploadUserFile(ctx, req); err != nil {
 		log.Println(err)

@@ -8,6 +8,7 @@ import (
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository/cache"
 	"github.com/basicprojectv2/internal/repository/dao"
+	"github.com/pkg/errors"
 	"io"
 	"log"
 	"os"
@@ -17,6 +18,8 @@ import (
 var (
 	ErrDuplicateUser = dao.ErrDuplicateEmail
 	ErrUserNotFound  = dao.ErrRecordNotFound
+	ErrFileNotFound  = dao.ErrFileNotFound
+	ErrReadFile      = errors.New("reading file error")
 )
 
 type UserRepository interface {
@@ -28,6 +31,7 @@ type UserRepository interface {
 	UpdateUser(ctx context.Context, req domain.User) error
 	UpsertUserAvatar(ctx context.Context, req domain.UserAvatar) error
 	UploadUserFile(ctx context.Context, req domain.UploadFile) error
+	GetUserFile(ctx context.Context, req domain.DownloadFileReq) (data domain.DownloadFileResponse, err error)
 }
 
 type CacheUserRepository struct {
@@ -42,6 +46,37 @@ func NewCacheUserRepository(dao dao.UserDAO, c cache.UserCache) UserRepository {
 	}
 }
 
+func (repo *CacheUserRepository) GetUserFile(ctx context.Context, req domain.DownloadFileReq) (data domain.DownloadFileResponse, err error) {
+
+	url, err := repo.dao.GetUserFileUrl(ctx, req)
+	if err != nil {
+		return data, err
+	}
+	// todo 到这一步没报错，说明Mysql中有记录，在文件路径中取该文件
+
+	baseFilePath, err := os.UserHomeDir()
+	if err != nil {
+		return data, err
+	}
+	fullUrl := fmt.Sprintf("%s/%s", baseFilePath, url)
+
+	// todo 检查文件是否存在
+	if _, err := os.Stat(fullUrl); os.IsNotExist(err) {
+		return data, ErrFileNotFound
+	}
+
+	// todo 读取文件
+	fileContent, err := os.ReadFile(fullUrl)
+	if err != nil {
+		return data, ErrReadFile
+	}
+	data.FileName = req.FileName
+	data.File = fileContent
+	log.Println("repo data =>", data)
+
+	return data, nil
+}
+
 func (repo *CacheUserRepository) UpdateUser(ctx context.Context, u domain.User) (err error) {
 	if err = repo.dao.UpdateUserByID(ctx, repo.toEntity(u)); err != nil {
 		return err
@@ -50,14 +85,15 @@ func (repo *CacheUserRepository) UpdateUser(ctx context.Context, u domain.User) 
 }
 
 func (repo *CacheUserRepository) UploadUserFile(ctx context.Context, req domain.UploadFile) (err error) {
-	// 将文件存储到指定路径
 	var uploadPath string
-	// 获取用户主目录
+
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		log.Println("Get User Home Dir Error", homeDir)
-		uploadPath = fmt.Sprintf("/Users/mac/Desktop/%s", req.UserID)
+		log.Println("Get Home Dir ERROR", err)
+		return err
 	}
+
+	// 将文件存储到指定路径
 	uploadPath = fmt.Sprintf("%s/Desktop/%s", homeDir, req.UserID)
 
 	// 检查文件夹是否存在，如果不存在则创建

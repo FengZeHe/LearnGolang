@@ -15,6 +15,7 @@ import (
 var (
 	ErrDuplicateEmail = errors.New("邮箱冲突")
 	ErrRecordNotFound = gorm.ErrRecordNotFound
+	ErrFileNotFound   = errors.New("文件不存在")
 )
 
 type GORMUserDAO struct {
@@ -31,6 +32,7 @@ type UserDAO interface {
 	UpsertUserAvatar(ctx context.Context, u domain.UserAvatar) error
 	InsertUserFile(ctx context.Context, u domain.UploadFile) error
 	CheckUniqueFileName(ctx context.Context, u domain.UploadFile) (fileName string, err error)
+	GetUserFileUrl(ctx context.Context, u domain.DownloadFileReq) (fileUrl string, err error)
 }
 
 func NewUserDAO(db *gorm.DB) UserDAO {
@@ -59,6 +61,21 @@ func (dao *GORMUserDAO) UpdateUserByID(ctx context.Context, u User) (err error) 
 	return nil
 }
 
+func (dao *GORMUserDAO) GetUserFileUrl(ctx context.Context, u domain.DownloadFileReq) (fileUrl string, err error) {
+	// todo 根据user_id和file_name进行查询
+	var data UserFile
+	if err = dao.db.Table("user_file").Model(&data).Where("file_name = ? AND user_id = ?", u.FileName, u.UserID).Error; err != nil {
+		return "", err
+	}
+	fileUrl = data.FileUrl
+	if fileUrl == "" {
+		return "", ErrFileNotFound
+	}
+	log.Println(fileUrl, data)
+
+	return fileUrl, nil
+}
+
 // 插入文件存储url路径
 func (dao *GORMUserDAO) InsertUserFile(ctx context.Context, f domain.UploadFile) (err error) {
 	// todo 检查是否冲突，如果冲突则修改文件名称_1 / _2
@@ -84,14 +101,15 @@ func (dao *GORMUserDAO) InsertUserFile(ctx context.Context, f domain.UploadFile)
 	f.FileName = fileName
 
 	u := UserFile{
-
 		UserID:   f.UserID,
 		FileUrl:  f.FileURL,
 		FileName: fileName,
+		FileType: f.FileType,
+		Ctime:    f.Ctime,
 	}
 
 	if err := dao.db.WithContext(ctx).Table("user_file").Create(&u).Error; err != nil {
-		log.Println(err)
+		//log.Println(err)
 		return err
 	}
 	return nil
@@ -185,5 +203,6 @@ type UserFile struct {
 	UserID   string `json:"user_id"`
 	FileUrl  string `json:"file_url"`
 	FileName string `json:"file_name"`
-	//ctime    string `json:"ctime"`
+	FileType string `json:"file_type"`
+	Ctime    string `json:"ctime"`
 }
