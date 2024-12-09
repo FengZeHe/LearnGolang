@@ -42,6 +42,9 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine, i18n, loginCheck gin.Ha
 	ug.POST("/uploadAvatar", loginCheck, h.HandleUploadAvatar)
 	ug.POST("/uploadFile", loginCheck, h.HandleUploadFile)
 	ug.POST("/profile", loginCheck, h.HandleUerProfile)
+
+	// 用户下载文件
+	ug.POST("/downloadFile", loginCheck, h.HandlerUserDownloadFile)
 }
 
 func (h *UserHandler) updateUser(ctx *gin.Context) {
@@ -113,6 +116,10 @@ func (h *UserHandler) HandleUploadAvatar(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"msg": "upload successful",
 	})
+
+}
+
+func (h *UserHandler) HandlerUserDownloadFile(ctx *gin.Context) {
 
 }
 
