@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"io"
 	"log"
+	"mime"
 	"os"
 	"path/filepath"
 )
@@ -53,17 +54,18 @@ func (repo *CacheUserRepository) GetUserFile(ctx context.Context, req domain.Dow
 		log.Println(err)
 		return data, err
 	}
-	// todo 到这一步没报错，说明Mysql中有记录，在文件路径中取该文件
-
 	baseFilePath, err := os.UserHomeDir()
 	if err != nil {
 		return data, err
 	}
+	// 完整的路径
 	fullUrl := fmt.Sprintf("%s/%s/%s", baseFilePath, "Desktop", url)
 
 	if _, err := os.Stat(fullUrl); os.IsNotExist(err) {
 		return data, ErrFileNotFound
 	}
+	fileType := mime.TypeByExtension(filepath.Ext(fullUrl))
+	log.Println("fileType=>", fileType)
 
 	fileContent, err := os.ReadFile(fullUrl)
 	if err != nil {
@@ -107,7 +109,12 @@ func (repo *CacheUserRepository) UploadUserFile(ctx context.Context, req domain.
 	if err != nil {
 		return err
 	}
-	UniqueFileName = fmt.Sprintf("%s.%s", UniqueFileName, "jpg")
+	switch req.FileType {
+	case "image/png":
+		UniqueFileName = fmt.Sprintf("%s.%s", UniqueFileName, "png")
+	default:
+		UniqueFileName = fmt.Sprintf("%s.%s", UniqueFileName, "jpg")
+	}
 	filePath := filepath.Join(uploadPath, UniqueFileName)
 
 	// 创建保存文件
