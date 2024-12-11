@@ -24,6 +24,7 @@ type UserListResponse struct {
 type DownloadFileResponse struct {
 	FileName string `json:"fileName"`
 	File     []byte `json:"file"`
+	Base64   string `json:"base64"`
 }
 
 type UpdateUserRequest struct {

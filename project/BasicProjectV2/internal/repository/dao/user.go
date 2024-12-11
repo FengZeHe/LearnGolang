@@ -68,7 +68,6 @@ func (dao *GORMUserDAO) GetUserFileUrl(ctx context.Context, u domain.DownloadFil
 		log.Println(err)
 		return "", err
 	}
-	log.Println(data)
 	fileUrl = data.FileUrl
 	if fileUrl == "" {
 		return "", ErrFileNotFound

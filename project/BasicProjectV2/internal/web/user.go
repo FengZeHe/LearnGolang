@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/basicprojectv2/pkg/jwt"
@@ -10,6 +11,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strconv"
 )
 
@@ -45,6 +47,10 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine, i18n, loginCheck gin.Ha
 
 	// 用户下载文件
 	ug.POST("/downloadFile", loginCheck, h.HandlerUserDownloadFile)
+
+	// 分片上传
+	ug.POST("/upload_chunk", loginCheck, h.HandleUploadChunk)
+	ug.POST("/merge_chunk", loginCheck, h.HandleMergeChunk)
 }
 
 func (h *UserHandler) updateUser(ctx *gin.Context) {
@@ -143,8 +149,73 @@ func (h *UserHandler) HandlerUserDownloadFile(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Header("Content-Type", "image/png")
-	ctx.Data(http.StatusOK, "image/jpeg", file.File)
+	//ctx.Header("Content-Type", "image/png")
+	//ctx.Data(http.StatusOK, "image/jpeg", file.File)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"pic": file.Base64,
+	})
+}
+
+// 处理上传分片的接口
+func (h *UserHandler) HandleUploadChunk(ctx *gin.Context) {
+	userid, exists := ctx.Get("userid")
+	if !exists {
+		ctx.JSON(401, gin.H{
+			"msg": "用户未登录",
+		})
+		return
+	}
+	log.Println(userid)
+	// todo  生成分片的临时文件夹
+	const chunkDir = "\"C:\\Users\\hzf19\\Desktop\\chunk\""
+
+	// todo 生成文件存储路径
+	const finalDir = "C:\\Users\\hzf19\\Desktop\\1821841651400708096"
+
+	log.Println("开始执行")
+
+	file, err := ctx.FormFile("chunk")
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(400, gin.H{"error": "文件上传失败"})
+	}
+
+	// 获取文件的其他信息
+	fileName := ctx.DefaultPostForm("fileName", "")               // 文件名
+	index, err := strconv.Atoi(ctx.DefaultPostForm("index", "0")) // 分片索引
+	log.Println(index)
+	if err != nil {
+		log.Println(err, "无效的分片索引")
+		ctx.JSON(400, gin.H{"error": "无效的分片索引"})
+		return
+	}
+	chunkCount, err := strconv.Atoi(ctx.DefaultPostForm("chunkCount", "0")) // 总分片数
+	if err != nil {
+		ctx.JSON(400, gin.H{"error": "无效的总分片数"})
+		return
+	}
+
+	// 创建存储分片的临时文件
+	chunkFilePath := filepath.Join(chunkDir, fmt.Sprintf("%s.part%d", fileName, index))
+	// 保存分片到临时文件
+	if err := ctx.SaveUploadedFile(file, chunkFilePath); err != nil {
+		ctx.JSON(500, gin.H{"error": "保存分片文件失败"})
+		return
+	}
+
+	// 返回上传成功的响应
+	ctx.JSON(200, gin.H{
+		"message":    "分片上传成功",
+		"chunkIndex": index,
+		"chunkCount": chunkCount,
+	})
+
+}
+
+// 合并分片的接口
+func (h *UserHandler) HandleMergeChunk(ctx *gin.Context) {
+
 }
 
 // 用户获取自己信息

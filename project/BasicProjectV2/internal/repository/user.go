@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository/cache"
@@ -33,6 +34,9 @@ type UserRepository interface {
 	UpsertUserAvatar(ctx context.Context, req domain.UserAvatar) error
 	UploadUserFile(ctx context.Context, req domain.UploadFile) error
 	GetUserFile(ctx context.Context, req domain.DownloadFileReq) (data domain.DownloadFileResponse, err error)
+
+	// 分片上传
+
 }
 
 type CacheUserRepository struct {
@@ -60,6 +64,7 @@ func (repo *CacheUserRepository) GetUserFile(ctx context.Context, req domain.Dow
 	}
 	// 完整的路径
 	fullUrl := fmt.Sprintf("%s/%s/%s", baseFilePath, "Desktop", url)
+	//log.Println(fullUrl)
 
 	if _, err := os.Stat(fullUrl); os.IsNotExist(err) {
 		return data, ErrFileNotFound
@@ -73,6 +78,9 @@ func (repo *CacheUserRepository) GetUserFile(ctx context.Context, req domain.Dow
 	}
 	data.FileName = req.FileName
 	data.File = fileContent
+
+	base64Avatar := base64.StdEncoding.EncodeToString(fileContent)
+	data.Base64 = base64Avatar
 
 	return data, nil
 }
