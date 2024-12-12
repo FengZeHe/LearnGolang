@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 )
@@ -168,21 +169,34 @@ func (h *UserHandler) HandleUploadChunk(ctx *gin.Context) {
 	}
 	log.Println(userid)
 	// todo  生成分片的临时文件夹
-	const chunkDir = "\"C:\\Users\\hzf19\\Desktop\\chunk\""
+	const chunkDir = "C:\\Users\\hzf19\\Desktop\\chunk"
 
 	// todo 生成文件存储路径
 	const finalDir = "C:\\Users\\hzf19\\Desktop\\1821841651400708096"
 
-	log.Println("开始执行")
+	// 检查分片存储目录是否存在，不存在则创建
+	if _, err := os.Stat(chunkDir); os.IsNotExist(err) {
+		err := os.MkdirAll(chunkDir, os.ModePerm) // 创建目录
+		if err != nil {
+			log.Println("创建分片目录失败:", err)
+			ctx.JSON(500, gin.H{"error": "创建分片目录失败"})
+			return
+		}
+	}
 
 	file, err := ctx.FormFile("chunk")
 	if err != nil {
 		log.Println(err)
 		ctx.JSON(400, gin.H{"error": "文件上传失败"})
+		return
 	}
 
 	// 获取文件的其他信息
-	fileName := ctx.DefaultPostForm("fileName", "")               // 文件名
+	// 获取文件名，文件名从表单字段获取
+	fileName := ctx.DefaultPostForm("fileName", "") // 获取文件名
+	if fileName == "" {
+		fileName = file.Filename // 如果没有从表单中获取到文件名，则使用上传的文件名
+	}
 	index, err := strconv.Atoi(ctx.DefaultPostForm("index", "0")) // 分片索引
 	log.Println(index)
 	if err != nil {
@@ -197,7 +211,7 @@ func (h *UserHandler) HandleUploadChunk(ctx *gin.Context) {
 	}
 
 	// 创建存储分片的临时文件
-	chunkFilePath := filepath.Join(chunkDir, fmt.Sprintf("%s.part%d", fileName, index))
+	chunkFilePath := filepath.Join(chunkDir, fmt.Sprintf("%s-chunk-%d", fileName, index))
 	// 保存分片到临时文件
 	if err := ctx.SaveUploadedFile(file, chunkFilePath); err != nil {
 		ctx.JSON(500, gin.H{"error": "保存分片文件失败"})
@@ -215,7 +229,62 @@ func (h *UserHandler) HandleUploadChunk(ctx *gin.Context) {
 
 // 合并分片的接口
 func (h *UserHandler) HandleMergeChunk(ctx *gin.Context) {
+	userid, exists := ctx.Get("userid")
+	if !exists {
+		ctx.JSON(400, gin.H{
+			"msg": "用户未登录",
+		})
+		return
+	}
+	strUserid := userid.(string)
+	log.Println(strUserid)
 
+	fileName := ctx.PostForm("fileName")
+	totalChunk, err := strconv.Atoi(ctx.PostForm("totalChunk"))
+	if err != nil || totalChunk <= 0 {
+		ctx.JSON(400, gin.H{"error": "无效的总分片数"})
+		return
+	}
+
+	// 分片的临时文件夹
+	const chunkDir = "C:\\Users\\hzf19\\Desktop\\chunk"
+
+	// 文件存储路径
+	mergePath := fmt.Sprintf("C:\\Users\\hzf19\\Desktop\\1821841651400708096\\%s", fileName)
+
+	// 确保临时文件夹存在
+	if _, err := os.Stat(chunkDir); os.IsNotExist(err) {
+		ctx.JSON(500, gin.H{"error": "临时文件不存在"})
+		return
+	}
+
+	// 创建合并文件
+	mergeFile, err := os.Create(mergePath)
+	if err != nil {
+		ctx.JSON(500, gin.H{"error": "创建合并文件失败"})
+		return
+	}
+	defer mergeFile.Close()
+
+	// 按索引顺序合并分片 顺序很重要
+	for i := 0; i < totalChunk; i++ {
+		chunkPath := filepath.Join(chunkDir, fmt.Sprintf("%s-chunk-%d", fileName, i))
+		chunkData, err := os.ReadFile(chunkPath)
+		if err != nil {
+			log.Printf("读取分片失败: %v", err)
+			ctx.JSON(500, gin.H{"error": fmt.Sprintf("读取分片 %d 失败: %v", i, err)})
+			return
+		}
+		if _, err := mergeFile.Write(chunkData); err != nil {
+			log.Printf("写入分片失败: %v", err)
+			ctx.JSON(500, gin.H{"error": fmt.Sprintf("写入分片 %d 失败: %v", i, err)})
+			return
+		}
+	}
+
+	ctx.JSON(200, gin.H{
+		"data": "merge chunk success",
+	})
 }
 
 // 用户获取自己信息
