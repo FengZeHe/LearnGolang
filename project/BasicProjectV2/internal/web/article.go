@@ -23,6 +23,7 @@ func (r *ArticleHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.Handl
 
 	rg.POST("/getArticles", r.GetArticles)
 	rg.POST("/getAuthorArticles", r.GetAuthorArticles)
+	rg.POST("/addReadCount", r.AddReadCount)
 }
 
 func (r *ArticleHandler) GetArticles(c *gin.Context) {
@@ -77,5 +78,27 @@ func (r *ArticleHandler) GetAuthorArticles(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"data": data,
+	})
+}
+
+func (r *ArticleHandler) AddReadCount(c *gin.Context) {
+	req := domain.AddArticleCount{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": err.Error(),
+		})
+		return
+	}
+
+	log.Println("Read Count + 1", req.ID)
+	err := r.svc.AddArticleReadCount(c, req.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"msg": "ok",
 	})
 }

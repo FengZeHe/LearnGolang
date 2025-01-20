@@ -13,6 +13,7 @@ type Article struct {
 	Title      string `json:"title"`
 	Content    string `json:"content"`
 	Status     string `json:"status"`
+	Read       int    `json:"read"`
 	AuthorName string `json:"authorName"`
 	AuthorID   string `json:"authorId"`
 	CreatedAt  string `json:"created_at"`
@@ -31,6 +32,7 @@ type ArticleResponse struct {
 	ID         string `json:"id"`
 	Title      string `json:"title"`
 	Content    string `json:"content"`
+	Read       int    `json:"read"`
 	AuthorName string `json:"authorName"`
 	CreatedAt  string `json:"created_at"`
 }
@@ -50,4 +52,8 @@ type QueryArticlesReq struct {
 type QueryAuthorArticlesReq struct {
 	PageIndex int `json:"pageIndex"`
 	PageSize  int `json:"pageSize"`
+}
+
+type AddArticleCount struct {
+	ID string `json:"id"`
 }
