@@ -13,6 +13,7 @@ type articleRepository struct {
 type ArticleRepository interface {
 	GetArticles(ctx context.Context, req domain.QueryArticlesReq) (domain.ArticleRepoResponse, error)
 	GetAuthorArticles(ctx context.Context, req domain.QueryAuthorArticlesReq, userid string) (domain.ArticleRepoResponse, error)
+	AddArticleReadCount(ctx context.Context, id string) error
 }
 
 func NewArticleRepository(dao dao.ArticleDAO) ArticleRepository {
@@ -61,6 +62,13 @@ func (a *articleRepository) GetAuthorArticles(ctx context.Context, req domain.Qu
 	return l, err
 }
 
+func (a *articleRepository) AddArticleReadCount(ctx context.Context, id string) (err error) {
+	if err = a.articleDAO.AddArticleCount(ctx, id); err != nil {
+		return err
+	}
+	return nil
+}
+
 func ArticleToEntity(origin []domain.Article) (target []domain.ArticleResponse) {
 	for _, v := range origin {
 		target = append(target, domain.ArticleResponse{
@@ -69,6 +77,7 @@ func ArticleToEntity(origin []domain.Article) (target []domain.ArticleResponse) 
 			Content:    v.Content,
 			AuthorName: v.AuthorName,
 			CreatedAt:  v.CreatedAt,
+			Read:       v.Read,
 		})
 	}
 	return target

@@ -17,6 +17,7 @@ type ArticleDAO interface {
 	UpdateArticleByID(ctx context.Context, a domain.Article) error
 	GetArticles(ctx context.Context, pageIndex, pageSize int) (domain.ArticlesDAOResponse, error)
 	GetArticlesByID(ctx context.Context, pageIndex, pageSize int, userID string) (domain.ArticlesDAOResponse, error)
+	AddArticleCount(ctx context.Context, id string) error
 }
 
 func NewArticleDAO(db *gorm.DB) ArticleDAO {
@@ -94,4 +95,11 @@ func (dao *GORMArticle) GetArticlesByID(ctx context.Context, pageIndex, pageSize
 	a.PageCount = totalPages
 	a.TotalCount = totalCount
 	return a, nil
+}
+
+func (dao *GORMArticle) AddArticleCount(ctx context.Context, id string) (err error) {
+	if err = dao.db.Model(&domain.Article{}).Table("article").Where("id = ?", id).Update("`read`", gorm.Expr("`read` + 1")).Error; err != nil {
+		return err
+	}
+	return nil
 }
