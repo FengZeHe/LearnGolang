@@ -3,18 +3,21 @@ package web
 import (
 	"fmt"
 	"github.com/basicprojectv2/internal/domain"
+	"github.com/basicprojectv2/internal/events/article"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type ArticleHandler struct {
-	svc service.ArticleService
+	svc          service.ArticleService
+	readProducer article.Producer
 }
 
-func NewArticleHandler(svc service.ArticleService) *ArticleHandler {
-	return &ArticleHandler{svc: svc}
+func NewArticleHandler(svc service.ArticleService, readProducer article.Producer) *ArticleHandler {
+	return &ArticleHandler{svc: svc, readProducer: readProducer}
 }
 
 func (r *ArticleHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.HandlerFunc) {
@@ -91,14 +94,29 @@ func (r *ArticleHandler) AddReadCount(c *gin.Context) {
 	}
 
 	log.Println("Read Count + 1", req.ID)
-	err := r.svc.AddArticleReadCount(c, req.ID)
+	articleID, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": err.Error(),
+		})
+		return
+	}
+
+	// 发送阅读事件到kafka
+	evt := article.ReadEvent{
+		Aid: articleID,
+		Uid: c.GetInt64("userid"),
+	}
+
+	if err := r.readProducer.ProduceReadEvent(evt); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"msg": err.Error(),
 		})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"msg": "ok",
 	})
+
 }

@@ -7,13 +7,13 @@ import (
 )
 
 type AppConfig struct {
-	Mode          string `mapstructure:"mode"`
-	Port          int    `mapstructure:"port"`
-	Name          string `mapstructure:"name"`
-	Version       string `mapstructure:"version"`
-	*MysqlConfig  `mapstructure:"mysql"`
-	*RedisConfig  `mapstructure:"redis"`
-	*SaramaConfig `mapstructure:"kafka"`
+	Mode         string `mapstructure:"mode"`
+	Port         int    `mapstructure:"port"`
+	Name         string `mapstructure:"name"`
+	Version      string `mapstructure:"version"`
+	*MysqlConfig `mapstructure:"mysql"`
+	*RedisConfig `mapstructure:"redis"`
+	*KafkaConfig `mapstructure:"kafka"`
 }
 
 type MysqlConfig struct {
@@ -30,7 +30,7 @@ type RedisConfig struct {
 	Addr string `mapstructure:"addr"`
 }
 
-type SaramaConfig struct {
+type KafkaConfig struct {
 	Addr []string `mapstructure:"addr"`
 }
 
@@ -62,7 +62,7 @@ func InitRedisConfig() (redisConfig *RedisConfig) {
 	return redisConfig
 }
 
-func InitSaramaConfig() (kafkaConfig *SaramaConfig) {
+func InitSaramaConfig() (kafkaConfig *KafkaConfig) {
 	viper.SetConfigFile("./config/config.yaml")
 	if err := viper.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("Read Config failed %v", err))
@@ -72,7 +72,7 @@ func InitSaramaConfig() (kafkaConfig *SaramaConfig) {
 		panic(fmt.Errorf("Unmarshal failed %v", err))
 	}
 
-	kafkaConfig = appConfig.SaramaConfig
-	log.Println("Get Kafka Config success!")
+	kafkaConfig = appConfig.KafkaConfig
+	log.Println("Get Samara Config success!")
 	return kafkaConfig
 }

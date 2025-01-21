@@ -3,6 +3,8 @@
 package main
 
 import (
+	"github.com/IBM/sarama"
+	"github.com/basicprojectv2/internal/events/article"
 	"github.com/basicprojectv2/internal/repository"
 	"github.com/basicprojectv2/internal/repository/cache"
 	"github.com/basicprojectv2/internal/repository/dao"
@@ -11,17 +13,41 @@ import (
 	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/basicprojectv2/ioc"
 	"github.com/basicprojectv2/settings"
-	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 )
 
-func InitializeApp() *gin.Engine {
+// ProvideSaramaConsumer提供sarama 消费者依赖
+func ProvideSaramaConsumer(consumer sarama.Consumer, articleDAO dao.ArticleDAO) article.Consumer {
+	return article.NewSaramaConsumer(consumer, articleDAO)
+}
+
+func ProvideSaramaConsumerClient() sarama.Consumer {
+	kafkaConfig := settings.InitSaramaConfig()
+	client := ioc.InitSaramaClient(kafkaConfig)
+	consumer := ioc.InitConsumer(client)
+	return consumer
+}
+
+var SaramaConsumerSet = wire.NewSet(
+	ProvideSaramaConsumer,
+	ProvideSaramaConsumerClient,
+)
+
+func InitializeApp() *App {
 	wire.Build(
 		// 读取配置
 		settings.InitMysqlConfig, settings.InitRedisConfig, settings.InitSaramaConfig,
 
 		// 第三方依赖部分
 		ioc.InitDB, ioc.InitRedis, ioc.InitMysqlCasbinEnforcer, ioc.LoadI18nBundle,
+		ioc.InitSaramaClient, ioc.InitSyncProducer,
+		//ioc.InitConsumer,
+		SaramaConsumerSet,
+		//ProvideSaramaConsumerClient,
+		//ProvideSaramaConsumer,
+
+		article.NewSaramaSyncProducer,
+		//article.NewSaramaConsumer,
 
 		// 测试Enforcer
 
@@ -63,12 +89,15 @@ func InitializeApp() *gin.Engine {
 		web.NewRoleHandler,
 		web.NewDraftHandler,
 		web.NewArticleHandler,
+		//wire.Bind(new(article.Producer), new(*article.SaramaSyncProducer)),
 
 		// 中间件和路由
 		ioc.InitGinMiddlewares,
 		ioc.InitWebServer,
 		middleware.NewCasbinRoleCheck,
+		wire.Struct(new(App), "*"),
 	)
-	return gin.Default()
+
+	return new(App)
 
 }

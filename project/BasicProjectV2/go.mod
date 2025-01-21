@@ -4,6 +4,7 @@ go 1.21.1
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/IBM/sarama v1.45.0
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/casbin/casbin/v2 v2.98.0
 	github.com/casbin/gorm-adapter/v3 v3.26.0
@@ -27,7 +28,6 @@ require (
 require golang.org/x/net v0.34.0 // indirect
 
 require (
-	github.com/IBM/sarama v1.45.0 // indirect
 	github.com/bytedance/sonic v1.11.3 // indirect
 	github.com/casbin/govaluate v1.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -52,7 +52,7 @@ require (
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.4.0 // indirect
-	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
