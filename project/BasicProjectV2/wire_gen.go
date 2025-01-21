@@ -17,6 +17,7 @@ import (
 	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/basicprojectv2/ioc"
 	"github.com/basicprojectv2/settings"
+	"github.com/google/wire"
 )
 
 // Injectors from wire.go:
@@ -81,11 +82,13 @@ func ProvideSaramaConsumer(consumer sarama.Consumer, articleDAO dao.ArticleDAO) 
 }
 
 func ProvideSaramaConsumerClient() sarama.Consumer {
-
 	kafkaConfig := settings.InitSaramaConfig()
-
 	client := ioc.InitSaramaClient(kafkaConfig)
-
 	consumer := ioc.InitConsumer(client)
 	return consumer
 }
+
+var SaramaConsumerSet = wire.NewSet(
+	ProvideSaramaConsumer,
+	ProvideSaramaConsumerClient,
+)

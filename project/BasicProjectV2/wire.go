@@ -22,14 +22,16 @@ func ProvideSaramaConsumer(consumer sarama.Consumer, articleDAO dao.ArticleDAO) 
 }
 
 func ProvideSaramaConsumerClient() sarama.Consumer {
-	// 初始化 Kafka 配置
 	kafkaConfig := settings.InitSaramaConfig()
-	// 初始化 Sarama 客户端
 	client := ioc.InitSaramaClient(kafkaConfig)
-	// 使用 InitConsumer 来创建 sarama.Consumer
 	consumer := ioc.InitConsumer(client)
 	return consumer
 }
+
+var SaramaConsumerSet = wire.NewSet(
+	ProvideSaramaConsumer,
+	ProvideSaramaConsumerClient,
+)
 
 func InitializeApp() *App {
 	wire.Build(
@@ -40,8 +42,9 @@ func InitializeApp() *App {
 		ioc.InitDB, ioc.InitRedis, ioc.InitMysqlCasbinEnforcer, ioc.LoadI18nBundle,
 		ioc.InitSaramaClient, ioc.InitSyncProducer,
 		//ioc.InitConsumer,
-		ProvideSaramaConsumerClient,
-		ProvideSaramaConsumer,
+		SaramaConsumerSet,
+		//ProvideSaramaConsumerClient,
+		//ProvideSaramaConsumer,
 
 		article.NewSaramaSyncProducer,
 		//article.NewSaramaConsumer,
