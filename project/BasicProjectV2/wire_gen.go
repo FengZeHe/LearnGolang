@@ -7,6 +7,8 @@
 package main
 
 import (
+	"github.com/IBM/sarama"
+	"github.com/basicprojectv2/internal/events/article"
 	"github.com/basicprojectv2/internal/repository"
 	"github.com/basicprojectv2/internal/repository/cache"
 	"github.com/basicprojectv2/internal/repository/dao"
@@ -15,12 +17,11 @@ import (
 	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/basicprojectv2/ioc"
 	"github.com/basicprojectv2/settings"
-	"github.com/gin-gonic/gin"
 )
 
 // Injectors from wire.go:
 
-func InitializeApp() *gin.Engine {
+func InitializeApp() *App {
 	mysqlConfig := settings.InitMysqlConfig()
 	db := ioc.InitDB(mysqlConfig)
 	enforcer := ioc.InitMysqlCasbinEnforcer(db)
@@ -57,7 +58,34 @@ func InitializeApp() *gin.Engine {
 	articleDAO := dao.NewArticleDAO(db)
 	articleRepository := repository.NewArticleRepository(articleDAO)
 	articleService := service.NewArticleService(articleRepository)
-	articleHandler := web.NewArticleHandler(articleService)
+	kafkaConfig := settings.InitSaramaConfig()
+	client := ioc.InitSaramaClient(kafkaConfig)
+	syncProducer := ioc.InitSyncProducer(client)
+	producer := article.NewSaramaSyncProducer(syncProducer)
+	articleHandler := web.NewArticleHandler(articleService, producer)
 	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler)
-	return engine
+	consumer := ProvideSaramaConsumerClient()
+	articleConsumer := ProvideSaramaConsumer(consumer, articleDAO)
+	app := &App{
+		server:         engine,
+		saramaConsumer: articleConsumer,
+	}
+	return app
+}
+
+// wire.go:
+
+// ProvideSaramaConsumer提供sarama 消费者依赖
+func ProvideSaramaConsumer(consumer sarama.Consumer, articleDAO dao.ArticleDAO) article.Consumer {
+	return article.NewSaramaConsumer(consumer, articleDAO)
+}
+
+func ProvideSaramaConsumerClient() sarama.Consumer {
+
+	kafkaConfig := settings.InitSaramaConfig()
+
+	client := ioc.InitSaramaClient(kafkaConfig)
+
+	consumer := ioc.InitConsumer(client)
+	return consumer
 }

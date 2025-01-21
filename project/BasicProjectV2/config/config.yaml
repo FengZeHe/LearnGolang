@@ -15,5 +15,5 @@ mysql:
 redis:
   addr: 127.0.0.1:6379
 
-sarama:
+kafka:
   addr: 30.116.184.138:9092
