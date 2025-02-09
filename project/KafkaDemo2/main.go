@@ -10,7 +10,7 @@ func main() {
 	config := sarama.NewConfig()
 	config.Net.SASL.Enable = true
 	config.Net.SASL.Mechanism = sarama.SASLTypePlaintext
-	config.Net.SASL.User = "admin"
+	config.Net.SASL.User = "user"
 	config.Net.SASL.Password = "123456"
 	config.Net.KeepAlive = 0
 	config.Version = sarama.V2_8_0_0
