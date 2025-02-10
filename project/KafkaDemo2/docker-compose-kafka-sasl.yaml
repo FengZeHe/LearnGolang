@@ -3,42 +3,38 @@ version: "3"
 services:
   kafka:
     image: 'bitnami/kafka:3.9.0'
-    hostname: kafka_one
+    hostname: kafka
     ports:
       - "9092:9092"
     volumes:
       - kafka_data:/bitnami
     networks:
-      - kafka_net
+      - kafka_network
     environment:
       - KAFKA_CFG_NODE_ID=0
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+#        注意这部分内容修改
       - KAFKA_CFG_LISTENERS=SASL_PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,SASL_PLAINTEXT:SASL_PLAINTEXT
       - KAFKA_CFG_ADVERTISED_LISTENERS=SASL_PLAINTEXT://localhost:9092
-      - KAFKA_CLIENT_USERS=admin
+      - KAFKA_CLIENT_USERS=user
       - KAFKA_CLIENT_PASSWORDS=123456
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CLIENT_LISTENER_NAME=SASL_SSL
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,SASL_PLAINTEXT:SASL_PLAINTEXT
       - KAFKA_CFG_SASL_MECHANISM_CONTROLLER_PROTOCOL=PLAIN
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CONTROLLER_USER=admin
-      - KAFKA_CONTROLLER_PASSWORD=123456
+      - KAFKA_CONTROLLER_PASSWORD=admin123456
+
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=SASL_PLAINTEXT
       - KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL=PLAIN
       - KAFKA_INTER_BROKER_USER=admin
       - KAFKA_INTER_BROKER_PASSWORD=123456
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    restart: always
-
 
 volumes:
   kafka_data:
     driver: local
 
 networks:
-  kafka_net:
+  kafka_network:
     driver: bridge
