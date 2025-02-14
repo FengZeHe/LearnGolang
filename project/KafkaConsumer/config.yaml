@@ -1,0 +1,4 @@
+kafka:
+  brokers: ["localhost:9092"]
+  acks: 1
+  topic: "test_topic"
