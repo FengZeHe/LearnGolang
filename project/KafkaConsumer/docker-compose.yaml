@@ -1,5 +1,9 @@
 version: '3'
 
+networks:
+  kafka_network:
+    driver: bridge
+
 services:
   kafka-0:
     image: bitnami/kafka:3.9.0
@@ -13,7 +17,7 @@ services:
       - KAFKA_KRAFT_CLUSTER_ID=bd0af14d9c93  #需要统一的集群id
       # Listeners
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://30.116.184.138:9092
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
@@ -23,10 +27,12 @@ services:
       - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
     volumes:
       - kafka_0_data:/bitnami/kafka
+    networks:
+      - kafka_network
   kafka-1:
     image: bitnami/kafka:3.9.0
     ports:
-      - "9092"
+      - "9093:9092"
     environment:
       # KRaft settings
       - KAFKA_CFG_NODE_ID=1
@@ -35,7 +41,7 @@ services:
       - KAFKA_KRAFT_CLUSTER_ID=bd0af14d9c93
       # Listeners
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://30.116.184.138:9093
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
@@ -45,10 +51,12 @@ services:
       - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
     volumes:
       - kafka_1_data:/bitnami/kafka
+    networks:
+      - kafka_network
   kafka-2:
     image: bitnami/kafka:3.9.0
     ports:
-      - "9092"
+      - "9094:9092"
     environment:
       # KRaft settings
       - KAFKA_CFG_NODE_ID=2
@@ -57,7 +65,7 @@ services:
       - KAFKA_KRAFT_CLUSTER_ID=bd0af14d9c93
       # Listeners
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://30.116.184.138:9094
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
@@ -67,6 +75,8 @@ services:
       - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
     volumes:
       - kafka_2_data:/bitnami/kafka
+    networks:
+      - kafka_network
 
 volumes:
   kafka_0_data:
