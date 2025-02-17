@@ -15,9 +15,10 @@ func main() {
 
 	// 创建 Kafka 生产者
 	producer, err := sarama.NewSyncProducer([]string{
-		"30.116.184.138:9092",
-		"30.116.184.138:9093",
-		"30.116.184.138:9094",
+		"30.116.184.138:9095",
+		//"30.116.184.138:9092",
+		//"30.116.184.138:9093",
+		//"30.116.184.138:9094",
 	}, producerConfig)
 	if err != nil {
 		log.Fatalf("Error creating Kafka producer: %v", err)
@@ -31,7 +32,7 @@ func main() {
 	// 发送消息
 	message := &sarama.ProducerMessage{
 		Topic: "test-topic",
-		Value: sarama.StringEncoder("2025-02-17-0959"),
+		Value: sarama.StringEncoder("2025-02-17-1155"),
 	}
 	partition, offset, err := producer.SendMessage(message)
 	if err != nil {
@@ -45,9 +46,10 @@ func main() {
 
 	// 创建 Kafka 消费者
 	consumer, err := sarama.NewConsumer([]string{
-		"30.116.184.138:9092",
-		"30.116.184.138:9093",
-		"30.116.184.138:9094",
+		//"30.116.184.138:9092",
+		//"30.116.184.138:9093",
+		//"30.116.184.138:9094",
+		"30.116.184.138:9095",
 	}, consumerConfig)
 	if err != nil {
 		log.Fatalf("Error creating Kafka consumer: %v", err)
