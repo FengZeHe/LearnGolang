@@ -1,0 +1,17 @@
+kafka:
+  brokers:
+    - "30.116.184.138:9092"
+  topic:
+    - "read-topic"
+  security:
+    enabled: false
+    username: ""
+    password: ""
+  consumer:
+    group_id: "read_consumer_group"
+    batch_size: 100
+    max_wait_time_ms: 500
+mongodb:
+  uri: "mongodb://localhost:27017"
+  db_name: "readDB"
+  collection_name: "readNum"

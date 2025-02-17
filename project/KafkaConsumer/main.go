@@ -15,8 +15,8 @@ func main() {
 
 	// 创建 Kafka 生产者
 	producer, err := sarama.NewSyncProducer([]string{
-		"30.116.184.138:9095",
-		//"30.116.184.138:9092",
+		//"30.116.184.138:9095",
+		"30.116.184.138:9092",
 		//"30.116.184.138:9093",
 		//"30.116.184.138:9094",
 	}, producerConfig)
@@ -32,7 +32,7 @@ func main() {
 	// 发送消息
 	message := &sarama.ProducerMessage{
 		Topic: "test-topic",
-		Value: sarama.StringEncoder("2025-02-17-1155"),
+		Value: sarama.StringEncoder("2025-02-17-1417"),
 	}
 	partition, offset, err := producer.SendMessage(message)
 	if err != nil {
@@ -46,10 +46,10 @@ func main() {
 
 	// 创建 Kafka 消费者
 	consumer, err := sarama.NewConsumer([]string{
-		//"30.116.184.138:9092",
+		"30.116.184.138:9092",
 		//"30.116.184.138:9093",
 		//"30.116.184.138:9094",
-		"30.116.184.138:9095",
+		//"30.116.184.138:9095",
 	}, consumerConfig)
 	if err != nil {
 		log.Fatalf("Error creating Kafka consumer: %v", err)
@@ -61,14 +61,14 @@ func main() {
 	}()
 
 	// 获取主题的分区信息
-	partitions, err := consumer.Partitions("test-topic")
+	partitions, err := consumer.Partitions("read-topic") //test-topic
 	if err != nil {
 		log.Fatalf("Error getting partitions: %v", err)
 	}
 
 	// 为每个分区创建一个消费者
 	for _, partition := range partitions {
-		pc, err := consumer.ConsumePartition("test-topic", partition, sarama.OffsetOldest)
+		pc, err := consumer.ConsumePartition("read-topic", partition, sarama.OffsetOldest)
 		if err != nil {
 			log.Fatalf("Error consuming partition: %v", err)
 		}
