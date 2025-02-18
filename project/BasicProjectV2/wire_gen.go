@@ -7,27 +7,33 @@
 package main
 
 import (
+	"github.com/IBM/sarama"
+	"github.com/basicprojectv2/internal/events/article"
 	"github.com/basicprojectv2/internal/repository"
 	"github.com/basicprojectv2/internal/repository/cache"
 	"github.com/basicprojectv2/internal/repository/dao"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/basicprojectv2/internal/web"
+	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/basicprojectv2/ioc"
 	"github.com/basicprojectv2/settings"
-	"github.com/gin-gonic/gin"
+	"github.com/google/wire"
 )
 
 // Injectors from wire.go:
 
-func InitializeApp() *gin.Engine {
-	v := ioc.InitGinMiddlewares()
+func InitializeApp() *App {
 	mysqlConfig := settings.InitMysqlConfig()
 	db := ioc.InitDB(mysqlConfig)
+	enforcer := ioc.InitMysqlCasbinEnforcer(db)
 	userDAO := dao.NewUserDAO(db)
 	redisConfig := settings.InitRedisConfig()
 	cmdable := ioc.InitRedis(redisConfig)
 	userCache := cache.NewUserCache(cmdable)
 	userRepository := repository.NewCacheUserRepository(userDAO, userCache)
+	casbinRoleCheck := middleware.NewCasbinRoleCheck(enforcer, userRepository)
+	bundle := ioc.LoadI18nBundle()
+	v := ioc.InitGinMiddlewares(casbinRoleCheck, bundle)
 	userService := service.NewUserService(userRepository)
 	codeCache := cache.NewCodeCache(cmdable)
 	codeRepository := repository.NewCodeRepository(codeCache)
@@ -36,8 +42,53 @@ func InitializeApp() *gin.Engine {
 	userHandler := web.NewUserHandler(userService, codeService)
 	sysDAO := dao.NewSysDAO(db)
 	sysRepository := repository.NewSysRepository(sysDAO)
-	sysService := service.NewSysService(sysRepository)
+	sysService := service.NewSysService(sysRepository, enforcer)
 	sysHandler := web.NewSysHandler(sysService)
-	engine := ioc.InitWebServer(v, userHandler, sysHandler)
-	return engine
+	gormMenuDAO := dao.NewMenuDAO(db)
+	menuRepository := repository.NewMenuRepository(gormMenuDAO)
+	menuService := service.NewMenuService(menuRepository)
+	menuHandler := web.NewMenuHandler(menuService)
+	gormRoleDAO := dao.NewRoleDAO(db)
+	roleRepository := repository.NewRoleRepository(gormRoleDAO)
+	roleService := service.NewRoleService(roleRepository, enforcer)
+	roleHandler := web.NewRoleHandler(roleService)
+	draftDAO := dao.NewDraftDAO(db)
+	draftRepository := repository.NewDraftRepository(draftDAO)
+	draftService := service.NewDraftService(draftRepository)
+	draftHandler := web.NewDraftHandler(draftService)
+	articleDAO := dao.NewArticleDAO(db)
+	articleRepository := repository.NewArticleRepository(articleDAO)
+	articleService := service.NewArticleService(articleRepository)
+	kafkaConfig := settings.InitSaramaConfig()
+	client := ioc.InitSaramaClient(kafkaConfig)
+	syncProducer := ioc.InitSyncProducer(client)
+	producer := article.NewSaramaSyncProducer(syncProducer)
+	articleHandler := web.NewArticleHandler(articleService, producer)
+	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler)
+	consumer := ProvideSaramaConsumerClient()
+	articleConsumer := ProvideSaramaConsumer(consumer, articleDAO)
+	app := &App{
+		server:         engine,
+		saramaConsumer: articleConsumer,
+	}
+	return app
 }
+
+// wire.go:
+
+// ProvideSaramaConsumer提供sarama 消费者依赖
+func ProvideSaramaConsumer(consumer sarama.Consumer, articleDAO dao.ArticleDAO) article.Consumer {
+	return article.NewSaramaConsumer(consumer, articleDAO)
+}
+
+func ProvideSaramaConsumerClient() sarama.Consumer {
+	kafkaConfig := settings.InitSaramaConfig()
+	client := ioc.InitSaramaClient(kafkaConfig)
+	consumer := ioc.InitConsumer(client)
+	return consumer
+}
+
+var SaramaConsumerSet = wire.NewSet(
+	ProvideSaramaConsumer,
+	ProvideSaramaConsumerClient,
+)

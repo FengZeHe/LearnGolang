@@ -1,0 +1,8 @@
+kafka:
+  brokers:
+    - "30.116.184.138:9092"
+  topic: "read-topic"
+  security:
+    enabled: false
+    username: ""
+    password: ""

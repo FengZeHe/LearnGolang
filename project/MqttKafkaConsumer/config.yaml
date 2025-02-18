@@ -1,0 +1,17 @@
+kafka:
+  brokers:
+    - "30.116.184.138:9092"
+  topic:
+    - "read-topic"
+  security:
+    enabled: false
+    username: ""
+    password: ""
+  consumer:
+    min_size: 1024
+    max_size: 1048576
+    max_wait_time: 1000
+mongodb:
+  uri: "mongodb://localhost:27017"
+  db_name: "readDB"
+  collection_name: "readNum"

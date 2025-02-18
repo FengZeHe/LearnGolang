@@ -1,17 +1,27 @@
 package repository
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"encoding/base64"
+	"fmt"
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository/cache"
 	"github.com/basicprojectv2/internal/repository/dao"
+	"github.com/pkg/errors"
+	"io"
 	"log"
+	"mime"
+	"os"
+	"path/filepath"
 )
 
 var (
 	ErrDuplicateUser = dao.ErrDuplicateEmail
 	ErrUserNotFound  = dao.ErrRecordNotFound
+	ErrFileNotFound  = dao.ErrFileNotFound
+	ErrReadFile      = errors.New("reading file error")
 )
 
 type UserRepository interface {
@@ -19,6 +29,14 @@ type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (domain.User, error)
 	FindByPhone(ctx context.Context, phone string) (domain.User, error)
 	FindById(ctx context.Context, id string) (domain.User, error)
+	GetUserList(ctx context.Context, req domain.UserListRequest) ([]domain.User, int, error)
+	UpdateUser(ctx context.Context, req domain.User) error
+	UpsertUserAvatar(ctx context.Context, req domain.UserAvatar) error
+	UploadUserFile(ctx context.Context, req domain.UploadFile) error
+	GetUserFile(ctx context.Context, req domain.DownloadFileReq) (data domain.DownloadFileResponse, err error)
+
+	// 分片上传
+
 }
 
 type CacheUserRepository struct {
@@ -31,6 +49,115 @@ func NewCacheUserRepository(dao dao.UserDAO, c cache.UserCache) UserRepository {
 		dao:   dao,
 		cache: c,
 	}
+}
+
+func (repo *CacheUserRepository) GetUserFile(ctx context.Context, req domain.DownloadFileReq) (data domain.DownloadFileResponse, err error) {
+
+	url, err := repo.dao.GetUserFileUrl(ctx, req)
+	if err != nil {
+		log.Println(err)
+		return data, err
+	}
+	baseFilePath, err := os.UserHomeDir()
+	if err != nil {
+		return data, err
+	}
+	// 完整的路径
+	fullUrl := fmt.Sprintf("%s/%s/%s", baseFilePath, "Desktop", url)
+	//log.Println(fullUrl)
+
+	if _, err := os.Stat(fullUrl); os.IsNotExist(err) {
+		return data, ErrFileNotFound
+	}
+	fileType := mime.TypeByExtension(filepath.Ext(fullUrl))
+	log.Println("fileType=>", fileType)
+
+	fileContent, err := os.ReadFile(fullUrl)
+	if err != nil {
+		return data, ErrReadFile
+	}
+	data.FileName = req.FileName
+	data.File = fileContent
+
+	base64Avatar := base64.StdEncoding.EncodeToString(fileContent)
+	data.Base64 = base64Avatar
+
+	return data, nil
+}
+
+func (repo *CacheUserRepository) UpdateUser(ctx context.Context, u domain.User) (err error) {
+	if err = repo.dao.UpdateUserByID(ctx, repo.toEntity(u)); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *CacheUserRepository) UploadUserFile(ctx context.Context, req domain.UploadFile) (err error) {
+	var uploadPath string
+
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Println("Get Home Dir ERROR", err)
+		return err
+	}
+
+	// 将文件存储到指定路径
+	uploadPath = fmt.Sprintf("%s/Desktop/%s", homeDir, req.UserID)
+
+	// 检查文件夹是否存在，如果不存在则创建
+	if _, err := os.Stat(uploadPath); os.IsNotExist(err) {
+		err := os.MkdirAll(uploadPath, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	// MySQL查询不重复的fileName
+	UniqueFileName, err := repo.dao.CheckUniqueFileName(ctx, req)
+	if err != nil {
+		return err
+	}
+	switch req.FileType {
+	case "image/png":
+		UniqueFileName = fmt.Sprintf("%s.%s", UniqueFileName, "png")
+	default:
+		UniqueFileName = fmt.Sprintf("%s.%s", UniqueFileName, "jpg")
+	}
+	filePath := filepath.Join(uploadPath, UniqueFileName)
+
+	// 创建保存文件
+	outFile, err := os.Create(filePath)
+	if err != nil {
+		log.Println("output file ERROR", err)
+		return err
+	}
+
+	defer outFile.Close()
+
+	// 将文件写入到本地文件夹
+	reader := bytes.NewReader(req.File)
+	_, err = io.Copy(outFile, reader)
+	if err != nil {
+		log.Println("Failed to save file")
+		return err
+	}
+
+	if err = repo.dao.InsertUserFile(ctx, req); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *CacheUserRepository) GetUserList(ctx context.Context, req domain.UserListRequest) (ul []domain.User, count int, err error) {
+	list, c, err := repo.dao.GetUserList(ctx, req)
+	count = int(c)
+	if err != nil {
+		log.Println("dao get user list error", err)
+	}
+	for _, u := range list {
+		ul = append(ul, repo.toDomain(u))
+	}
+	return ul, count, err
 }
 
 func (repo *CacheUserRepository) Create(ctx context.Context, u domain.User) (err error) {
@@ -72,7 +199,14 @@ func (repo *CacheUserRepository) FindById(ctx context.Context, id string) (domai
 	return du, nil
 }
 
-// toDomain 将dao.User转为 domain.User
+func (repo *CacheUserRepository) UpsertUserAvatar(ctx context.Context, req domain.UserAvatar) (err error) {
+	if err = repo.dao.UpsertUserAvatar(ctx, req); err != nil {
+		return err
+	}
+	return nil
+}
+
+// addReqToDomain 将dao.User转为 domain.User
 func (repo *CacheUserRepository) toDomain(u dao.User) domain.User {
 	return domain.User{
 		ID:       u.ID,
@@ -82,6 +216,7 @@ func (repo *CacheUserRepository) toDomain(u dao.User) domain.User {
 		Aboutme:  u.Aboutme,
 		Nickname: u.Nickname,
 		Birthday: u.Birthday,
+		Role:     u.Role,
 	}
 }
 
@@ -101,5 +236,6 @@ func (repo *CacheUserRepository) toEntity(u domain.User) dao.User {
 		Birthday: u.Birthday,
 		Aboutme:  u.Aboutme,
 		Nickname: u.Nickname,
+		Role:     u.Role,
 	}
 }

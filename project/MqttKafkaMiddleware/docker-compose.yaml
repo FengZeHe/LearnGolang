@@ -1,0 +1,13 @@
+version: '3'
+services:
+  mqtt_kafka_mdl:
+    build: .
+    ports:
+      - "8086:8080"
+    networks:
+      - mqtt_net
+
+
+networks:
+  mqtt_net:
+    driver: bridge

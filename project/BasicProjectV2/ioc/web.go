@@ -2,24 +2,30 @@ package ioc
 
 import (
 	"github.com/basicprojectv2/internal/web"
+	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"time"
 )
 
 // 初始化gin Engine
-func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web.SysHandler) *gin.Engine {
+func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web.SysHandler,
+	menuHdl *web.MenuHandler, roleHdl *web.RoleHandler, draftHdl *web.DraftHandler, articleHdl *web.ArticleHandler) *gin.Engine {
 	server := gin.Default()
-	server.Use(mdls...)
-	// userHandler 注册user的路由
-	userHdl.RegisterRoutes(server)
-	sysHdl.RegisterRoutes(server)
+	server.Use(mdls[0])
+	userHdl.RegisterRoutes(server, mdls[3], mdls[2])
+	sysHdl.RegisterRoutes(server, mdls[1], mdls[2], mdls[3])
+	menuHdl.RegisterRoutes(server, mdls[2])
+	roleHdl.RegisterRoutes(server, mdls[2])
+	draftHdl.RegisterRoutes(server, mdls[2])
+	articleHdl.RegisterRoutes(server, mdls[2])
 
 	return server
 }
 
 // 初始化中间件
-func InitGinMiddlewares() []gin.HandlerFunc {
+func InitGinMiddlewares(ca *middleware.CasbinRoleCheck, i18n *i18n.Bundle) []gin.HandlerFunc {
 	return []gin.HandlerFunc{
 		cors.New(cors.Config{
 			//AllowAllOrigins: true,
@@ -41,7 +47,9 @@ func InitGinMiddlewares() []gin.HandlerFunc {
 			AllowAllOrigins: true,
 			MaxAge:          12 * time.Hour,
 		}),
-		//(&middleware.LoginJWTMiddlewareBuilder{}).CheckLogin(), // 什么写法？
+		ca.CheckRole(),
+		(&middleware.LoginJWTMiddlewareBuilder{}).CheckLogin(),
+		middleware.I18nMiddleware(i18n),
 	}
 }
 

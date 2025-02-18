@@ -18,6 +18,7 @@ func main() {
 	mysqlConf := settings.InitMysqlConfig()
 	db, err := settings.InitDB(mysqlConf)
 
+	db.AutoMigrate()
 	//
 	//adapter, err := gormadapter.NewAdapterByDBUseTableName(db, "", "casbin_rules")
 	//if err != nil {
