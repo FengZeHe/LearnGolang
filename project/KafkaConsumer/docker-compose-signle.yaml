@@ -48,6 +48,12 @@ services:
       - "8883:8883"
     environment:
       - TZ=Asia/Shanghai
+  mqtt_kafka_mdl:
+    image: mqtt_kafka_mdl:1.0
+    ports:
+      - "8086:8080"
+    networks:
+      kafka_network:
 
 
 volumes:

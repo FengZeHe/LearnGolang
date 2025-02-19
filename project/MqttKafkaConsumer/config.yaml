@@ -8,9 +8,9 @@ kafka:
     username: ""
     password: ""
   consumer:
-    group_id: "read_consumer_group"
-    batch_size: 100
-    max_wait_time_ms: 500
+    min_size: 1024
+    max_size: 1048576
+    max_wait_time: 1000
 mongodb:
   uri: "mongodb://localhost:27017"
   db_name: "readDB"

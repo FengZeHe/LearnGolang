@@ -2,11 +2,13 @@ package consumer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"log"
-	"time"
-
 	"github.com/IBM/sarama"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"mqttkafkaconsumer/config"
 )
 
@@ -17,101 +19,50 @@ func StartConsumer(appConfig *config.AppConfig) {
 		log.Fatalf("Failed to setup Kafka config: %v", err)
 	}
 
-	// 创建 Kafka 消费者组
-	consumerGroup, err := sarama.NewConsumerGroup(appConfig.Kafka.Brokers, appConfig.Kafka.Consumer.GroupID, kafkaConfig)
+	consumer, err := sarama.NewConsumer(appConfig.Kafka.Brokers, kafkaConfig)
 	if err != nil {
-		log.Fatalf("Failed to create Kafka consumer group: %v", err)
+		log.Fatalf("Failed to start consumer: %v", err)
 	}
-	defer consumerGroup.Close()
+	defer consumer.Close()
 
-	// 定义上下文
+	// 创建分区消费者
+	partitionConsumer, err := consumer.ConsumePartition("read-topic", 0, sarama.OffsetNewest)
+	if err != nil {
+		log.Fatalf("Failed to create partition consumer: %v", err)
+	}
+	defer partitionConsumer.Close()
+
+	// 连接 MongoDB
 	ctx := context.Background()
-
-	// 创建自定义消费者组程序
-	handler := ConsumerHandler{
-		BatchSize:   appConfig.Kafka.Consumer.BatchSize,
-		MaxWaitTime: time.Duration(appConfig.Kafka.Consumer.MaxWaitTimeMs),
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(appConfig.MongoDB.URI))
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
+	defer client.Disconnect(ctx)
+	collection := client.Database(appConfig.MongoDB.DBName).Collection(appConfig.MongoDB.CollectionName)
 
-	//开始消费
-	for {
-		if err := consumerGroup.Consume(ctx, appConfig.Kafka.Topic, &handler); err != nil {
-			log.Fatalf("Error from consumer: %v", err)
+	// 消费消息
+	for msg := range partitionConsumer.Messages() {
+		fmt.Printf("Received message: %s\n", string(msg.Value))
+
+		var data struct {
+			ArticleID string `json:"articleID"`
 		}
+		if err := json.Unmarshal(msg.Value, &data); err != nil {
+			log.Printf("Failed to parse message: %v", err)
+			continue
+		}
+
+		// 定义 filter 和 update
+		filter := bson.M{"articleID": data.ArticleID}
+		update := bson.M{"$inc": bson.M{"read": 1}}
+
+		// 更新 MongoDB 文档
+		_, err = collection.UpdateOne(ctx, filter, update, options.Update().SetUpsert(true))
+		if err != nil {
+			log.Printf("Failed to update MongoDB document: %v", err)
+		}
+
 	}
+
 }
-
-// ConsumerHandler 实现 sarama.ConsumerGroupHandler 接口
-type ConsumerHandler struct {
-	//Collection  *mongo.Collection
-	BatchSize   int
-	MaxWaitTime time.Duration
-}
-
-func (h *ConsumerHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-	for message := range claim.Messages() {
-		fmt.Printf("Received message: Topic = %s, Partition = %d, Offset = %d, Key = %s, Value = %s\n",
-			message.Topic, message.Partition, message.Offset, string(message.Key), string(message.Value))
-		session.MarkMessage(message, "")
-	}
-	return nil
-}
-
-// Setup 在每个新会话开始时调用
-func (h *ConsumerHandler) Setup(_ sarama.ConsumerGroupSession) error {
-	return nil
-}
-
-// Cleanup 在每个会话结束时调用
-func (h *ConsumerHandler) Cleanup(_ sarama.ConsumerGroupSession) error {
-	return nil
-}
-
-// ConsumeClaim 处理每个分区的消息
-//func (h *ConsumerHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-//	messages := make([]interface{}, 0, h.BatchSize)
-//	timer := time.NewTimer(h.MaxWaitTime)
-//
-//	for {
-//		select {
-//		case message, ok := <-claim.Messages():
-//			if !ok {
-//				return nil
-//			}
-//
-//			messages = append(messages, bson.D{{"value", string(message.Value)}})
-//
-//			if len(messages) >= h.BatchSize {
-//				if !timer.Stop() {
-//					<-timer.C
-//				}
-//				h.processBatch(session, messages)
-//				messages = make([]interface{}, 0, h.BatchSize)
-//				timer.Reset(h.MaxWaitTime)
-//			}
-//		case <-timer.C:
-//			if len(messages) > 0 {
-//				h.processBatch(session, messages)
-//				messages = make([]interface{}, 0, h.BatchSize)
-//			}
-//			timer.Reset(h.MaxWaitTime)
-//		}
-//	}
-//}
-
-//processBatch 处理批量消息
-//func (h *ConsumerHandler) processBatch(session sarama.ConsumerGroupSession, messages []interface{}) {
-//	_, err := h.Collection.InsertMany(context.Background(), messages)
-//	if err != nil {
-//		log.Printf("Error inserting messages into MongoDB: %v", err)
-//	}
-//
-//	for _, msg := range messages {
-//		fmt.Printf("Received message: %s\n", msg)
-//	}
-//
-//	for _, msg := range messages {
-//		session.MarkMessage(msg.(*sarama.ConsumerMessage), "")
-//	}
-//	session.Commit()
-//}

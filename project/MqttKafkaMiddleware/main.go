@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/IBM/sarama"
@@ -35,6 +36,9 @@ func main() {
 
 	topic = kafkaConfig.Topic
 
+	// 处理生产者成功和错误事件
+	go handleProducerEvents()
+
 	// 创建Gin引擎
 	r := gin.Default()
 
@@ -68,7 +72,22 @@ func handleWebhook(c *gin.Context) {
 		Topic: topic,
 		Value: sarama.StringEncoder(string(message)),
 	}
+	fmt.Println(topic, message)
 
 	// 处理成功响应
 	c.JSON(200, gin.H{"message": "Message sent to Kafka"})
+}
+
+// handleProducerEvents 处理Kafka生产者的成功和错误事件
+func handleProducerEvents() {
+	for {
+		select {
+		case success := <-producer.Successes():
+			// 处理消息发送成功事件
+			log.Printf("Message sent successfully to partition %d, offset %d", success.Partition, success.Offset)
+		case err := <-producer.Errors():
+			// 处理消息发送失败事件
+			log.Printf("Failed to send message: %v", err.Err)
+		}
+	}
 }

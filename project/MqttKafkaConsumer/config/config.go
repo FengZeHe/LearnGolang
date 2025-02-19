@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/spf13/viper"
@@ -17,9 +18,9 @@ type KafkaConfig struct {
 		Password string `mapstructure:"password"`
 	} `mapstructure:"security"`
 	Consumer struct {
-		GroupID       string `mapstructure:"group_id"`
-		BatchSize     int    `mapstructure:"batch_size"`
-		MaxWaitTimeMs int    `mapstructure:"max_wait_time_ms"`
+		MinSize     int32 `mapstructure:"min_size"`
+		MaxSize     int32 `mapstructure:"max_size"`
+		MaxWaitTime int   `mapstructure:"max_wait_time"`
 	} `mapstructure:"consumer"`
 }
 
@@ -58,6 +59,10 @@ func LoadConfig() (*AppConfig, error) {
 func SetupKafkaConfig(config *KafkaConfig) (*sarama.Config, error) {
 	kafkaConfig := sarama.NewConfig()
 	kafkaConfig.Consumer.Offsets.Initial = sarama.OffsetOldest
+	kafkaConfig.Consumer.Fetch.Min = config.Consumer.MinSize
+	kafkaConfig.Consumer.Fetch.Max = config.Consumer.MaxSize
+	kafkaConfig.Consumer.MaxWaitTime = time.Duration(config.Consumer.MaxWaitTime) * time.Millisecond
+
 	kafkaConfig.Consumer.Return.Errors = true
 	if config.Security.Enabled {
 		kafkaConfig.Net.SASL.Enable = true
