@@ -1,4 +1,4 @@
-module kafkaCluter
+module kafkaConsumer
 
 go 1.21.6
 
