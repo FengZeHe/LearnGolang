@@ -18,10 +18,6 @@ var (
 	ErrFileNotFound   = errors.New("文件不存在")
 )
 
-type GORMUserDAO struct {
-	db *gorm.DB
-}
-
 type UserDAO interface {
 	Insert(ctx context.Context, u User) error
 	FindByEmail(ctx context.Context, email string) (User, error)
@@ -33,6 +29,10 @@ type UserDAO interface {
 	InsertUserFile(ctx context.Context, u domain.UploadFile) error
 	CheckUniqueFileName(ctx context.Context, u domain.UploadFile) (fileName string, err error)
 	GetUserFileUrl(ctx context.Context, u domain.DownloadFileReq) (fileUrl string, err error)
+}
+
+type GORMUserDAO struct {
+	db *gorm.DB
 }
 
 func NewUserDAO(db *gorm.DB) UserDAO {
