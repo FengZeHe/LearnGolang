@@ -97,7 +97,5 @@ func InitializeApp() *App {
 		middleware.NewCasbinRoleCheck,
 		wire.Struct(new(App), "*"),
 	)
-
 	return new(App)
-
 }

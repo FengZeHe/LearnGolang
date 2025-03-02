@@ -1,6 +1,6 @@
 kafka:
   brokers:
-    - "30.116.184.138:9092"
+    - "192.168.137.89:9092"
   topic:
     - "read-topic"
   security:
