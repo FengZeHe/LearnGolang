@@ -10,12 +10,6 @@ func main() {
 
 	initPrometheus()
 
-	app.cron.Start()
-	defer func() {
-		// 等待定时任务退出
-		<-app.cron.Stop().Done()
-	}()
-
 	server := app.server
 	err := server.Run(":8088")
 	if err != nil {
