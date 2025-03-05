@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 )
@@ -10,13 +11,11 @@ func main() {
 
 	initPrometheus()
 
-	app.cron.Start()
-	defer func() {
-		// 等待定时任务退出
-		<-app.cron.Stop().Done()
-	}()
-
 	server := app.server
+	server.Use(func(c *gin.Context) {
+		httpRequestsTotal.WithLabelValues(c.Request.URL.Path, c.Request.Method).Inc()
+		c.Next()
+	})
 	err := server.Run(":8088")
 	if err != nil {
 		return

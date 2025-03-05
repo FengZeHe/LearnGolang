@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
   prometheus:
     image: bitnami/prometheus:2.55.1
@@ -6,4 +6,23 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
+    command:
+      - "--config.file=/opt/bitnami/prometheus/conf/prometheus.yml"
+    restart: always
+    networks:
+      - monitoring
+  node-exporter:
+    image: bitnami/node-exporter:1.9.0
+    container_name: node-exporter
+    network_mode: host
+    pid: host
+    command:
+      - '--path.rootfs=/host'
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
+
+networks:
+  monitoring:
+    driver: bridge

@@ -25,7 +25,6 @@ func StartConsumer(appConfig *config.AppConfig) {
 	}
 	defer consumer.Close()
 
-	// 创建分区消费者
 	partitionConsumer, err := consumer.ConsumePartition("read-topic", 0, sarama.OffsetNewest)
 	if err != nil {
 		log.Fatalf("Failed to create partition consumer: %v", err)
@@ -53,7 +52,6 @@ func StartConsumer(appConfig *config.AppConfig) {
 			continue
 		}
 
-		// 定义 filter 和 update
 		filter := bson.M{"articleID": data.ArticleID}
 		update := bson.M{"$inc": bson.M{"read": 1}}
 
@@ -62,7 +60,5 @@ func StartConsumer(appConfig *config.AppConfig) {
 		if err != nil {
 			log.Printf("Failed to update MongoDB document: %v", err)
 		}
-
 	}
-
 }
