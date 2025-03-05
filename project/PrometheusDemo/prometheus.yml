@@ -1,5 +1,5 @@
 scrape_configs:
-  - job_name: "PrometheusDemo"
+  - job_name: 'prometheus_demo'
     scrape_interval: 5s
     scrape_timeout: 3s
     static_configs:
