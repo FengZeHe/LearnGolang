@@ -48,15 +48,15 @@ func (m *MonitoringBuilder) HttpRequestDurationHistogram() gin.HandlerFunc {
 			Subsystem: m.Subsystem,
 			Name:      m.Name + "_Duration",
 			Help:      m.Help,
-			Buckets:   prometheus.ExponentialBuckets(0.01, 2, 10),
+			//Buckets:   prometheus.ExponentialBuckets(0.01, 2, 10),
+			Buckets: prometheus.LinearBuckets(0.1, 0.1, 5),
 		},
 		[]string{"path", "method"})
 	prometheus.MustRegister(httpRequestDuration)
 	return func(c *gin.Context) {
 		start := time.Now()
-		time.Sleep(200 * time.Millisecond)
 		c.Next()
-		duration := time.Since(start).Milliseconds()
+		duration := time.Since(start).Seconds()
 		log.Println("duration=", duration)
 		httpRequestDuration.WithLabelValues(c.Request.URL.Path, c.Request.Method).Observe(float64(duration))
 	}
