@@ -10,19 +10,19 @@ services:
     command:
       - "--config.file=/opt/bitnami/prometheus/conf/prometheus.yml"
     restart: always
-    networks:
-      - monitoring
-  node-exporter:
-    image: bitnami/node-exporter:1.9.0
-    container_name: node-exporter
-    network_mode: host
-    pid: host
-    command:
-      - '--path.rootfs=/host'
-    restart: unless-stopped
-    volumes:
-      - '/:/host:ro,rslave'
+#    networks:
+#      - monitoring
+#  node-exporter:
+#    image: bitnami/node-exporter:1.9.0
+#    container_name: node-exporter
+#    network_mode: host
+#    pid: host
+#    command:
+#      - '--path.rootfs=/host'
+#    restart: unless-stopped
+#    volumes:
+#      - '/:/host:ro,rslave'
 
-networks:
-  monitoring:
-    driver: bridge
+#networks:
+#  monitoring:
+#    driver: bridge

@@ -20,6 +20,7 @@ func (h *UserHandler) RegisterRoutes(server *gin.Engine) {
 }
 
 func (h *UserHandler) Hi(c *gin.Context) {
+
 	c.JSON(200, gin.H{
 		"message": "hi",
 	})
