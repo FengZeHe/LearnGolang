@@ -1,13 +1,12 @@
 package dao
 
 import (
-	"context"
 	"gorm.io/gorm"
 	"prometheusdemo/internal/domain"
 )
 
 type UserDAO interface {
-	GetUser(ctx context.Context) (domain.User, error)
+	GetUser() ([]domain.User, error)
 }
 
 type GORMUserDAO struct {
@@ -20,7 +19,10 @@ func NewUserDAO(db *gorm.DB) UserDAO {
 	}
 }
 
-// ToDo 改 GormUserDAO
-func (u *GORMUserDAO) GetUser(ctx context.Context) (domain.User, error) {
-	return domain.User{}, nil
+func (u *GORMUserDAO) GetUser() ([]domain.User, error) {
+	var data []domain.User
+	if err := u.db.Table("users").Find(&data).Error; err != nil {
+		return nil, err
+	}
+	return data, nil
 }

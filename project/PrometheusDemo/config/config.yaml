@@ -6,3 +6,7 @@ mysql:
   dbname: webook
   max_open_conns: 200
   max_idle_conns: 50
+
+redis:
+  addr: 127.0.0.1:6379
+

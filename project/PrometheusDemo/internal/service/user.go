@@ -1,9 +1,12 @@
 package service
 
-import "prometheusdemo/internal/repository"
+import (
+	"prometheusdemo/internal/domain"
+	"prometheusdemo/internal/repository"
+)
 
 type UserService interface {
-	GetUser()
+	GetUser() (users []domain.User, err error)
 }
 
 type userService struct {
@@ -16,7 +19,10 @@ func NewUserService(repo repository.UserRepository) UserService {
 	}
 }
 
-func (u userService) GetUser() {
-	//TODO implement me
-	panic("implement me")
+func (u userService) GetUser() (users []domain.User, err error) {
+	users, err = u.repo.GetUser()
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }

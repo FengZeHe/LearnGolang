@@ -8,6 +8,7 @@ import (
 
 type AppConfig struct {
 	MysqlConfig *MysqlConfig `mapstructure:"mysql"`
+	RedisConfig *RedisConfig `mapstructure:"redis"`
 }
 
 type MysqlConfig struct {
@@ -18,6 +19,10 @@ type MysqlConfig struct {
 	Port         int    `mapstructure:"port"`
 	MaxOpenConns int    `mapstructure:"max_open_conns"`
 	MaxIdleConns int    `mapstructure:"max_idle_conns"`
+}
+
+type RedisConfig struct {
+	Addr string `mapstructure:"addr"`
 }
 
 func InitMysqlConfig() (mysqlConfig *MysqlConfig) {
@@ -32,4 +37,18 @@ func InitMysqlConfig() (mysqlConfig *MysqlConfig) {
 	mysqlConfig = appConfig.MysqlConfig
 	log.Println("Get Mysql Config success!")
 	return mysqlConfig
+}
+
+func InitRedisConfig() (redisConfig *RedisConfig) {
+	viper.SetConfigFile("./config/config.yaml")
+	if err := viper.ReadInConfig(); err != nil {
+		panic(fmt.Errorf("Read Config failed %v", err))
+	}
+	var appConfig AppConfig
+	if err := viper.Unmarshal(&appConfig); err != nil {
+		panic(fmt.Errorf("Unmarshal failed %v", err))
+	}
+	redisConfig = appConfig.RedisConfig
+	log.Println("Get Redis Config success!")
+	return redisConfig
 }

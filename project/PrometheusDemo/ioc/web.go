@@ -10,13 +10,13 @@ import (
 
 func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler) *gin.Engine {
 	server := gin.Default()
-	server.Use(mdls...)
-	userHdl.RegisterRoutes(server)
+	server.Use(mdls[0], mdls[1], mdls[2])
+	userHdl.RegisterRoutes(server, mdls[3])
 
 	return server
 }
 
-func InitGinMiddlewares() []gin.HandlerFunc {
+func InitGinMiddlewares(uc *middlewares.MiddleUserCache) []gin.HandlerFunc {
 	pb := &middlewares.MonitoringBuilder{
 		NameSpace: "my_http",
 		Subsystem: "prometheus_demo",
@@ -34,6 +34,8 @@ func InitGinMiddlewares() []gin.HandlerFunc {
 			MaxAge:           12 * time.Hour,
 		}),
 		pb.HttpRequestTotalCounter(),
-		pb.HttpRequestDurationHistogram(),
+		//pb.HttpRequestDurationHistogram(),
+		pb.HttpResponseTime(),
+		uc.GetUserCache(),
 	}
 }

@@ -8,20 +8,27 @@ package main
 
 import (
 	"prometheusdemo/internal/repository"
+	"prometheusdemo/internal/repository/cache"
 	"prometheusdemo/internal/repository/dao"
 	"prometheusdemo/internal/service"
 	"prometheusdemo/internal/web"
+	"prometheusdemo/internal/web/middlewares"
 	"prometheusdemo/ioc"
 )
 
 // Injectors from wire.go:
 
 func InitializeApp() *App {
-	v := ioc.InitGinMiddlewares()
 	mysqlConfig := ioc.InitMysqlConfig()
 	db := ioc.InitDB(mysqlConfig)
 	userDAO := dao.NewUserDAO(db)
-	userRepository := repository.NewCacheUserRepository(userDAO)
+	redisConfig := ioc.InitRedisConfig()
+	cmdable := ioc.InitRedis(redisConfig)
+	userCache := cache.NewUserCache(cmdable)
+	userRepository := repository.NewCacheUserRepository(userDAO, userCache)
+	client := ioc.InitRedisClient(redisConfig)
+	middleUserCache := middlewares.NewMiddleUserCache(userRepository, client)
+	v := ioc.InitGinMiddlewares(middleUserCache)
 	userService := service.NewUserService(userRepository)
 	userHandler := web.NewUserHandler(userService)
 	engine := ioc.InitWebServer(v, userHandler)
