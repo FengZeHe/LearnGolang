@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"log"
 	"math/rand"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -30,14 +33,18 @@ func main() {
 		}
 	}()
 
+	_, err = initDB()
+	if err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
+	}
+
 	r := gin.Default()
 	r.Use(otelgin.Middleware("gin-service"))
 
 	// 定义一个带有参数的 GET 路由
 	r.GET("/hello", HandleHi)
 
-	// 启动服务器，监听 8080 端口
-	r.Run(":8080")
+	r.Run(":8087")
 }
 
 func HandleHi(c *gin.Context) {
@@ -50,12 +57,21 @@ func HandleHi(c *gin.Context) {
 
 	time.Sleep(time.Duration(rand.Intn(200)+1) * time.Millisecond)
 
+	db, _ := initDB()
+	data, err := QueryUser(db)
+	if err != nil {
+		span.RecordError(err)
+		c.JSON(500, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	span.SetStatus(codes.Ok, "Success")
 	c.JSON(200, gin.H{
-		"message": "hi!",
+		"message": data,
 	})
 
-	// 设置 span 状态
-	span.SetStatus(codes.Ok, "Success")
 }
 
 func initTracerProvider(zipkinEndpoint string) (*tracesdk.TracerProvider, error) {
@@ -84,4 +100,32 @@ func initTracerProvider(zipkinEndpoint string) (*tracesdk.TracerProvider, error)
 	)
 	otel.SetTracerProvider(tp)
 	return tp, nil
+}
+
+type User struct {
+	Id       string `json:"id" column:"id"`
+	Email    string `json:"email" column:"email"`
+	Password string `json:"password" column:"password"`
+	Role     string `json:"role" column:"role"`
+}
+
+func initDB() (*gorm.DB, error) {
+	// 配置 MySQL 连接信息
+	dsn := "root:12345678@tcp(127.0.0.1:3306)/webook?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	// 添加 OpenTelemetry 插件
+	db.Use(otelgorm.NewPlugin())
+
+	return db, nil
+}
+
+func QueryUser(db *gorm.DB) (data User, err error) {
+	if err = db.Table("users").First(&data).Error; err != nil {
+		return data, err
+	}
+	return data, nil
 }
