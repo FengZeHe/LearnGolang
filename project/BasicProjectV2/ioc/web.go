@@ -13,7 +13,7 @@ import (
 func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web.SysHandler,
 	menuHdl *web.MenuHandler, roleHdl *web.RoleHandler, draftHdl *web.DraftHandler, articleHdl *web.ArticleHandler) *gin.Engine {
 	server := gin.Default()
-	server.Use(mdls[0])
+	server.Use(mdls[0], mdls[4], mdls[5])
 	userHdl.RegisterRoutes(server, mdls[3], mdls[2])
 	sysHdl.RegisterRoutes(server, mdls[1], mdls[2], mdls[3])
 	menuHdl.RegisterRoutes(server, mdls[2])
@@ -26,6 +26,13 @@ func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web
 
 // 初始化中间件
 func InitGinMiddlewares(ca *middleware.CasbinRoleCheck, i18n *i18n.Bundle) []gin.HandlerFunc {
+	pb := &middleware.MonitoringBuilder{
+		NameSpace: "basic_projectV2",
+		Subsystem: "ordinary_service",
+		Name:      "http_request",
+		Help:      "",
+	}
+
 	return []gin.HandlerFunc{
 		cors.New(cors.Config{
 			//AllowAllOrigins: true,
@@ -50,6 +57,8 @@ func InitGinMiddlewares(ca *middleware.CasbinRoleCheck, i18n *i18n.Bundle) []gin
 		ca.CheckRole(),
 		(&middleware.LoginJWTMiddlewareBuilder{}).CheckLogin(),
 		middleware.I18nMiddleware(i18n),
+		pb.HttpRequestTotalCounter(),
+		pb.HttpResponseTime(),
 	}
 }
 

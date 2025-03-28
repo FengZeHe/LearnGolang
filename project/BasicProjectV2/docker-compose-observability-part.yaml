@@ -1,0 +1,42 @@
+version: "3"
+services:
+  prometheus:
+    image: bitnami/prometheus:2.55.1
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
+    command:
+      - "--config.file=/opt/bitnami/prometheus/conf/prometheus.yml"
+  zipkin:
+    image: bitnami/zipkin:3.5.0
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    environment:
+      - ZIPKIN_AUTHENTICATION_DISABLED=yes
+  grafana:
+    image: grafana/grafana:11.5.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+#  node-exporter:
+#    image: bitnami/node-exporter:1.9.0
+#    container_name: node-exporter
+#    network_mode: "host"
+#    pid: "host"
+#    command:
+#      - '--path.rootfs=/host'
+#    restart: unless-stopped
+#    volumes:
+##      - 在linux下
+#      - '/:/host:ro'
+
+volumes:
+  grafana-data:

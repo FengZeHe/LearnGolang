@@ -59,17 +59,10 @@ func InitializeApp() *App {
 	articleDAO := dao.NewArticleDAO(db)
 	articleRepository := repository.NewArticleRepository(articleDAO)
 	articleService := service.NewArticleService(articleRepository)
-	kafkaConfig := settings.InitSaramaConfig()
-	client := ioc.InitSaramaClient(kafkaConfig)
-	syncProducer := ioc.InitSyncProducer(client)
-	producer := article.NewSaramaSyncProducer(syncProducer)
-	articleHandler := web.NewArticleHandler(articleService, producer)
+	articleHandler := web.NewArticleHandler(articleService)
 	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler)
-	consumer := ProvideSaramaConsumerClient()
-	articleConsumer := ProvideSaramaConsumer(consumer, articleDAO)
 	app := &App{
-		server:         engine,
-		saramaConsumer: articleConsumer,
+		server: engine,
 	}
 	return app
 }

@@ -3,7 +3,6 @@ package web
 import (
 	"fmt"
 	"github.com/basicprojectv2/internal/domain"
-	"github.com/basicprojectv2/internal/events/article"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -12,12 +11,12 @@ import (
 )
 
 type ArticleHandler struct {
-	svc          service.ArticleService
-	readProducer article.Producer
+	svc service.ArticleService
+	//readProducer article.Producer
 }
 
-func NewArticleHandler(svc service.ArticleService, readProducer article.Producer) *ArticleHandler {
-	return &ArticleHandler{svc: svc, readProducer: readProducer}
+func NewArticleHandler(svc service.ArticleService) *ArticleHandler {
+	return &ArticleHandler{svc: svc}
 }
 
 func (r *ArticleHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.HandlerFunc) {
@@ -26,7 +25,7 @@ func (r *ArticleHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.Handl
 
 	rg.POST("/getArticles", r.GetArticles)
 	rg.POST("/getAuthorArticles", r.GetAuthorArticles)
-	rg.POST("/addReadCount", r.AddReadCount)
+	//rg.POST("/addReadCount", r.AddReadCount)
 }
 
 func (r *ArticleHandler) GetArticles(c *gin.Context) {
@@ -101,19 +100,20 @@ func (r *ArticleHandler) AddReadCount(c *gin.Context) {
 		})
 		return
 	}
+	log.Println(articleID)
 
 	// 发送阅读事件到kafka
-	evt := article.ReadEvent{
-		Aid: articleID,
-		Uid: c.GetInt64("userid"),
-	}
-
-	if err := r.readProducer.ProduceReadEvent(evt); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg": err.Error(),
-		})
-		return
-	}
+	//evt := article.ReadEvent{
+	//	Aid: articleID,
+	//	Uid: c.GetInt64("userid"),
+	//}
+	//
+	//if err := r.readProducer.ProduceReadEvent(evt); err != nil {
+	//	c.JSON(http.StatusInternalServerError, gin.H{
+	//		"msg": err.Error(),
+	//	})
+	//	return
+	//}
 
 	c.JSON(http.StatusOK, gin.H{
 		"msg": "ok",

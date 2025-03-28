@@ -1,0 +1,14 @@
+scrape_configs:
+  - job_name: 'prometheus_demo'
+    scrape_interval: 5s
+    scrape_timeout: 3s
+    static_configs:
+      - targets: [ "30.116.184.138:8081" ]
+    basic_auth:
+      username: "prometheus"
+      password: "prometheus_password"
+#        192.168.10.232  30.116.184.138
+  - job_name: "node_exporter"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["30.116.184.137:9100"]
