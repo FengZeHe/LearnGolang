@@ -5,6 +5,8 @@ import (
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 	"log"
 	"net/http"
 	"strconv"
@@ -29,8 +31,12 @@ func (r *ArticleHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.Handl
 }
 
 func (r *ArticleHandler) GetArticles(c *gin.Context) {
+	_, span := otel.Tracer("gin-service").Start(c.Request.Context(), "handleGetArticle")
+	defer span.End()
+
 	req := domain.QueryArticlesReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
+		span.RecordError(err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"msg": "请求参数错误",
 		})
@@ -46,10 +52,12 @@ func (r *ArticleHandler) GetArticles(c *gin.Context) {
 	data, err := r.svc.GetArticles(c, req)
 	if err != nil {
 		log.Println(err)
+		span.RecordError(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"msg": err.Error(),
 		})
 	}
+	span.SetStatus(codes.Ok, "Success")
 	c.JSON(http.StatusOK, gin.H{
 		"data": data,
 	})

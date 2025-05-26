@@ -1,8 +1,16 @@
 package main
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/zipkin"
+	"go.opentelemetry.io/otel/sdk/resource"
+
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0" // 使用统一的架构版本
 	"log"
 )
 
@@ -15,8 +23,20 @@ func main() {
 		}
 	}()
 
+	// 初始化 Zipkin exporter 和 TracerProvider
+	zipkinEndpoint := "http://192.168.95.131:9411/api/v2/spans"
+	tp, err := initTracerProvider(zipkinEndpoint)
+	if err != nil {
+		log.Fatalf("failed to initialize tracer provider: %v", err)
+	}
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Printf("Error shutting down tracer provider: %v", err)
+		}
+	}()
+
 	server := app.server
-	err := server.Run(":8088")
+	err = server.Run(":8088")
 	if err != nil {
 		return
 	}
@@ -25,6 +45,14 @@ func main() {
 
 // 初始化Prometheus
 func initPrometheus() *gin.Engine {
+
+	var appAlive = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "app_alive",
+		Help: "Heartbeat detection",
+	})
+	prometheus.MustRegister(appAlive)
+	appAlive.Set(1)
+
 	r := gin.Default()
 	r.GET("/metrics", promAuthMiddleware(), gin.WrapH(promhttp.Handler()))
 	log.Println("init Prometheus metrics server success!")
@@ -35,4 +63,32 @@ func promAuthMiddleware() gin.HandlerFunc {
 	return gin.BasicAuth(gin.Accounts{
 		"prometheus": "prometheus_password",
 	})
+}
+
+func initTracerProvider(zipkinEndpoint string) (*tracesdk.TracerProvider, error) {
+	// 创建 Zipkin exporter
+	exp, err := zipkin.New(zipkinEndpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	// 创建资源，添加服务名称等信息
+	r, err := resource.Merge(
+		resource.Default(),
+		resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String("gin-service"),
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// 创建 TracerProvider
+	tp := tracesdk.NewTracerProvider(
+		tracesdk.WithBatcher(exp),
+		tracesdk.WithResource(r),
+	)
+	otel.SetTracerProvider(tp)
+	return tp, nil
 }

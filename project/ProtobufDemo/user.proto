@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option go_package = "./service";
+package service;
+
+message User {
+  int64 userid = 1;
+  string username = 2;
+  int32 age=3;
+}

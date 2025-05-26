@@ -17,6 +17,7 @@ func main() {
 }
 
 func initPrometheus() {
+
 	go func() {
 		// 专门给 prometheus 用的端口
 		http.Handle("/metrics", promhttp.Handler())

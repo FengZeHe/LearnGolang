@@ -6,6 +6,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"time"
 )
 
@@ -13,7 +14,7 @@ import (
 func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web.SysHandler,
 	menuHdl *web.MenuHandler, roleHdl *web.RoleHandler, draftHdl *web.DraftHandler, articleHdl *web.ArticleHandler) *gin.Engine {
 	server := gin.Default()
-	server.Use(mdls[0], mdls[4], mdls[5])
+	server.Use(mdls[0], mdls[4], mdls[5], mdls[6])
 	userHdl.RegisterRoutes(server, mdls[3], mdls[2])
 	sysHdl.RegisterRoutes(server, mdls[1], mdls[2], mdls[3])
 	menuHdl.RegisterRoutes(server, mdls[2])
@@ -59,8 +60,6 @@ func InitGinMiddlewares(ca *middleware.CasbinRoleCheck, i18n *i18n.Bundle) []gin
 		middleware.I18nMiddleware(i18n),
 		pb.HttpRequestTotalCounter(),
 		pb.HttpResponseTime(),
+		otelgin.Middleware("gin-service"),
 	}
-}
-
-type UserHandler struct {
 }

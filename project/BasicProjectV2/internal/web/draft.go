@@ -4,6 +4,8 @@ import (
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 	"net/http"
 )
 
@@ -65,8 +67,12 @@ func (r *DraftHandler) getDraft(c *gin.Context) {
 }
 
 func (r *DraftHandler) AddArticle(c *gin.Context) {
+	_, span := otel.Tracer("gin-service").Start(c.Request.Context(), "handleAddArticle")
+	defer span.End()
+
 	var req domain.AddDraftReq
 	if err := c.ShouldBindJSON(&req); err != nil {
+		span.RecordError(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "请求参数错误"})
 		return
 	}
@@ -82,6 +88,7 @@ func (r *DraftHandler) AddArticle(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	span.SetStatus(codes.Ok, "Success")
 	c.JSON(http.StatusOK, gin.H{
 		"msg": "保存成功",
 	})
