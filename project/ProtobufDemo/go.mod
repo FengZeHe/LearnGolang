@@ -1,8 +1,9 @@
 module protobufdemo
 
-go 1.23.7
+go 1.22
+
+
 
 require (
-	github.com/golang/protobuf v1.5.4
 	google.golang.org/protobuf v1.36.6
 )
