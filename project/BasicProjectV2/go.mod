@@ -2,8 +2,6 @@ module github.com/basicprojectv2
 
 go 1.22.0
 
-toolchain go1.23.7
-
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/IBM/sarama v1.45.0
@@ -13,21 +11,17 @@ require (
 	github.com/gin-contrib/cors v1.7.1
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-sql-driver/mysql v1.7.0
-	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/wire v0.6.0
 	github.com/nicksnyder/go-i18n/v2 v2.4.1
 	github.com/pkg/errors v0.9.1
-	github.com/redis/go-redis/v9 v9.5.1
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/mock v0.4.0
-	golang.org/x/crypto v0.33.0
 	golang.org/x/text v0.22.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.11
 )
 
-require golang.org/x/net v0.35.0 // indirect
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
