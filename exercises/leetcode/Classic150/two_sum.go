@@ -38,7 +38,7 @@ func main() {
 
 //思路：如果存在两数A、B之和等于给定值，那么A = 给定值 - B，这时候再循环下标看哪个值等于A
 /*
-func twoSum(nums []int, target int) []int {
+fun twoSum(nums []int, target int) []int {
 	res := []int{}
 	for i := 0; i < len(nums); i++ {
 		temp := target - nums[i]

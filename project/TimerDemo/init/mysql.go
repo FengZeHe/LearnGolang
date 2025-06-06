@@ -6,13 +6,12 @@ import (
 	"log"
 )
 
-func InitMysql() (db *gorm.DB) {
+func InitMysqlDB() (db *gorm.DB) {
 	dsn := "root:12345678@tcp(127.0.0.1:3306)/dbtask?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Println(err)
-		return
+		panic(err)
 	}
-	log.Println("connect to Mysql success")
+	log.Println("mysql connect success")
 	return db
 }

@@ -26,10 +26,10 @@ func Mutex() {
 }
 
 /*
-	func (rw *RWMutex) Lock       //写锁定
-	func (rw *RWMutex) Unlock     //写解锁
-	func (rw *RWMutex) RLock      //读锁定
-	func (rw *RWMutex) RUnlock    //读解锁
+	fun (rw *RWMutex) Lock       //写锁定
+	fun (rw *RWMutex) Unlock     //写解锁
+	fun (rw *RWMutex) RLock      //读锁定
+	fun (rw *RWMutex) RUnlock    //读解锁
 */
 
 func RWMutex() {

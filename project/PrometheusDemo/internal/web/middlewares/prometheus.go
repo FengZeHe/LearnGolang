@@ -239,7 +239,7 @@ func (h *CacheHitHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (cont
 	return ctx, nil
 }
 
-//func (h *CacheHitHook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
+//fun (h *CacheHitHook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
 //	if cmd.Name() == "get" { // Redis 命令名称是小写的
 //		if cmd.Err() == redis.Nil {
 //			h.cacheMissCounter.WithLabelValues("get").Inc()
