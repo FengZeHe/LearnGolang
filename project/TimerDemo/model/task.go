@@ -26,3 +26,8 @@ type AddTaskReq struct {
 	TaskType string `json:"taskType"`
 	TaskName string `json:"taskName"`
 }
+
+type UpdateTaskReq struct {
+	ID     int `json:"id"`
+	Status int `json:"status"`
+}
