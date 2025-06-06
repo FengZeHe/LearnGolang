@@ -80,6 +80,23 @@ func (s *CronScheduler) Stop() {
 	s.taskEntry = make(map[uint]cron.EntryID)
 }
 
+func (s *CronScheduler) RemoveTask(taskID uint) (err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	// 检查任务是否存在
+	entryID, exists := s.taskEntry[taskID]
+	if !exists {
+		log.Println("任务不存在", taskID)
+		return nil
+	}
+	s.cron.Remove(entryID)
+	delete(s.taskEntry, taskID) // 删除map中的字段
+
+	log.Println("已停止任务", taskID)
+	return nil
+}
+
 // 添加Task到Cron中
 func (s *CronScheduler) addTaskToCron(task *model.TbTasks) (err error) {
 

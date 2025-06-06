@@ -1,18 +1,22 @@
 package service
 
 import (
+	"context"
 	"github.com/robfig/cron/v3"
 	"log"
 	"timerDemo/dao"
 	"timerDemo/model"
+	"timerDemo/scheduler"
 )
 
 type TaskService interface {
 	CreateTask(task model.TbTasks) error
+	PauseTask(ctx context.Context, taskID uint) error
 }
 
 type taskService struct {
-	repo dao.TaskDAO
+	repo      dao.TaskDAO
+	scheduler *scheduler.CronScheduler
 }
 
 func (t taskService) CreateTask(task model.TbTasks) (err error) {
@@ -40,6 +44,23 @@ func (t taskService) CreateTask(task model.TbTasks) (err error) {
 	return nil
 }
 
-func NewTaskService(repo dao.TaskDAO) TaskService {
-	return taskService{repo: repo}
+func NewTaskService(repo dao.TaskDAO, cronScheduler *scheduler.CronScheduler) TaskService {
+	return taskService{repo: repo, scheduler: cronScheduler}
+}
+
+func (t taskService) PauseTask(ctx context.Context, taskID uint) (err error) {
+	// 查询任务
+	task, err := t.repo.GetTaskByID(ctx, taskID)
+	if err != nil {
+		return err
+	}
+	task.Status = 1 // 标记为暂停
+	if err = t.repo.UpdateTask(task); err != nil {
+		return err
+	}
+	if srErr := t.scheduler.RemoveTask(taskID); srErr != nil {
+		return srErr
+	}
+
+	return nil
 }

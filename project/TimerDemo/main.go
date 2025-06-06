@@ -18,10 +18,9 @@ func main() {
 
 	db := idb.InitMysqlDB()
 	repo := dao.NewTaskDAO(db)
-	srv := service.NewTaskService(repo)
-
 	// 初始化cron调度器
 	sch := scheduler.NewCronScheduler(repo, tr)
+	srv := service.NewTaskService(repo, sch)
 
 	// 启动Cron调度器
 	ctx := context.Background()

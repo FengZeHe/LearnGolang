@@ -23,7 +23,7 @@ func RegisterTaskRouter(srv service.TaskService) *gin.Engine {
 		v1.POST("/update")
 		v1.POST("/delete/:id")
 		v1.GET("/")
-		v1.POST("/action/:id")
+		v1.POST("/stop/:id", tc.PauseTask)
 		// 日志部分
 		v1.GET("/log")
 		v1.GET("/log/:id")
