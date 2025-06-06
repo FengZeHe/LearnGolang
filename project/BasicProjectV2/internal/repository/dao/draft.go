@@ -62,7 +62,7 @@ func (dao *GORMDraftDAO) InsertDraftAndArticle(ctx context.Context, d domain.Dra
 	return err
 	// todo Mysql手动事务
 	//tx := dao.db.Begin()
-	//defer func() {
+	//defer fun() {
 	//	if r := recover(); r != nil {
 	//		tx.Rollback()
 	//	}

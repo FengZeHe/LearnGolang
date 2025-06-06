@@ -45,7 +45,7 @@ func InitGinMiddlewares(ca *middleware.CasbinRoleCheck, i18n *i18n.Bundle) []gin
 			ExposeHeaders: []string{"x-jwt-token"},
 			//AllowHeaders: []string{"content-type"},
 			//AllowMethods: []string{"POST"},
-			//AllowOriginFunc: func(origin string) bool {
+			//AllowOriginFunc: fun(origin string) bool {
 			//	if strings.HasPrefix(origin, "http://localhost") {
 			//		//if strings.Contains(origin, "localhost") {
 			//		return true

@@ -1,13 +1,17 @@
 package model
 
+import "time"
+
 // TbTask Model
 type TbTasks struct {
-	ID        int    `json:"id"`
-	Name      string `json:"name"`
-	CronExpr  string `json:"cronExpr"`
-	Status    int    `json:"status"`
-	CreatedAt string `json:"createdAt"`
-	UpdatedAt string `json:"updatedAt"`
+	ID        uint      `json:"id" `
+	Name      string    `json:"name" gorm:"column:name"`
+	CronExpr  string    `json:"cronExpr" gorm:"column:cron_expr"`
+	TaskType  string    `json:"taskType" gorm:"column:task_type"` // 任务类型，脚本/函数 script/fun
+	TaskName  string    `json:"taskName" gorm:"column:task_name"` // 执行任务名称
+	Status    int       `json:"status"`
+	CreatedAt time.Time `json:"createdAt" gorm:"column:created_at"`
+	UpdatedAt time.Time `json:"updatedAt" gorm:"column:updated_at"`
 }
 
 type TbTaskLog struct {
@@ -19,4 +23,6 @@ type TbTaskLog struct {
 type AddTaskReq struct {
 	Name     string `json:"name"`
 	CronExpr string `json:"cronExpr"`
+	TaskType string `json:"taskType"`
+	TaskName string `json:"taskName"`
 }

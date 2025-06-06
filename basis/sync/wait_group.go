@@ -9,9 +9,9 @@ import (
 /*
 	wait group用于等待一组goroutine结束
 	有这些方法：
-	func (wg *WaitGroup) Add(delta int) Add 用来添加 goroutine 的个数
-	func (wg *WaitGroup) Done() Done 执行一次数量减 1
-	func (wg *WaitGroup) Wait() Wait 用来等待结束
+	fun (wg *WaitGroup) Add(delta int) Add 用来添加 goroutine 的个数
+	fun (wg *WaitGroup) Done() Done 执行一次数量减 1
+	fun (wg *WaitGroup) Wait() Wait 用来等待结束
 */
 
 func main() {

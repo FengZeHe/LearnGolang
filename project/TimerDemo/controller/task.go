@@ -21,6 +21,16 @@ func (tc *TaskController) AddTask(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": "okk"})
+	task := model.TbTasks{
+		Name:     req.Name,
+		CronExpr: req.CronExpr,
+		TaskType: req.TaskType,
+		TaskName: req.TaskName,
+	}
+	if err := tc.srv.CreateTask(task); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "task added"})
 
 }
