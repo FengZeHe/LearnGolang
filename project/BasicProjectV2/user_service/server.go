@@ -3,7 +3,6 @@ package user_service
 import (
 	"context"
 	"github.com/basicprojectv2/internal/service"
-	"log"
 )
 
 type UserService struct {
@@ -21,7 +20,6 @@ func (s *UserService) GetUserById(ctx context.Context, req *GetUserByIdReq) (*Us
 	if err != nil {
 		return nil, err
 	}
-	log.Println(user)
 	return &User{
 		Id:       user.ID,
 		Email:    user.Email,
