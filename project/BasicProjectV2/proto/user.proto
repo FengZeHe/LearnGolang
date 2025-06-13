@@ -3,6 +3,7 @@ syntax = "proto3";
 package user_service;
 
 option go_package = "./user_service";
+import "google/api/annotations.proto";
 
 // 定义User消息
  message User {
@@ -24,3 +25,4 @@ message GetUserByIdReq {
 service UserService {
    rpc GetUserById(GetUserByIdReq) returns (User);
 }
+
