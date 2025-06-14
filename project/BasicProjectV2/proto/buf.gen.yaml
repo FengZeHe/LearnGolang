@@ -1,0 +1,15 @@
+version: v1
+plugins:
+  - name: go
+    out: user_service
+    opt: paths=source_relative
+  - name: go-grpc
+    out: user_service
+    opt:
+      - paths=source_relative
+      - require_unimplemented_servers=false
+  - name: grpc-gateway
+    out: user_service
+    opt:
+      - paths=source_relative
+      - generate_unbound_methods=true

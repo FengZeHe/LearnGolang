@@ -100,15 +100,15 @@ func (s *CronScheduler) RemoveTask(taskID uint) (err error) {
 // 添加Task到Cron中
 func (s *CronScheduler) addTaskToCron(task *model.TbTasks) (err error) {
 
-	// 创建一个默认的cron解析器
+	// 创建cron解析器
 	parser := cron.NewParser(
-		cron.SecondOptional | // 允许秒字段（可选）
-			cron.Minute | // 分钟字段
-			cron.Hour | // 小时字段
-			cron.Dom | // 日期字段
-			cron.Month | // 月份字段
-			cron.Dow | // 星期字段
-			cron.Descriptor, // 支持描述符，如@daily, @weekly等
+		cron.SecondOptional |
+			cron.Minute |
+			cron.Hour |
+			cron.Dom |
+			cron.Month |
+			cron.Dow |
+			cron.Descriptor,
 	)
 
 	schedule, err := parser.Parse(task.CronExpr)
@@ -145,5 +145,4 @@ func (s *CronScheduler) execTask(task *model.TbTasks, exec tasks.TaskExecutor) {
 		log.Println("exec Task Error:", err)
 		return
 	}
-
 }
