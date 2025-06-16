@@ -34,7 +34,6 @@ func (tc *TaskController) AddTask(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"msg": "task added"})
-
 }
 
 func (tc *TaskController) PauseTask(c *gin.Context) {
