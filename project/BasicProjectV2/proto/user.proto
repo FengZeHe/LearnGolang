@@ -23,6 +23,11 @@ message GetUserByIdReq {
 }
 
 service UserService {
-   rpc GetUserById(GetUserByIdReq) returns (User);
+   rpc GetUserById(GetUserByIdReq) returns (User){
+     option (google.api.http) = {
+       post: "/v1/user/{id}"
+       body:"*"
+     };
+   }
 }
 
