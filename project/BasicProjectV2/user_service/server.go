@@ -21,7 +21,7 @@ func (s *UserService) GetUserById(ctx context.Context, req *GetUserByIdReq) (*Us
 	if err != nil {
 		return nil, err
 	}
-	log.Println(user)
+	log.Printf("user: %v", user)
 	return &User{
 		Id:       user.ID,
 		Email:    user.Email,

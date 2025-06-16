@@ -1,5 +1,5 @@
 version: v1
-name: buf.build/myuser/myrepo
+name: buf.build/user_service
 deps:
   - buf.build/googleapis/googleapis
 breaking:
