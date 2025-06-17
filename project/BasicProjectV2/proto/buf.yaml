@@ -1,5 +1,5 @@
 version: v1
-name: buf.build/user_service
+name: buf.build/basicProjectService/userService
 deps:
   - buf.build/googleapis/googleapis
 breaking:
