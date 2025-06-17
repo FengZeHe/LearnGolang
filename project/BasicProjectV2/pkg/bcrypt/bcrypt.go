@@ -10,7 +10,6 @@ var (
 )
 
 // 密码加密与密码对比功能的实现
-
 func GetPwd(password string) (hashStr string, err error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	hashStr = string(hash)

@@ -5,7 +5,7 @@ package user_service;
 option go_package = "../user_service";
 
 import "google/api/annotations.proto";
-
+import "google/protobuf/empty.proto";
 
 // 定义User消息
  message User {
@@ -24,6 +24,32 @@ message GetUserByIdReq {
    string id = 1;
 }
 
+
+// 用户注册请求
+message UserRegisterReq {
+  string email = 1;
+  string password = 2;
+  string confirmPassword = 3;
+}
+
+message UserRegisterResp {
+  string msg  = 1;
+}
+
+message UserLoginReq {
+  string email  = 1;
+  string password = 2;
+}
+
+message UserLoginResp {
+   string msg = 1;
+   string token = 2;
+}
+
+message HiResp {
+   string msg = 1;
+}
+
 service UserService {
    rpc GetUserById(GetUserByIdReq) returns (User){
      option (google.api.http) = {
@@ -31,4 +57,24 @@ service UserService {
        body:"*"
      };
    };
+
+   rpc UserRegister(UserRegisterReq) returns (UserRegisterResp){
+      option (google.api.http) = {
+        post:"/v1/user/register",
+        body:"*"
+      };
+   }
+
+   rpc UserLogin(UserLoginReq) returns (UserLoginResp) {
+     option (google.api.http) = {
+        post:"/v1/user/login",
+        body:"*"
+     };
+   }
+
+   rpc Hi(google.protobuf.Empty) returns (HiResp){
+     option (google.api.http) = {
+        get:"/v1/user/hi"
+     };
+   }
 }
