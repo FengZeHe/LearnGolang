@@ -1,3 +1,5 @@
+//go:build wireinject
+
 package main
 
 import (
@@ -13,10 +15,11 @@ func InitializeApp() *App {
 	wire.Build(
 		settings.InitMysqlConfig,
 		ioc.InitDB,
-		ioc.NewGrpcServer,
+		//ioc.NewGrpcServer,
 		dao.NewUserDAO,
 		service.NewUserService,
 		repository.NewUserRepository,
+		NewUerService,
 		NewApp,
 	)
 	return &App{}
