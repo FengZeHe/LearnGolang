@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: user.proto
 
-package user_service
+package main
 
 import (
 	context "context"
