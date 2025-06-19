@@ -1,10 +1,10 @@
-package user_service
+package main
 
 import (
 	"context"
-	"github.com/basicprojectv2/internal/domain"
-	"github.com/basicprojectv2/internal/service"
-	"github.com/basicprojectv2/pkg/jwt"
+	"github.com/basicprojectv2/user_service/domain"
+	"github.com/basicprojectv2/user_service/pkg/jwt"
+	"github.com/basicprojectv2/user_service/service"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"log"
 )
