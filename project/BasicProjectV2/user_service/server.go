@@ -71,6 +71,6 @@ func (s *UserService) UserLogin(ctx context.Context, req *pb.UserLoginReq) (logi
 
 func (s *UserService) Hi(ctx context.Context, in *emptypb.Empty) (resp *pb.HiResp, err error) {
 	resp = &pb.HiResp{}
-	resp.Msg = "Hi! 这里是user_service"
+	resp.Msg = "Hi! 这里是user_service ,gRPC Server"
 	return resp, nil
 }

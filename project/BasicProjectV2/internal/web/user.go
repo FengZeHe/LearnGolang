@@ -362,7 +362,7 @@ func (h *UserHandler) Hi(ctx *gin.Context) {
 	welcomeMsg, err := localizer.(*i18n.Localizer).Localize(localizeConfig)
 	if err != nil {
 		log.Println("localize welcome error", err)
-		welcomeMsg = "Hi 这里是BasicProjectV2 "
+		welcomeMsg = "Hi 这里是BasicProjectV2 单体~ "
 	}
 	ctx.JSON(200, welcomeMsg)
 }
