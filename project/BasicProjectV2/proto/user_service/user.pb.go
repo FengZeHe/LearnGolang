@@ -4,7 +4,7 @@
 // 	protoc        (unknown)
 // source: user.proto
 
-package main
+package user_service
 
 import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"

@@ -6,7 +6,7 @@ Package user_service is a reverse proxy.
 
 It translates gRPC into RESTful JSON APIs.
 */
-package main
+package user_service
 
 import (
 	"context"
