@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	pb "github.com/basicprojectv2/proto/user_service"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	//user_service "github.com/basicprojectv2/user_service/
 	"google.golang.org/grpc"
@@ -25,7 +26,7 @@ func NewApp(userSvc *UserService) *App {
 }
 
 func (a *App) Start() error {
-	RegisterUserServiceServer(a.grpcServer, a.userSvc)
+	pb.RegisterUserServiceServer(a.grpcServer, a.userSvc)
 
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
@@ -48,7 +49,7 @@ func (a *App) Start() error {
 	defer conn.Close()
 
 	gwmux := runtime.NewServeMux()
-	err = RegisterUserServiceHandler(context.Background(), gwmux, conn)
+	err = pb.RegisterUserServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		log.Fatal("Failed to register gateway:", err)
 	}

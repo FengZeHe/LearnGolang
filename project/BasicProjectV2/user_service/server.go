@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	pb "github.com/basicprojectv2/proto/user_service"
 	"github.com/basicprojectv2/user_service/domain"
 	"github.com/basicprojectv2/user_service/pkg/jwt"
 	"github.com/basicprojectv2/user_service/service"
@@ -10,7 +11,7 @@ import (
 )
 
 type UserService struct {
-	UnimplementedUserServiceServer
+	pb.UnimplementedUserServiceServer
 	svc service.UserService
 }
 
@@ -19,12 +20,12 @@ func NewUerService(svc service.UserService) *UserService {
 	return &UserService{svc: svc}
 }
 
-func (s *UserService) GetUserById(ctx context.Context, req *GetUserByIdReq) (*User, error) {
+func (s *UserService) GetUserById(ctx context.Context, req *pb.GetUserByIdReq) (*pb.User, error) {
 	user, err := s.svc.FindById(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
-	return &User{
+	return &pb.User{
 		Id:       user.ID,
 		Email:    user.Email,
 		Phone:    user.Phone,
@@ -35,8 +36,8 @@ func (s *UserService) GetUserById(ctx context.Context, req *GetUserByIdReq) (*Us
 	}, nil
 }
 
-func (s *UserService) UserRegister(ctx context.Context, req *UserRegisterReq) (signResp *UserRegisterResp, err error) {
-	signResp = &UserRegisterResp{} // 初始化signResp
+func (s *UserService) UserRegister(ctx context.Context, req *pb.UserRegisterReq) (signResp *pb.UserRegisterResp, err error) {
+	signResp = &pb.UserRegisterResp{} // 初始化signResp
 
 	err = s.svc.Signup(ctx, domain.User{Email: req.Email, Password: req.Password})
 	if err != nil {
@@ -48,8 +49,8 @@ func (s *UserService) UserRegister(ctx context.Context, req *UserRegisterReq) (s
 	return signResp, nil
 }
 
-func (s *UserService) UserLogin(ctx context.Context, req *UserLoginReq) (loginResp *UserLoginResp, err error) {
-	loginResp = &UserLoginResp{}
+func (s *UserService) UserLogin(ctx context.Context, req *pb.UserLoginReq) (loginResp *pb.UserLoginResp, err error) {
+	loginResp = &pb.UserLoginResp{}
 	u, err := s.svc.Login(ctx, req.Email, req.Password)
 	if err != nil {
 		log.Println(err)
@@ -68,8 +69,8 @@ func (s *UserService) UserLogin(ctx context.Context, req *UserLoginReq) (loginRe
 
 }
 
-func (s *UserService) Hi(ctx context.Context, in *emptypb.Empty) (resp *HiResp, err error) {
-	resp = &HiResp{}
-	resp.Msg = "Hi! 这里是user_service"
+func (s *UserService) Hi(ctx context.Context, in *emptypb.Empty) (resp *pb.HiResp, err error) {
+	resp = &pb.HiResp{}
+	resp.Msg = "Hi! 这里是user_service ,gRPC Server"
 	return resp, nil
 }

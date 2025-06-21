@@ -34,7 +34,7 @@ func NewUserHandler(svc service.UserService, codeSvc service.CodeService) *UserH
 // 注册路由
 func (h *UserHandler) RegisterRoutes(server *gin.Engine, i18n, loginCheck gin.HandlerFunc) {
 	ug := server.Group("/v2/users/")
-	ug.GET("/hi", i18n, h.Hi)
+	ug.GET("/hi", loginCheck, i18n, h.Hi)
 	ug.POST("/signin", h.SignIn)
 	ug.POST("/login", h.Login)
 	ug.POST("/loginsms/code/send", h.SendSMS)
@@ -362,7 +362,7 @@ func (h *UserHandler) Hi(ctx *gin.Context) {
 	welcomeMsg, err := localizer.(*i18n.Localizer).Localize(localizeConfig)
 	if err != nil {
 		log.Println("localize welcome error", err)
-		welcomeMsg = "default welcome message"
+		welcomeMsg = "Hi 这里是BasicProjectV2 单体~ "
 	}
 	ctx.JSON(200, welcomeMsg)
 }
