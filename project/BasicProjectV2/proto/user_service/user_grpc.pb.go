@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,7 +20,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	UserService_GetUserById_FullMethodName = "/user_service.UserService/GetUserById"
+	UserService_GetUserById_FullMethodName  = "/user_service.UserService/GetUserById"
+	UserService_UserRegister_FullMethodName = "/user_service.UserService/UserRegister"
+	UserService_UserLogin_FullMethodName    = "/user_service.UserService/UserLogin"
+	UserService_Hi_FullMethodName           = "/user_service.UserService/Hi"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -27,6 +31,9 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
 	GetUserById(ctx context.Context, in *GetUserByIdReq, opts ...grpc.CallOption) (*User, error)
+	UserRegister(ctx context.Context, in *UserRegisterReq, opts ...grpc.CallOption) (*UserRegisterResp, error)
+	UserLogin(ctx context.Context, in *UserLoginReq, opts ...grpc.CallOption) (*UserLoginResp, error)
+	Hi(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*HiResp, error)
 }
 
 type userServiceClient struct {
@@ -46,11 +53,41 @@ func (c *userServiceClient) GetUserById(ctx context.Context, in *GetUserByIdReq,
 	return out, nil
 }
 
+func (c *userServiceClient) UserRegister(ctx context.Context, in *UserRegisterReq, opts ...grpc.CallOption) (*UserRegisterResp, error) {
+	out := new(UserRegisterResp)
+	err := c.cc.Invoke(ctx, UserService_UserRegister_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) UserLogin(ctx context.Context, in *UserLoginReq, opts ...grpc.CallOption) (*UserLoginResp, error) {
+	out := new(UserLoginResp)
+	err := c.cc.Invoke(ctx, UserService_UserLogin_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) Hi(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*HiResp, error) {
+	out := new(HiResp)
+	err := c.cc.Invoke(ctx, UserService_Hi_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations should embed UnimplementedUserServiceServer
 // for forward compatibility
 type UserServiceServer interface {
 	GetUserById(context.Context, *GetUserByIdReq) (*User, error)
+	UserRegister(context.Context, *UserRegisterReq) (*UserRegisterResp, error)
+	UserLogin(context.Context, *UserLoginReq) (*UserLoginResp, error)
+	Hi(context.Context, *emptypb.Empty) (*HiResp, error)
 }
 
 // UnimplementedUserServiceServer should be embedded to have forward compatible implementations.
@@ -59,6 +96,15 @@ type UnimplementedUserServiceServer struct {
 
 func (UnimplementedUserServiceServer) GetUserById(context.Context, *GetUserByIdReq) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserById not implemented")
+}
+func (UnimplementedUserServiceServer) UserRegister(context.Context, *UserRegisterReq) (*UserRegisterResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserRegister not implemented")
+}
+func (UnimplementedUserServiceServer) UserLogin(context.Context, *UserLoginReq) (*UserLoginResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserLogin not implemented")
+}
+func (UnimplementedUserServiceServer) Hi(context.Context, *emptypb.Empty) (*HiResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Hi not implemented")
 }
 
 // UnsafeUserServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -90,6 +136,60 @@ func _UserService_GetUserById_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_UserRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserRegisterReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UserRegister(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_UserRegister_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UserRegister(ctx, req.(*UserRegisterReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_UserLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserLoginReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UserLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_UserLogin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UserLogin(ctx, req.(*UserLoginReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_Hi_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).Hi(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_Hi_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).Hi(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -100,6 +200,18 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserById",
 			Handler:    _UserService_GetUserById_Handler,
+		},
+		{
+			MethodName: "UserRegister",
+			Handler:    _UserService_UserRegister_Handler,
+		},
+		{
+			MethodName: "UserLogin",
+			Handler:    _UserService_UserLogin_Handler,
+		},
+		{
+			MethodName: "Hi",
+			Handler:    _UserService_Hi_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
