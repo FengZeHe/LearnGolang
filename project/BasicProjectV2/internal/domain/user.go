@@ -21,6 +21,10 @@ type UserListResponse struct {
 	Users []User `json:"list"`
 }
 
+type HiResponse struct {
+	Msg string `json:"msg"`
+}
+
 type DownloadFileResponse struct {
 	FileName string `json:"fileName"`
 	File     []byte `json:"file"`

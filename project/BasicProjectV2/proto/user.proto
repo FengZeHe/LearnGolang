@@ -8,20 +8,20 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
 // 定义User消息
-message User {
-  string id = 1;
-  string email = 2;
-  string password = 3;
-  string phone = 4;
-  int32 birthday = 5;
-  string nickname = 6;
-  string aboutme = 7;
-  string role = 8;
-}
+ message User {
+   string id = 1;
+   string email = 2;
+   string password = 3;
+   string phone = 4;
+   int32 birthday = 5;
+   string nickname = 6;
+   string aboutme = 7;
+   string role = 8;
+ }
 
-// 根据ID获取用户
+ // 根据ID获取用户
 message GetUserByIdReq {
-  string id = 1;
+   string id = 1;
 }
 
 
@@ -42,39 +42,39 @@ message UserLoginReq {
 }
 
 message UserLoginResp {
-  string msg = 1;
-  string token = 2;
+   string msg = 1;
+   string token = 2;
 }
 
 message HiResp {
-  string msg = 1;
+   string msg = 1;
 }
 
 service UserService {
-  rpc GetUserById(GetUserByIdReq) returns (User){
-    option (google.api.http) = {
-      post:"/v1/user/{id}",
-      body:"*"
-    };
-  };
+   rpc GetUserById(GetUserByIdReq) returns (User){
+     option (google.api.http) = {
+       post:"/v1/user/{id}",
+       body:"*"
+     };
+   };
 
-  rpc UserRegister(UserRegisterReq) returns (UserRegisterResp){
-    option (google.api.http) = {
-      post:"/v1/user/register",
-      body:"*"
-    };
-  }
+   rpc UserRegister(UserRegisterReq) returns (UserRegisterResp){
+      option (google.api.http) = {
+        post:"/v1/user/register",
+        body:"*"
+      };
+   }
 
-  rpc UserLogin(UserLoginReq) returns (UserLoginResp) {
-    option (google.api.http) = {
-      post:"/v1/user/login",
-      body:"*"
-    };
-  }
+   rpc UserLogin(UserLoginReq) returns (UserLoginResp) {
+     option (google.api.http) = {
+        post:"/v1/user/login",
+        body:"*"
+     };
+   }
 
-  rpc Hi(google.protobuf.Empty) returns (HiResp){
-    option (google.api.http) = {
-      get:"/v2/users/hi"
-    };
-  }
+   rpc Hi(google.protobuf.Empty) returns (HiResp){
+     option (google.api.http) = {
+        get:"/v2/users/hi"
+     };
+   }
 }
