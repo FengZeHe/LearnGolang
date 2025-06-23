@@ -7,7 +7,6 @@ import (
 	"github.com/basicprojectv2/pkg/jwt"
 	"github.com/basicprojectv2/pkg/snowflake"
 	"github.com/gin-gonic/gin"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"io"
 	"log"
 	"net/http"
@@ -34,7 +33,7 @@ func NewUserHandler(svc service.UserService, codeSvc service.CodeService) *UserH
 // 注册路由
 func (h *UserHandler) RegisterRoutes(server *gin.Engine, i18n, loginCheck gin.HandlerFunc) {
 	ug := server.Group("/v2/users/")
-	ug.GET("/hi", loginCheck, i18n, h.Hi)
+	ug.GET("/hi", h.Hi) //loginCheck, i18n,
 	ug.POST("/signin", h.SignIn)
 	ug.POST("/login", h.Login)
 	ug.POST("/loginsms/code/send", h.SendSMS)
@@ -357,13 +356,14 @@ func (h *UserHandler) HandleUploadFile(ctx *gin.Context) {
 }
 
 func (h *UserHandler) Hi(ctx *gin.Context) {
-	localizer, _ := ctx.Get("localizer")
-	localizeConfig := &i18n.LocalizeConfig{MessageID: "welcome_msg"}
-	welcomeMsg, err := localizer.(*i18n.Localizer).Localize(localizeConfig)
-	if err != nil {
-		log.Println("localize welcome error", err)
-		welcomeMsg = "Hi 这里是BasicProjectV2 单体~ "
-	}
+	//localizer, _ := ctx.Get("localizer")
+	//localizeConfig := &i18n.LocalizeConfig{MessageID: "welcome_msg"}
+	//welcomeMsg, err := localizer.(*i18n.Localizer).Localize(localizeConfig)
+	//if err != nil {
+	//	log.Println("localize welcome error", err)
+	//	welcomeMsg = "Hi 这里是BasicProjectV2 单体~ "
+	//}
+	welcomeMsg := domain.HiResponse{Msg: "Hi 这里是BasicProjectV2 单体~ "}
 	ctx.JSON(200, welcomeMsg)
 }
 

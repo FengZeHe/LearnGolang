@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	pb "github.com/basicprojectv2/proto/user_service"
+	"github.com/basicprojectv2/user_service/interceptors/jwt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	//user_service "github.com/basicprojectv2/user_service/
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
@@ -19,8 +19,21 @@ type App struct {
 }
 
 func NewApp(userSvc *UserService) *App {
+	jwtInterceptor := jwt.NewJWTInterceptor([]string{
+		// 免检路径
+		/*
+				在 gRPC 中，每个服务方法都有一个唯一的全限定路径（Full Method Name），
+			格式为：/包名.服务名/方法名。这个路径用于客户端与服务器之间的通信，也是拦截器中配置免检路径的依据。
+					package声明/ proto中对应的service关键字  / Userlogin
+		*/
+		"/user_service.UserService/UserLogin",
+	})
+
+	grpcSerer := grpc.NewServer(
+		grpc.UnaryInterceptor(jwtInterceptor.UnaryInterceptor()))
+
 	return &App{
-		grpcServer: grpc.NewServer(),
+		grpcServer: grpcSerer,
 		userSvc:    userSvc,
 	}
 }
