@@ -7,6 +7,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"log"
 	"net"
 	"net/http"
@@ -16,6 +18,7 @@ type App struct {
 	grpcServer *grpc.Server
 	gwServer   *http.Server
 	userSvc    *UserService
+	healthSvc  grpc_health_v1.HealthServer
 }
 
 func NewApp(userSvc *UserService) *App {
@@ -26,20 +29,32 @@ func NewApp(userSvc *UserService) *App {
 				格式为：/包名.服务名/方法名。这个路径用于客户端与服务器之间的通信，也是拦截器中配置免检路径的依据。
 						package声明/ proto中对应的service关键字  / Userlogin
 		*/
+		"/grpc.health.v1.Health/Check",
+		"/grpc.health.v1.Health/Watch",
 		"/user_service.UserService/UserLogin",
 	})
 
-	grpcSerer := grpc.NewServer(
+	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(jwtInterceptor.UnaryInterceptor()))
 
+	// 注册健康检查服务
+	healthServer := health.NewServer()
+
 	return &App{
-		grpcServer: grpcSerer,
+		grpcServer: grpcServer,
 		userSvc:    userSvc,
+		healthSvc:  healthServer,
 	}
 }
 
 func (a *App) Start() error {
 	pb.RegisterUserServiceServer(a.grpcServer, a.userSvc)
+
+	healthServer := a.healthSvc.(*health.Server)
+	healthServer.SetServingStatus("user_service.UserService", grpc_health_v1.HealthCheckResponse_SERVING)
+	grpc_health_v1.RegisterHealthServer(a.grpcServer, healthServer)
+
+	log.Println("已注册服务", a.grpcServer.GetServiceInfo())
 
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
