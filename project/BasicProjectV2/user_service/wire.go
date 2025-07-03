@@ -13,6 +13,9 @@ import (
 
 func InitializeApp() *App {
 	wire.Build(
+		// 服务注册
+		ioc.NewEtcdConfig,
+
 		settings.InitMysqlConfig,
 		ioc.InitDB,
 		//ioc.NewGrpcServer,

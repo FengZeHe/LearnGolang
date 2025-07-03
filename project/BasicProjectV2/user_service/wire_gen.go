@@ -14,10 +14,6 @@ import (
 	"github.com/basicprojectv2/user_service/settings"
 )
 
-import (
-	_ "google.golang.org/genproto/googleapis/api/annotations"
-)
-
 // Injectors from wire.go:
 
 func InitializeApp() *App {
@@ -27,6 +23,7 @@ func InitializeApp() *App {
 	userRepository := repository.NewUserRepository(userDAO)
 	userService := service.NewUserService(userRepository)
 	mainUserService := NewUerService(userService)
-	app := NewApp(mainUserService)
+	etcdConfig := ioc.NewEtcdConfig()
+	app := NewApp(mainUserService, etcdConfig)
 	return app
 }
