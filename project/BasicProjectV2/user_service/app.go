@@ -4,6 +4,7 @@ import (
 	"context"
 	pb "github.com/basicprojectv2/proto/user_service"
 	"github.com/basicprojectv2/user_service/interceptors/jwt"
+	"github.com/basicprojectv2/user_service/ioc"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -21,9 +22,10 @@ type App struct {
 	gwServer   *http.Server
 	userSvc    *UserService
 	healthSvc  grpc_health_v1.HealthServer
+	etcdClient *ioc.EtcdClient
 }
 
-func NewApp(userSvc *UserService) *App {
+func NewApp(userSvc *UserService, etcdClient *ioc.EtcdConfig) *App {
 	jwtInterceptor := jwt.NewJWTInterceptor([]string{
 		// 免检路径
 		/*
@@ -46,10 +48,13 @@ func NewApp(userSvc *UserService) *App {
 	wrappedHealthServer := &healthServerWrapper{healthServer: healthServer}
 	healthServer.SetServingStatus("user_service.UserService", grpc_health_v1.HealthCheckResponse_SERVING)
 
+	ec, _ := ioc.NewEtcdClient(etcdClient)
+
 	return &App{
 		grpcServer: grpcServer,
 		userSvc:    userSvc,
 		healthSvc:  wrappedHealthServer,
+		etcdClient: ec,
 	}
 }
 
@@ -69,6 +74,14 @@ func (a *App) Start() error {
 		return err
 	}
 	log.Println("start gRPC Server on 50051")
+
+	// 注册到etcd
+	serviceName := "user_service"
+	serviceAddr := "localhost:50051"
+
+	if err = a.etcdClient.RegisterService(serviceName, serviceAddr); err != nil {
+		log.Printf("register service %s to ETCD error: %v", serviceName, err)
+	}
 
 	go func() {
 		if err := a.grpcServer.Serve(lis); err != nil {
