@@ -9,6 +9,6 @@ func NewEtcdConfig() *serviceReg.EtcdConfig {
 	return &serviceReg.EtcdConfig{
 		Endpoints:   []string{"127.0.0.1:2379"},
 		DialTimeout: 5 * time.Second,
-		LeaseTTL:    10,
+		LeaseTTL:    60 * 60 * 24,
 	}
 }

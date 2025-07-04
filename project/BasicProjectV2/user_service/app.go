@@ -15,7 +15,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"time"
 )
 
 type App struct {
@@ -85,18 +84,18 @@ func (a *App) Start() error {
 	}
 
 	// 10s后服务下线
-	t1 := time.NewTimer(10 * time.Second)
-	go func() {
-		<-t1.C
-		log.Println("时间到喽")
-		if err := a.etcdClient.UnregisterService(); err != nil {
-			log.Println("unregister service error:", err)
-		} else {
-			log.Println("unregister service success")
-		}
-		// 退出程序
-		//os.Exit(0)
-	}()
+	//t1 := time.NewTimer(10 * time.Second)
+	//go func() {
+	//	<-t1.C
+	//	log.Println("时间到喽")
+	//	if err := a.etcdClient.UnregisterService(); err != nil {
+	//		log.Println("unregister service error:", err)
+	//	} else {
+	//		log.Println("unregister service success")
+	//	}
+	//	// 退出程序
+	//	//os.Exit(0)
+	//}()
 
 	go func() {
 		if err := a.grpcServer.Serve(lis); err != nil {
