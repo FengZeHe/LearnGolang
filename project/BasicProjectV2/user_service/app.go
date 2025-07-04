@@ -4,7 +4,7 @@ import (
 	"context"
 	pb "github.com/basicprojectv2/proto/user_service"
 	"github.com/basicprojectv2/user_service/interceptors/jwt"
-	"github.com/basicprojectv2/user_service/ioc"
+	"github.com/basicprojectv2/user_service/serviceReg"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -15,6 +15,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 )
 
 type App struct {
@@ -22,10 +23,10 @@ type App struct {
 	gwServer   *http.Server
 	userSvc    *UserService
 	healthSvc  grpc_health_v1.HealthServer
-	etcdClient *ioc.EtcdClient
+	etcdClient *serviceReg.EtcdClient
 }
 
-func NewApp(userSvc *UserService, etcdClient *ioc.EtcdConfig) *App {
+func NewApp(userSvc *UserService, etcdClient *serviceReg.EtcdConfig) *App {
 	jwtInterceptor := jwt.NewJWTInterceptor([]string{
 		// 免检路径
 		/*
@@ -48,7 +49,7 @@ func NewApp(userSvc *UserService, etcdClient *ioc.EtcdConfig) *App {
 	wrappedHealthServer := &healthServerWrapper{healthServer: healthServer}
 	healthServer.SetServingStatus("user_service.UserService", grpc_health_v1.HealthCheckResponse_SERVING)
 
-	ec, _ := ioc.NewEtcdClient(etcdClient)
+	ec, _ := serviceReg.NewEtcdClient(etcdClient)
 
 	return &App{
 		grpcServer: grpcServer,
@@ -82,6 +83,20 @@ func (a *App) Start() error {
 	if err = a.etcdClient.RegisterService(serviceName, serviceAddr); err != nil {
 		log.Printf("register service %s to ETCD error: %v", serviceName, err)
 	}
+
+	// 10s后服务下线
+	t1 := time.NewTimer(10 * time.Second)
+	go func() {
+		<-t1.C
+		log.Println("时间到喽")
+		if err := a.etcdClient.UnregisterService(); err != nil {
+			log.Println("unregister service error:", err)
+		} else {
+			log.Println("unregister service success")
+		}
+		// 退出程序
+		//os.Exit(0)
+	}()
 
 	go func() {
 		if err := a.grpcServer.Serve(lis); err != nil {
