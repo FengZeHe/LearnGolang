@@ -26,7 +26,7 @@ func NewWeightedRoundRobinBalancer(servers map[string]int) (*WeightedRoundRobinB
 		return nil, errors.New("servers is empty")
 	}
 	wrrb := &WeightedRoundRobinBalancer{
-		addrs: make([]*WeightedServer, len(servers)),
+		addrs: make([]*WeightedServer, 0, len(servers)),
 	}
 
 	// 服务器列表
@@ -47,7 +47,7 @@ func (wrrb *WeightedRoundRobinBalancer) Next() string {
 }
 
 // 加权轮询
-func (wrrb *WeightedRoundRobinBalancer) selectServerV1() string {
+func (wrrb *WeightedRoundRobinBalancer) SelectServerV1() string {
 	totalWeight := 0
 	for _, server := range wrrb.addrs {
 		totalWeight += server.Weight
@@ -84,6 +84,6 @@ func (wrrb *WeightedRoundRobinBalancer) SelectServerV2() string {
 			bestServer = server
 		}
 	}
-	bestServer.CurrentWeight += maxCurrentWeight
+	bestServer.CurrentWeight -= maxCurrentWeight
 	return bestServer.Addr
 }
