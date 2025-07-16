@@ -41,23 +41,11 @@ func main() {
 		grpc.WithChainUnaryInterceptor(
 			ji.JwtClientInterceptor(),
 			li.LogUnaryServerInterceptor(),
-		)) //
+		))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-
-	//conn, err := grpc.Dial(
-	//	"localhost:50051",
-	//	grpc.WithTransportCredentials(insecure.NewCredentials()),
-	//	grpc.WithChainUnaryInterceptor(
-	//		ji.JwtClientInterceptor(),
-	//		li.LogUnaryServerInterceptor()))
-	//if err != nil {
-	//	log.Fatalf("did not connect: %v", err)
-	//}
-	//
-	//defer conn.Close()
 
 	client := pb.NewUserServiceClient(conn)
 	resp, err := client.Hi(ctx, &emptypb.Empty{})
