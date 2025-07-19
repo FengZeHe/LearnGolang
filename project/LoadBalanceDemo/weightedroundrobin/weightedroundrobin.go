@@ -12,9 +12,6 @@ type WeightedServer struct {
 	CurrentWeight int
 }
 
-type Server struct {
-}
-
 type WeightedRoundRobinBalancer struct {
 	addrs []*WeightedServer
 	mu    sync.RWMutex
@@ -39,15 +36,8 @@ func NewWeightedRoundRobinBalancer(servers map[string]int) (*WeightedRoundRobinB
 	return wrrb, nil
 }
 
-func (wrrb *WeightedRoundRobinBalancer) Next() string {
-	wrrb.mu.RLock()
-	defer wrrb.mu.RUnlock()
-
-	return ""
-}
-
 // 加权轮询
-func (wrrb *WeightedRoundRobinBalancer) SelectServerV1() string {
+func (wrrb *WeightedRoundRobinBalancer) SelectServer() string {
 	totalWeight := 0
 	for _, server := range wrrb.addrs {
 		totalWeight += server.Weight
@@ -67,6 +57,37 @@ func (wrrb *WeightedRoundRobinBalancer) SelectServerV1() string {
 		}
 	}
 	return wrrb.addrs[0].Addr
+}
+
+func (wrrb *WeightedRoundRobinBalancer) SelectServerV1() string {
+	wrrb.mu.Lock()
+	defer wrrb.mu.Unlock()
+
+	var (
+		selectedServer *WeightedServer
+		totalWeight    int
+	)
+
+	// 1. 计算总权重，并累加当前权重
+	for _, server := range wrrb.addrs {
+		totalWeight += server.Weight
+		server.CurrentWeight += server.Weight
+	}
+
+	// 2. 选择当前权重最大的服务器
+	for _, server := range wrrb.addrs {
+		if selectedServer == nil || server.CurrentWeight > selectedServer.CurrentWeight {
+			selectedServer = server
+		}
+	}
+
+	// 3. 选中服务器的当前权重减去总权重
+	if selectedServer != nil {
+		selectedServer.CurrentWeight -= totalWeight
+		return selectedServer.Addr
+	}
+
+	return "" // 理论上不会执行到这里，因为服务器列表非空
 }
 
 // 平滑加权轮询
