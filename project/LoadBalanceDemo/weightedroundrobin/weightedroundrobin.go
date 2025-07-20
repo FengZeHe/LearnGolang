@@ -2,6 +2,7 @@ package weightedroundrobin
 
 import (
 	"errors"
+	"math"
 	"sync"
 	"sync/atomic"
 )
@@ -87,24 +88,39 @@ func (wrrb *WeightedRoundRobinBalancer) SelectServerV1() string {
 		return selectedServer.Addr
 	}
 
-	return "" // 理论上不会执行到这里，因为服务器列表非空
+	return ""
 }
 
 // 平滑加权轮询
 func (wrrb *WeightedRoundRobinBalancer) SelectServerV2() string {
-	totalWeight := 0
-	bestServer := wrrb.addrs[0]
-	maxCurrentWeight := wrrb.addrs[0].CurrentWeight // 先使用第一台服务器的当前权重
+	wrrb.mu.Lock()
+	defer wrrb.mu.Unlock()
 
+	if len(wrrb.addrs) == 0 {
+		return ""
+	}
+
+	totalWeight := 0
+	var bestServer *WeightedServer
+	maxCurrentWeight := math.MinInt64
+
+	// 计算总权重
 	for _, server := range wrrb.addrs {
-		totalWeight += server.Weight // 总权重
+		totalWeight += server.Weight
 		server.CurrentWeight += server.Weight
 
+		// 找出当前权重最大的服务器
 		if server.CurrentWeight > maxCurrentWeight {
 			maxCurrentWeight = server.CurrentWeight
 			bestServer = server
 		}
 	}
-	bestServer.CurrentWeight -= maxCurrentWeight
-	return bestServer.Addr
+
+	if bestServer != nil {
+		bestServer.CurrentWeight -= totalWeight
+		return bestServer.Addr
+	}
+
+	return wrrb.addrs[0].Addr
+
 }
