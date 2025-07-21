@@ -23,7 +23,7 @@ func init() {
 
 	// 注册负载均衡器
 	balancer.Register(base.NewBalancerBuilder(
-		"random",
+		"my_random",
 		&loadBalancer.RandomPickerBuilder{}, //负载均衡构建
 		base.Config{HealthCheck: true},      // 启用健康检查
 	))
@@ -60,7 +60,7 @@ func main() {
 		),
 		//grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"round_robin": {}}]}`),
 		//grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"pick_first": {}}]}`),
-		grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"random": {}}]}`),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"my_random": {}}]}`),
 	)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
