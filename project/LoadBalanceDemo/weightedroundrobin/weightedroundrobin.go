@@ -2,6 +2,7 @@ package weightedroundrobin
 
 import (
 	"errors"
+	"math"
 	"sync"
 	"sync/atomic"
 )
@@ -10,9 +11,6 @@ type WeightedServer struct {
 	Addr          string
 	Weight        int // 权重
 	CurrentWeight int
-}
-
-type Server struct {
 }
 
 type WeightedRoundRobinBalancer struct {
@@ -39,15 +37,8 @@ func NewWeightedRoundRobinBalancer(servers map[string]int) (*WeightedRoundRobinB
 	return wrrb, nil
 }
 
-func (wrrb *WeightedRoundRobinBalancer) Next() string {
-	wrrb.mu.RLock()
-	defer wrrb.mu.RUnlock()
-
-	return ""
-}
-
 // 加权轮询
-func (wrrb *WeightedRoundRobinBalancer) SelectServerV1() string {
+func (wrrb *WeightedRoundRobinBalancer) SelectServer() string {
 	totalWeight := 0
 	for _, server := range wrrb.addrs {
 		totalWeight += server.Weight
@@ -69,21 +60,67 @@ func (wrrb *WeightedRoundRobinBalancer) SelectServerV1() string {
 	return wrrb.addrs[0].Addr
 }
 
+func (wrrb *WeightedRoundRobinBalancer) SelectServerV1() string {
+	wrrb.mu.Lock()
+	defer wrrb.mu.Unlock()
+
+	var (
+		selectedServer *WeightedServer
+		totalWeight    int
+	)
+
+	// 1. 计算总权重，并累加当前权重
+	for _, server := range wrrb.addrs {
+		totalWeight += server.Weight
+		server.CurrentWeight += server.Weight
+	}
+
+	// 2. 选择当前权重最大的服务器
+	for _, server := range wrrb.addrs {
+		if selectedServer == nil || server.CurrentWeight > selectedServer.CurrentWeight {
+			selectedServer = server
+		}
+	}
+
+	// 3. 选中服务器的当前权重减去总权重
+	if selectedServer != nil {
+		selectedServer.CurrentWeight -= totalWeight
+		return selectedServer.Addr
+	}
+
+	return ""
+}
+
 // 平滑加权轮询
 func (wrrb *WeightedRoundRobinBalancer) SelectServerV2() string {
-	totalWeight := 0
-	bestServer := wrrb.addrs[0]
-	maxCurrentWeight := wrrb.addrs[0].CurrentWeight // 先使用第一台服务器的当前权重
+	wrrb.mu.Lock()
+	defer wrrb.mu.Unlock()
 
+	if len(wrrb.addrs) == 0 {
+		return ""
+	}
+
+	totalWeight := 0
+	var bestServer *WeightedServer
+	maxCurrentWeight := math.MinInt64
+
+	// 计算总权重
 	for _, server := range wrrb.addrs {
-		totalWeight += server.Weight // 总权重
+		totalWeight += server.Weight
 		server.CurrentWeight += server.Weight
 
+		// 找出当前权重最大的服务器
 		if server.CurrentWeight > maxCurrentWeight {
 			maxCurrentWeight = server.CurrentWeight
 			bestServer = server
 		}
 	}
-	bestServer.CurrentWeight -= maxCurrentWeight
-	return bestServer.Addr
+
+	if bestServer != nil {
+		bestServer.CurrentWeight -= totalWeight
+		return bestServer.Addr
+	}
+
+	return wrrb.addrs[0].Addr
+
 }
