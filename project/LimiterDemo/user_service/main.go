@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"limiterdemo/user_service/limiter"
 	"limiterdemo/user_service/proto/user_service"
 	"log"
 	"net"
@@ -21,7 +23,13 @@ func main() {
 		panic(err)
 	}
 
-	s := grpc.NewServer()
+	//每秒生成100个令牌，桶容量200（允许突发200个请求）
+	li := limiter.NewTokenBucketLimiter(rate.Limit(1), 2)
+
+	s := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			li.LimitInterceptor()),
+	)
 	service.RegisterUserServiceServer(s, &UserService{})
 	log.Println("Staring user service in 50051...")
 
