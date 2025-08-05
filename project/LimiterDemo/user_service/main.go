@@ -24,7 +24,7 @@ func main() {
 	}
 
 	//每秒生成100个令牌，桶容量200（允许突发200个请求）
-	li := limiter.NewTokenBucketLimiter(rate.Limit(1), 2)
+	li := limiter.NewTokenBucketLimiter(rate.Limit(100), 200)
 
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
