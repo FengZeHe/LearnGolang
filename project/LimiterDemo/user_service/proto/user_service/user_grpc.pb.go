@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -21,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	UserService_GetUserById_FullMethodName          = "/user_service.UserService/GetUserById"
 	UserService_ControlCircuitBraker_FullMethodName = "/user_service.UserService/ControlCircuitBraker"
+	UserService_CoreBusiness_FullMethodName         = "/user_service.UserService/CoreBusiness"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -29,6 +31,7 @@ const (
 type UserServiceClient interface {
 	GetUserById(ctx context.Context, in *GetUserReq, opts ...grpc.CallOption) (*User, error)
 	ControlCircuitBraker(ctx context.Context, in *CircuitBrakerReq, opts ...grpc.CallOption) (*CircuitBrakerResp, error)
+	CoreBusiness(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CoreResp, error)
 }
 
 type userServiceClient struct {
@@ -59,12 +62,23 @@ func (c *userServiceClient) ControlCircuitBraker(ctx context.Context, in *Circui
 	return out, nil
 }
 
+func (c *userServiceClient) CoreBusiness(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CoreResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CoreResp)
+	err := c.cc.Invoke(ctx, UserService_CoreBusiness_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations should embed UnimplementedUserServiceServer
 // for forward compatibility.
 type UserServiceServer interface {
 	GetUserById(context.Context, *GetUserReq) (*User, error)
 	ControlCircuitBraker(context.Context, *CircuitBrakerReq) (*CircuitBrakerResp, error)
+	CoreBusiness(context.Context, *emptypb.Empty) (*CoreResp, error)
 }
 
 // UnimplementedUserServiceServer should be embedded to have
@@ -79,6 +93,9 @@ func (UnimplementedUserServiceServer) GetUserById(context.Context, *GetUserReq) 
 }
 func (UnimplementedUserServiceServer) ControlCircuitBraker(context.Context, *CircuitBrakerReq) (*CircuitBrakerResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ControlCircuitBraker not implemented")
+}
+func (UnimplementedUserServiceServer) CoreBusiness(context.Context, *emptypb.Empty) (*CoreResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CoreBusiness not implemented")
 }
 func (UnimplementedUserServiceServer) testEmbeddedByValue() {}
 
@@ -136,6 +153,24 @@ func _UserService_ControlCircuitBraker_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_CoreBusiness_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).CoreBusiness(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_CoreBusiness_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).CoreBusiness(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -150,6 +185,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ControlCircuitBraker",
 			Handler:    _UserService_ControlCircuitBraker_Handler,
+		},
+		{
+			MethodName: "CoreBusiness",
+			Handler:    _UserService_CoreBusiness_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

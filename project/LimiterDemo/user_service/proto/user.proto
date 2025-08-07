@@ -26,6 +26,10 @@ message CircuitBrakerResp {
   int32 manual = 2; // 手动控制
 }
 
+message CoreResp{
+  string msg =1;
+}
+
 service UserService {
    rpc GetUserById(GetUserReq) returns (User){
      option (google.api.http) = {
@@ -38,6 +42,12 @@ service UserService {
      option (google.api.http) = {
        post:"/circuitbraker",
        body:"*"
+     };
+   }
+
+   rpc CoreBusiness(google.protobuf.Empty) returns (CoreResp){
+     option (google.api.http) = {
+       get:"/core",
      };
    }
 }

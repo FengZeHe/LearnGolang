@@ -51,3 +51,9 @@ func (s *UserService) ControlCircuitBraker(ctx context.Context, req *service.Cir
 
 	return nil, nil
 }
+
+func (s *UserService) CoreBusiness(ctx context.Context) (*service.CoreResp, error) {
+	return &service.CoreResp{
+		Msg: "都jb哥们",
+	}, nil
+}

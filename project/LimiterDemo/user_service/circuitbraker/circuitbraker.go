@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
+	"strings"
 	"sync/atomic"
 )
 
@@ -91,6 +92,15 @@ func (c *CircuitBreaker) CircuitBrakerInterceptor() grpc.UnaryServerInterceptor 
 			log.Println("手动闭合熔断器，允许所有请求")
 			return handler(ctx, req)
 		case 2: // 手动打开熔断器，拒绝所有请求
+
+			/*
+				降级部分：
+				1.可以使用全路径
+				2.可以匹配前缀
+			*/
+			if strings.HasPrefix(info.FullMethod, "/user_service.UserService/") {
+			}
+
 			log.Println("手动打开熔断器，拒绝所有请求")
 			return nil, status.Errorf(codes.Unavailable, "熔断器已手动强制打开")
 		}
