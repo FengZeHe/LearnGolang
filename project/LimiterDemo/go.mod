@@ -3,6 +3,7 @@ module limiterdemo
 go 1.23.9
 
 require (
+	github.com/go-kratos/aegis v0.2.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1
 	golang.org/x/time v0.12.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20250728155136-f173205681a0
@@ -11,7 +12,6 @@ require (
 )
 
 require (
-	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5 // indirect
 	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.26.0 // indirect

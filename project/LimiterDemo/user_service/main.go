@@ -2,20 +2,19 @@ package main
 
 import (
 	"context"
+	"github.com/go-kratos/aegis/circuitbreaker/sre"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	cb "limiterdemo/user_service/circuitbraker"
 	"limiterdemo/user_service/limiter"
 	"limiterdemo/user_service/proto/user_service"
+	us "limiterdemo/user_service/service"
 	"log"
 	"net"
 	"net/http"
 )
-
-type UserService struct {
-	service.UnimplementedUserServiceServer
-}
 
 func main() {
 	lis, err := net.Listen("tcp", ":50051")
@@ -23,14 +22,22 @@ func main() {
 		panic(err)
 	}
 
+	opts := []sre.Option{
+		sre.WithRequest(100),
+	}
+	cirb := cb.NewCircuitBraker(opts...)
+	userService := us.NewUserService(cirb)
+
 	//每秒生成100个令牌，桶容量200（允许突发200个请求）
 	li := limiter.NewTokenBucketLimiter(rate.Limit(100), 200)
 
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			li.LimitInterceptor()),
+			li.LimitInterceptor(),
+			cirb.CircuitBrakerInterceptor()),
 	)
-	service.RegisterUserServiceServer(s, &UserService{})
+
+	service.RegisterUserServiceServer(s, userService)
 	log.Println("Staring user service in 50051...")
 
 	go func() {
@@ -60,15 +67,4 @@ func main() {
 	if err := httpServer.ListenAndServe(); err != nil {
 		log.Fatal("Failed to serve HTTP:", err)
 	}
-
-}
-
-func (s *UserService) GetUserById(ctx context.Context, req *service.GetUserReq) (*service.User, error) {
-	userId := req.Id
-	user := &service.User{
-		Userid:   userId,
-		Username: "熊二",
-		Age:      "8",
-	}
-	return user, nil
 }

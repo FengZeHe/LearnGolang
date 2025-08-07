@@ -16,11 +16,28 @@ message GetUserReq {
   string id = 1;
 }
 
-service  UserService {
+message CircuitBrakerReq {
+  int32 enabled = 1;   // 拦截器逻辑
+  int32 manual = 2; // 手动控制
+}
+
+message CircuitBrakerResp {
+  int32 enabled = 1; // 拦截器逻辑
+  int32 manual = 2; // 手动控制
+}
+
+service UserService {
    rpc GetUserById(GetUserReq) returns (User){
      option (google.api.http) = {
         post:"/user/{id}",
         body:"*"
      };
    };
+
+   rpc ControlCircuitBraker(CircuitBrakerReq) returns (CircuitBrakerResp){
+     option (google.api.http) = {
+       post:"/circuitbraker",
+       body:"*"
+     };
+   }
 }
