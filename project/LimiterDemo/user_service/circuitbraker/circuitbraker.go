@@ -98,7 +98,9 @@ func (c *CircuitBreaker) CircuitBrakerInterceptor() grpc.UnaryServerInterceptor 
 				1.可以使用全路径
 				2.可以匹配前缀
 			*/
-			if strings.HasPrefix(info.FullMethod, "/user_service.UserService/") {
+			if strings.HasPrefix(info.FullMethod, "/user_service.UserService/CoreBusiness") {
+				log.Println("核心业务 通过")
+				return handler(ctx, req)
 			}
 
 			log.Println("手动打开熔断器，拒绝所有请求")

@@ -2,8 +2,12 @@ package service
 
 import (
 	"context"
+	"fmt"
 	cb "limiterdemo/user_service/circuitbraker"
 	service "limiterdemo/user_service/proto/user_service"
+	"time"
+
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type UserService struct {
@@ -52,8 +56,9 @@ func (s *UserService) ControlCircuitBraker(ctx context.Context, req *service.Cir
 	return nil, nil
 }
 
-func (s *UserService) CoreBusiness(ctx context.Context) (*service.CoreResp, error) {
+func (s *UserService) CoreBusiness(ctx context.Context, e *emptypb.Empty) (*service.CoreResp, error) {
+	msg := fmt.Sprintf("看到这里的朋友点个杯奶茶喝，犒劳一下辛苦的自己 %s", time.Now().Format("2006-01-02 15:04:05"))
 	return &service.CoreResp{
-		Msg: "都jb哥们",
+		Msg: msg,
 	}, nil
 }
