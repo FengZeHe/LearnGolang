@@ -24,9 +24,9 @@ func main() {
 
 	opts := []sre.Option{ // 内置失败率，当滑动窗口失败总数超过总请求数比例的50%就自动触发熔断
 		sre.WithRequest(100), // 设置最小请求阈值，如果请求数太少就不触发了，避免误触发
-		sre.WithBucket(10),   // 将滑动窗口时间拆分成n个桶
-		sre.WithSuccess(10),  // 半开状态的成功阈值
-		sre.WithWindow(5),    // 设置滑动窗口的总时间(统计请求数据的时间范围)
+		//sre.WithBucket(10),   // 将滑动窗口时间拆分成n个桶
+		//sre.WithSuccess(10),  // 半开状态的成功阈值
+		//sre.WithWindow(5),    // 设置滑动窗口的总时间(统计请求数据的时间范围)
 	}
 	cirb := cb.NewCircuitBraker(opts...)
 	userService := us.NewUserService(cirb)
