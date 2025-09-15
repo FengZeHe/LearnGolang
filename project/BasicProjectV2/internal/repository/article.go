@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository/dao"
 )
@@ -12,6 +13,7 @@ type articleRepository struct {
 
 type ArticleRepository interface {
 	GetArticles(ctx context.Context, req domain.QueryArticlesReq) (domain.ArticleRepoResponse, error)
+	GetArticleByID(ctx context.Context, articleID string) (domain.Article, error)
 	GetAuthorArticles(ctx context.Context, req domain.QueryAuthorArticlesReq, userid string) (domain.ArticleRepoResponse, error)
 	AddArticleReadCount(ctx context.Context, id string) error
 }
@@ -41,6 +43,15 @@ func (a *articleRepository) GetArticles(ctx context.Context, req domain.QueryArt
 	return l, err
 }
 
+func (a *articleRepository) GetArticleByID(ctx context.Context, articleID string) (domain.Article, error) {
+	article, err := a.articleDAO.GetArticleByID(ctx, articleID)
+	if err != nil {
+		return domain.Article{}, err
+	}
+
+	return article, nil
+}
+
 func (a *articleRepository) GetAuthorArticles(ctx context.Context, req domain.QueryAuthorArticlesReq, userid string) (l domain.ArticleRepoResponse, err error) {
 	if req.PageSize <= 0 {
 		req.PageSize = 10
@@ -49,7 +60,7 @@ func (a *articleRepository) GetAuthorArticles(ctx context.Context, req domain.Qu
 		req.PageIndex = 1
 	}
 
-	res, err := a.articleDAO.GetArticlesByID(ctx, req.PageIndex, req.PageSize, userid)
+	res, err := a.articleDAO.GetArticlesByUserID(ctx, req.PageIndex, req.PageSize, userid)
 	if err != nil {
 		return l, err
 	}

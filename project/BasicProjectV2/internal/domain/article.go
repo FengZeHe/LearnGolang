@@ -53,6 +53,9 @@ type QueryAuthorArticlesReq struct {
 	PageIndex int `json:"pageIndex"`
 	PageSize  int `json:"pageSize"`
 }
+type QueryArticlesByIDReq struct {
+	ID string `json:"id"`
+}
 
 type AddArticleCount struct {
 	ID string `json:"id"`

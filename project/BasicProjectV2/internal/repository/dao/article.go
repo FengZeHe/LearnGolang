@@ -2,10 +2,11 @@ package dao
 
 import (
 	"context"
-	"github.com/basicprojectv2/internal/domain"
-	"gorm.io/gorm"
 	"math"
 	"time"
+
+	"github.com/basicprojectv2/internal/domain"
+	"gorm.io/gorm"
 )
 
 type GORMArticle struct {
@@ -16,7 +17,9 @@ type ArticleDAO interface {
 	InsertArticle(ctx context.Context, a domain.Article) error
 	UpdateArticleByID(ctx context.Context, a domain.Article) error
 	GetArticles(ctx context.Context, pageIndex, pageSize int) (domain.ArticlesDAOResponse, error)
-	GetArticlesByID(ctx context.Context, pageIndex, pageSize int, userID string) (domain.ArticlesDAOResponse, error)
+	GetArticleByID(ctx context.Context, id string) (domain.Article, error)
+	GetArticlesByUserID(ctx context.Context, pageIndex, pageSize int, userID string) (domain.ArticlesDAOResponse, error)
+
 	AddArticleCount(ctx context.Context, id string) error
 }
 
@@ -69,7 +72,7 @@ func (dao *GORMArticle) GetArticles(ctx context.Context, pageIndex, pageSize int
 	return a, nil
 }
 
-func (dao *GORMArticle) GetArticlesByID(ctx context.Context, pageIndex, pageSize int, userID string) (a domain.ArticlesDAOResponse, err error) {
+func (dao *GORMArticle) GetArticlesByUserID(ctx context.Context, pageIndex, pageSize int, userID string) (a domain.ArticlesDAOResponse, err error) {
 	var data []domain.Article
 
 	// 计算偏移量
@@ -94,6 +97,14 @@ func (dao *GORMArticle) GetArticlesByID(ctx context.Context, pageIndex, pageSize
 	a.PageIndex = pageIndex
 	a.PageCount = totalPages
 	a.TotalCount = totalCount
+	return a, nil
+}
+
+func (dao *GORMArticle) GetArticleByID(ctx context.Context, id string) (a domain.Article, err error) {
+	err = dao.db.WithContext(ctx).Table("article").Where("id = ?", id).First(&a).Error
+	if err != nil {
+		return a, err
+	}
 	return a, nil
 }
 
