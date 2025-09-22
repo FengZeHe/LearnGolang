@@ -12,6 +12,8 @@ type commentService struct {
 
 type CommentService interface {
 	AddComment(ctx *gin.Context, req domain.AddCommentReq) (err error)
+	GetComment(ctx *gin.Context, aid string) (comments []domain.Comment, err error)
+	DeleteComment(ctx *gin.Context, aid string) (err error)
 }
 
 func NewCommentService(repo repository.CommentRepository) CommentService {
@@ -25,4 +27,17 @@ func (c *commentService) AddComment(ctx *gin.Context, req domain.AddCommentReq) 
 		return err
 	}
 	return nil
+}
+
+func (c *commentService) GetComment(ctx *gin.Context, aid string) (comments []domain.Comment, err error) {
+	comments, err = c.repo.GetComment(ctx, aid)
+	if err != nil {
+		return nil, err
+	}
+	return comments, nil
+}
+
+func (c *commentService) DeleteComment(ctx *gin.Context, aid string) (err error) {
+
+	return err
 }

@@ -19,6 +19,22 @@ func NewCommentHandler(svc service.CommentService) *CommentHandler {
 func (h *CommentHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.HandlerFunc) {
 	cg := server.Group("/v2/comment/")
 	cg.POST("/add", loginCheck, h.AddComment)
+	cg.GET("/", loginCheck, h.GetComment)
+	cg.DELETE("/", loginCheck, h.DeleteComment)
+}
+
+func (h *CommentHandler) GetComment(c *gin.Context) {
+	aid := c.Query("aid")
+	comments, err := h.svc.GetComment(c, aid)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"err": err,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data": comments,
+	})
 }
 
 func (h *CommentHandler) AddComment(c *gin.Context) {
@@ -32,5 +48,16 @@ func (h *CommentHandler) AddComment(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "comment added"})
+}
 
+func (h *CommentHandler) DeleteComment(c *gin.Context) {
+	aid := c.Query("aid")
+	if err := h.svc.DeleteComment(c, aid); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"err": err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "comment deleted"})
 }
