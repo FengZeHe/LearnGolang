@@ -60,7 +60,11 @@ func InitializeApp() *App {
 	articleRepository := repository.NewArticleRepository(articleDAO)
 	articleService := service.NewArticleService(articleRepository)
 	articleHandler := web.NewArticleHandler(articleService)
-	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler)
+	commentDao := dao.NewCommentDao(db)
+	commentRepository := repository.NewCommentRepository(commentDao)
+	commentService := service.NewCommentService(commentRepository)
+	commentHandler := web.NewCommentHandler(commentService)
+	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler, commentHandler)
 	app := &App{
 		server: engine,
 	}

@@ -1,18 +1,20 @@
 package ioc
 
 import (
+	"time"
+
 	"github.com/basicprojectv2/internal/web"
 	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
-	"time"
 )
 
 // 初始化gin Engine
 func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web.SysHandler,
-	menuHdl *web.MenuHandler, roleHdl *web.RoleHandler, draftHdl *web.DraftHandler, articleHdl *web.ArticleHandler) *gin.Engine {
+	menuHdl *web.MenuHandler, roleHdl *web.RoleHandler, draftHdl *web.DraftHandler,
+	articleHdl *web.ArticleHandler, commentHdl *web.CommentHandler) *gin.Engine {
 	server := gin.Default()
 	server.Use(mdls[0], mdls[4], mdls[5], mdls[6])
 	userHdl.RegisterRoutes(server, mdls[3], mdls[2])
@@ -21,6 +23,7 @@ func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web
 	roleHdl.RegisterRoutes(server, mdls[2])
 	draftHdl.RegisterRoutes(server, mdls[2])
 	articleHdl.RegisterRoutes(server, mdls[2])
+	commentHdl.RegisterRoutes(server, mdls[2])
 
 	return server
 }
