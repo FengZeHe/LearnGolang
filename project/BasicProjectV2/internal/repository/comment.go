@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"strconv"
 	"time"
 
@@ -31,6 +32,7 @@ func (c *commentRepository) AddComment(ctx *gin.Context, req domain.AddCommentRe
 	comment := domain.Comment{
 		Uid:       StringToInt64(strUserid),
 		Aid:       StringToInt64(req.Aid),
+		Pid:       StringToSqlNullInt64(req.Pid),
 		Content:   req.Content,
 		CreatedAt: time.Now().Format("2006-01-02 15:04:05"),
 	}
@@ -55,7 +57,19 @@ func (c *commentRepository) DeleteComment(ctx *gin.Context, aid string) (err err
 
 }
 
-func StringToInt64(target string) (output int64) {
-	output, _ = strconv.ParseInt(target, 10, 64)
+func StringToSqlNullInt64(target string) (output sql.NullInt64) {
+	// 如果pid没有填
+	if target == "" {
+		output.Valid = false
+	} else {
+		output.Valid = true
+	}
+
+	outputValue, _ := strconv.ParseInt(target, 10, 64)
+	output.Int64 = outputValue
+	return output
+}
+func StringToInt64(value string) (output int64) {
+	output, _ = strconv.ParseInt(value, 10, 64)
 	return output
 }

@@ -1,7 +1,8 @@
 package dao
 
 import (
-	"errors"
+	"database/sql"
+	"log"
 
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/gin-gonic/gin"
@@ -32,21 +33,39 @@ func (c *GormCommentDAO) QueryComment(ctx *gin.Context, aid string) (comments []
 }
 
 func (c *GormCommentDAO) InsertComment(req domain.Comment) (err error) {
-	article := domain.Article{}
-	var count int64
-	if err = c.db.Table("article").Find(&article).Where("id = ?", req.Aid).Count(&count).Error; err != nil {
-		return err
-	}
 
-	if count <= 0 {
-		return errors.New("NoArticle")
-	} else {
-		if err = c.db.Table("comment").Create(&req).Error; err != nil {
+	return c.db.Transaction(func(tx *gorm.DB) error {
+		// todo 1.判断该评论是否为顶级评论(前面req可以判断)
+
+		commentTemp := domain.Comment{
+			Uid: req.Uid,
+			Aid: req.Aid,
+			Pid: req.Pid, //判断pid是否
+			Rid: sql.NullInt64{Valid: false},
+		}
+		if err = tx.Table("comment").Create(&commentTemp).Error; err != nil {
+			log.Println("create comment error", err)
 			return err
 		}
-	}
 
-	return nil
+		// 如果存在pid
+		if !req.Pid.Valid {
+			commentTemp.Rid = sql.NullInt64{Int64: int64(commentTemp.Id), Valid: true}
+		} else {
+			// 把父级的root id拿过来
+			var parent domain.Comment
+			// todo 还要修改，当查不到record时 rid是0
+			if err = tx.Table("comment").Where("id = ?", req.Pid).Find(&parent).Error; err != nil {
+				log.Println("find parent comment error", err)
+				return err
+			}
+			commentTemp.Rid = parent.Rid
+		}
+
+		// 3. 确定rid，写回去
+		return tx.Model(&domain.Comment{}).
+			Where("id = ?", commentTemp.Id).Update("rid", commentTemp.Rid).Error
+	})
 }
 
 func (c *GormCommentDAO) DeleteComment(ctx *gin.Context, aid string) (err error) {
