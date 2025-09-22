@@ -1,7 +1,7 @@
 package domain
 
 type Comment struct {
-	Id        int64  `gorm:"column:id" json:"id"`
+	Id        int    `gorm:"column:id primaryKey;autoIncrement" json:"id"`
 	Uid       int64  `gorm:"column:uid" json:"uid"` // 发表评论用户的ID
 	Pid       int64  `gorm:"column:pid" json:"pid"` // 评论的父ID
 	Rid       int64  `gorm:"column:rid" json:"rid"` // 评论的ROOT ID
@@ -12,8 +12,7 @@ type Comment struct {
 }
 
 type AddCommentReq struct {
-	Uid     int64  `json:"uid"`
-	Pid     int64  `json:"pid"`
-	Aid     int64  `json:"aid"`
+	Pid     string `json:"pid"`
+	Aid     string `json:"aid"`
 	Content string `json:"content"`
 }
