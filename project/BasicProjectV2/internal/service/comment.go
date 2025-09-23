@@ -1,6 +1,8 @@
 package service
 
 import (
+	"log"
+
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository"
 	"github.com/gin-gonic/gin"
@@ -37,7 +39,9 @@ func (c *commentService) GetComment(ctx *gin.Context, aid string) (comments []do
 	return comments, nil
 }
 
-func (c *commentService) DeleteComment(ctx *gin.Context, aid string) (err error) {
-
-	return err
+func (c *commentService) DeleteComment(ctx *gin.Context, id string) (err error) {
+	if err = c.repo.DeleteComment(ctx, id); err != nil {
+		return err
+	}
+	return nil
 }

@@ -17,7 +17,7 @@ type commentRepository struct {
 type CommentRepository interface {
 	AddComment(ctx *gin.Context, req domain.AddCommentReq) error
 	GetComment(ctx *gin.Context, aid string) (comments []domain.Comment, err error)
-	DeleteComment(ctx *gin.Context, aid string) (err error)
+	DeleteComment(ctx *gin.Context, id string) (err error)
 }
 
 func NewCommentRepository(dao dao.CommentDao) CommentRepository {
@@ -51,10 +51,8 @@ func (c *commentRepository) GetComment(ctx *gin.Context, aid string) (comments [
 	return comments, nil
 }
 
-func (c *commentRepository) DeleteComment(ctx *gin.Context, aid string) (err error) {
-
-	return c.dao.DeleteComment(ctx, aid)
-
+func (c *commentRepository) DeleteComment(ctx *gin.Context, id string) (err error) {
+	return c.dao.DeleteComment(ctx, id)
 }
 
 func StringToSqlNullInt64(target string) (output sql.NullInt64) {

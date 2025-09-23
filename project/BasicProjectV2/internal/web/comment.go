@@ -51,8 +51,8 @@ func (h *CommentHandler) AddComment(c *gin.Context) {
 }
 
 func (h *CommentHandler) DeleteComment(c *gin.Context) {
-	aid := c.Query("aid")
-	if err := h.svc.DeleteComment(c, aid); err != nil {
+	id := c.Query("id")
+	if err := h.svc.DeleteComment(c, id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"err": err,
 		})
