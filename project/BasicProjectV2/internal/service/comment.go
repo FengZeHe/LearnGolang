@@ -1,8 +1,6 @@
 package service
 
 import (
-	"log"
-
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository"
 	"github.com/gin-gonic/gin"
