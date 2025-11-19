@@ -3,6 +3,7 @@ package ioc
 import (
 	"time"
 
+	intWeb "github.com/basicprojectv2/interactive/web"
 	"github.com/basicprojectv2/internal/web"
 	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/gin-contrib/cors"
@@ -14,7 +15,7 @@ import (
 // 初始化gin Engine
 func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web.SysHandler,
 	menuHdl *web.MenuHandler, roleHdl *web.RoleHandler, draftHdl *web.DraftHandler,
-	articleHdl *web.ArticleHandler, commentHdl *web.CommentHandler) *gin.Engine {
+	articleHdl *web.ArticleHandler, commentHdl *web.CommentHandler, intHdl *intWeb.InteractiveHandler) *gin.Engine {
 	server := gin.Default()
 	server.Use(mdls[0], mdls[4], mdls[5], mdls[6])
 	userHdl.RegisterRoutes(server, mdls[3], mdls[2])
@@ -24,6 +25,7 @@ func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web
 	draftHdl.RegisterRoutes(server, mdls[2])
 	articleHdl.RegisterRoutes(server, mdls[2])
 	commentHdl.RegisterRoutes(server, mdls[2])
+	intHdl.RegisterRoutes(server, mdls[2])
 
 	return server
 }

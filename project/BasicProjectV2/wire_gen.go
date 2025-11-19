@@ -8,6 +8,10 @@ package main
 
 import (
 	"github.com/IBM/sarama"
+	repository2 "github.com/basicprojectv2/interactive/repository"
+	dao2 "github.com/basicprojectv2/interactive/repository/dao"
+	service2 "github.com/basicprojectv2/interactive/service"
+	web2 "github.com/basicprojectv2/interactive/web"
 	"github.com/basicprojectv2/internal/events/article"
 	"github.com/basicprojectv2/internal/repository"
 	"github.com/basicprojectv2/internal/repository/cache"
@@ -64,7 +68,11 @@ func InitializeApp() *App {
 	commentRepository := repository.NewCommentRepository(commentDao)
 	commentService := service.NewCommentService(commentRepository)
 	commentHandler := web.NewCommentHandler(commentService)
-	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler, commentHandler)
+	interactiveDAO := dao2.NewInteractiveDAO(db)
+	interactiveRepository := repository2.NewInteractiveRepository(interactiveDAO)
+	interactiveService := service2.NewInteractiveService(interactiveRepository)
+	interactiveHandler := web2.NewInteractiveHandler(interactiveService)
+	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler, commentHandler, interactiveHandler)
 	app := &App{
 		server: engine,
 	}

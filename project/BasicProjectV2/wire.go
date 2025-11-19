@@ -4,6 +4,10 @@ package main
 
 import (
 	"github.com/IBM/sarama"
+	intRepository "github.com/basicprojectv2/interactive/repository"
+	intDao "github.com/basicprojectv2/interactive/repository/dao"
+	intService "github.com/basicprojectv2/interactive/service"
+	intWeb "github.com/basicprojectv2/interactive/web"
 	"github.com/basicprojectv2/internal/events/article"
 	"github.com/basicprojectv2/internal/repository"
 	"github.com/basicprojectv2/internal/repository/cache"
@@ -64,6 +68,7 @@ func InitializeApp() *App {
 		dao.NewDraftDAO,
 		dao.NewArticleDAO,
 		dao.NewCommentDao,
+		intDao.NewInteractiveDAO,
 
 		// repository部分
 		repository.NewCacheUserRepository,
@@ -74,6 +79,7 @@ func InitializeApp() *App {
 		repository.NewDraftRepository,
 		repository.NewArticleRepository,
 		repository.NewCommentRepository,
+		intRepository.NewInteractiveRepository,
 
 		// service部分
 		ioc.InitSMSService,
@@ -85,6 +91,7 @@ func InitializeApp() *App {
 		service.NewDraftService,
 		service.NewArticleService,
 		service.NewCommentService,
+		intService.NewInteractiveService,
 
 		//handler部分
 		web.NewUserHandler,
@@ -95,6 +102,7 @@ func InitializeApp() *App {
 		web.NewArticleHandler,
 		web.NewCommentHandler,
 		//wire.Bind(new(article.Producer), new(*article.SaramaSyncProducer)),
+		intWeb.NewInteractiveHandler,
 
 		// 中间件和路由
 		ioc.InitGinMiddlewares,
