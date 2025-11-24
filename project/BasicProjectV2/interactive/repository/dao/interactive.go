@@ -53,37 +53,41 @@ func (i *GORMInteractive) HandleLike(aid string, like int, uid string, ctx conte
 			 2. 加一条用户点赞文章的记录
 	*/
 	now := time.Now().Format("2006-01-02 15:04:05")
-	if err = i.db.Model(domain.Interactive{}).Table("interactive").Clauses(clause.OnConflict{
-		DoUpdates: clause.Assignments(map[string]any{
-			"like_count": gorm.Expr("like_count + ?", likeArg),
-			"utime":      now,
-		}),
-	}).Create(&domain.Interactive{
-		Aid:       aid,
-		LikeCount: 1,
-		CTime:     now,
-		UTime:     now,
-	}).Error; err != nil {
-		log.Println("interactive like", err)
-		return err
-	}
+	return i.db.Transaction(func(tx *gorm.DB) error {
+		// todo 第一段操作
+		if err = i.db.Model(domain.Interactive{}).Table("interactive").
+			Clauses(clause.OnConflict{
+				DoUpdates: clause.Assignments(map[string]any{
+					"like_count": gorm.Expr("like_count + ?", likeArg),
+					"utime":      now,
+				}),
+			}).Create(&domain.Interactive{
+			Aid:       aid,
+			LikeCount: 1,
+			CTime:     now,
+			UTime:     now,
+		}).Error; err != nil {
+			log.Println("interactive like", err)
+			return err
+		}
 
-	if err = i.db.Model(domain.LikeRecord{}).Table("like_record").Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "aid"}, {Name: "uid"}},
-		DoUpdates: clause.Assignments(map[string]any{
-			"like":  like,
-			"utime": now,
-		}),
-	}).Create(&domain.LikeRecord{
-		Uid:   uid,
-		Aid:   aid,
-		Like:  like,
-		CTime: now,
-		UTime: now,
-	}).Error; err != nil {
-		log.Println("like record error", err)
-		return err
-	}
-
-	return nil
+		// ToDo 第二段操作
+		if err = i.db.Model(domain.LikeRecord{}).Table("like_record").Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "aid"}, {Name: "uid"}},
+			DoUpdates: clause.Assignments(map[string]any{
+				"like":  like,
+				"utime": now,
+			}),
+		}).Create(&domain.LikeRecord{
+			Uid:   uid,
+			Aid:   aid,
+			Like:  like,
+			CTime: now,
+			UTime: now,
+		}).Error; err != nil {
+			log.Println("like record error", err)
+			return err
+		}
+		return nil
+	})
 }
