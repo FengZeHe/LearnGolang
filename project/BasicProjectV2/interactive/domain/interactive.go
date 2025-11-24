@@ -18,3 +18,16 @@ type ArticleStatus struct {
 type AddReadCountReq struct {
 	Aid string `json:"aid"`
 }
+type LikeReq struct {
+	Aid  string `json:"aid"`
+	Like int    `json:"like"`
+}
+
+type LikeRecord struct {
+	ID    string `json:"id" gorm:"primary_key;autoIncrement;"`
+	Aid   string `json:"aid" gorm:"aid"`
+	Uid   string `json:"uid" gorm:"uid"`
+	Like  int    `json:"like" gorm:"like"`
+	CTime string `json:"-" gorm:"column:ctime"`
+	UTime string `json:"-" gorm:"column:utime"`
+}

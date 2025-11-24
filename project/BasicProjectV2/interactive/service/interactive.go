@@ -11,7 +11,8 @@ type interactiveService struct {
 }
 
 type InteractiveService interface {
-	AddReadCount(Aid string, ctx context.Context) (err error)
+	AddReadCount(aid string, ctx context.Context) (err error)
+	HandleLike(aid string, like int, uid string, ctx context.Context) (err error)
 }
 
 func NewInteractiveService(interactiveRepository repository.InteractiveRepository) InteractiveService {
@@ -20,6 +21,10 @@ func NewInteractiveService(interactiveRepository repository.InteractiveRepositor
 	}
 }
 
-func (i *interactiveService) AddReadCount(Aid string, ctx context.Context) (err error) {
-	return i.interactiveRepo.AddReadCount(Aid, ctx)
+func (i *interactiveService) AddReadCount(aid string, ctx context.Context) (err error) {
+	return i.interactiveRepo.AddReadCount(aid, ctx)
+}
+
+func (i *interactiveService) HandleLike(aid string, like int, uid string, ctx context.Context) (err error) {
+	return i.interactiveRepo.HandleLike(aid, like, uid, ctx)
 }

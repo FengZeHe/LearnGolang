@@ -57,6 +57,32 @@ func (r *InteractiveHandler) AddReadCount(c *gin.Context) {
 
 // 处理用户点赞
 func (r *InteractiveHandler) HandleLike(c *gin.Context) {
+	req := domain.LikeReq{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": "bad request",
+		})
+		return
+	}
+
+	uid, exists := c.Get("userid")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"msg": "unauthorized",
+		})
+		return
+	}
+	uidStr := uid.(string)
+
+	if err := r.svc.HandleLike(req.Aid, req.Like, uidStr, context.Background()); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg": "like error",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"msg": "like success",
+	})
 
 }
 
