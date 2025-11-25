@@ -31,3 +31,17 @@ type LikeRecord struct {
 	CTime string `json:"-" gorm:"column:ctime"`
 	UTime string `json:"-" gorm:"column:utime"`
 }
+
+type CollectReq struct {
+	Aid     string `json:"aid"`
+	Collect int    `json:"collect"`
+}
+
+type CollectRecord struct {
+	ID        string `json:"id" gorm:"primary_key;autoIncrement;"`
+	Aid       string `json:"aid" grom:"aid"`
+	Uid       string `json:"uid" gorm:"uid"`
+	Collected int    `json:"collected" grom:"collected"`
+	Ctime     string `json:"-" gorm:"column:ctime"`
+	Utime     string `json:"-" gorm:"column:utime"`
+}

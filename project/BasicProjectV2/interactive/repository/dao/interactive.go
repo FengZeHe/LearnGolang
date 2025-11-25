@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
 
@@ -17,6 +18,7 @@ type GORMInteractive struct {
 type InteractiveDAO interface {
 	AddReadCount(aid string, ctx context.Context) (err error)
 	HandleLike(aid string, like int, uid string, ctx context.Context) (err error)
+	HandleCollect(aid string, collect int, uid string, ctx context.Context) (err error)
 }
 
 func NewInteractiveDAO(db *gorm.DB) InteractiveDAO {
@@ -85,4 +87,58 @@ func (i *GORMInteractive) HandleLike(aid string, like int, uid string, ctx conte
 		}
 		return nil
 	})
+}
+
+func (i *GORMInteractive) HandleCollect(aid string, collect int, uid string, ctx context.Context) (err error) {
+
+	now := time.Now().Format("2006-01-02 15:04:05")
+	// 查询是否有收藏记录
+	var rec domain.CollectRecord
+	var recColl int
+	if err = i.db.Model(domain.CollectRecord{}).Table("collect_record").Where("aid = ? AND uid = ?", aid, uid).First(&rec).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			recColl = 0
+		} else {
+			return err
+		}
+	}
+	recColl = rec.Collected
+
+	switch {
+	case collect == 1 && recColl == 0:
+		//收藏
+		if err = i.db.Model(domain.Interactive{}).Table("interactive").Where("aid = ?", aid).
+			UpdateColumn("collect_count", gorm.Expr("collect_count + ?", 1)).Error; err != nil {
+			log.Println("update interactive collect count error", err)
+			return err
+		}
+
+	case collect == 0 && recColl == 1:
+		//取消收藏
+		if err = i.db.Model(domain.Interactive{}).Table("interactive").Where("aid = ?", aid).
+			UpdateColumn("collect_count", gorm.Expr("collect_count - ?", 1)).Error; err != nil {
+			log.Println("update interactive collect count error", err)
+			return err
+		}
+
+	default:
+		// 默认 不改动
+	}
+
+	if err = i.db.Model(domain.CollectRecord{}).Table("collect_record").Clauses(clause.OnConflict{
+		Columns: []clause.Column{{Name: "aid"}, {Name: "uid"}},
+		DoUpdates: clause.Assignments(map[string]any{
+			"collected": collect,
+			"utime":     now,
+		}),
+	}).Create(&domain.CollectRecord{
+		Aid:       aid,
+		Uid:       uid,
+		Collected: collect,
+		Ctime:     now,
+		Utime:     now,
+	}).Error; err != nil {
+		return err
+	}
+	return nil
 }

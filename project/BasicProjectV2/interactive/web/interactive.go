@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/basicprojectv2/interactive/domain"
@@ -87,4 +88,32 @@ func (r *InteractiveHandler) HandleLike(c *gin.Context) {
 }
 
 // 处理用户收藏
-func (r *InteractiveHandler) HandleCollect(c *gin.Context) {}
+func (r *InteractiveHandler) HandleCollect(c *gin.Context) {
+	req := domain.CollectReq{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": "bad request",
+		})
+	}
+
+	uid, exists := c.Get("userid")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"msg": "unauthorized",
+		})
+		return
+	}
+	uidStr := uid.(string)
+
+	if err := r.svc.HandleCollect(req.Aid, req.Collect, uidStr, context.Background()); err != nil {
+		log.Println("error:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg": "collect error",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "collect success",
+	})
+
+}

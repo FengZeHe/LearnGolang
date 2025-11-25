@@ -13,6 +13,7 @@ type interactiveRepository struct {
 type InteractiveRepository interface {
 	AddReadCount(aid string, ctx context.Context) (err error)
 	HandleLike(aid string, like int, uid string, ctx context.Context) (err error)
+	HandleCollect(aid string, collect int, uid string, ctx context.Context) (err error)
 }
 
 func NewInteractiveRepository(interactiveDAO dao.InteractiveDAO) InteractiveRepository {
@@ -27,4 +28,8 @@ func (i *interactiveRepository) AddReadCount(aid string, ctx context.Context) (e
 
 func (i *interactiveRepository) HandleLike(aid string, like int, uid string, ctx context.Context) (err error) {
 	return i.interactiveDAO.HandleLike(aid, like, uid, ctx)
+}
+
+func (i *interactiveRepository) HandleCollect(aid string, collect int, uid string, ctx context.Context) (err error) {
+	return i.interactiveDAO.HandleCollect(aid, collect, uid, ctx)
 }
