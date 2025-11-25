@@ -45,3 +45,8 @@ type CollectRecord struct {
 	Ctime     string `json:"-" gorm:"column:ctime"`
 	Utime     string `json:"-" gorm:"column:utime"`
 }
+
+type InteractiveStatus struct {
+	Collected int `json:"collected"`
+	Liked     int `json:"liked"`
+}

@@ -19,6 +19,7 @@ type InteractiveDAO interface {
 	AddReadCount(aid string, ctx context.Context) (err error)
 	HandleLike(aid string, like int, uid string, ctx context.Context) (err error)
 	HandleCollect(aid string, collect int, uid string, ctx context.Context) (err error)
+	GetStatus(aid, uid string, ctx context.Context) (res domain.InteractiveStatus, err error)
 }
 
 func NewInteractiveDAO(db *gorm.DB) InteractiveDAO {
@@ -90,7 +91,7 @@ func (i *GORMInteractive) HandleLike(aid string, like int, uid string, ctx conte
 }
 
 func (i *GORMInteractive) HandleCollect(aid string, collect int, uid string, ctx context.Context) (err error) {
-
+	// todo  用mysql事务来做
 	now := time.Now().Format("2006-01-02 15:04:05")
 	// 查询是否有收藏记录
 	var rec domain.CollectRecord
@@ -141,4 +142,13 @@ func (i *GORMInteractive) HandleCollect(aid string, collect int, uid string, ctx
 		return err
 	}
 	return nil
+}
+
+func (i *GORMInteractive) GetStatus(aid, uid string, ctx context.Context) (res domain.InteractiveStatus, err error) {
+	if err = i.db.Model(domain.InteractiveStatus{}).Raw(`
+	 SELECT a.collected,b.like from webook.collect_record as a LEFT JOIN webook.like_record as b ON 
+		a.aid = b.aid where a.aid=? and a.uid=?;`, aid, uid).Scan(&res).Error; err != nil {
+		return res, err
+	}
+	return res, nil
 }

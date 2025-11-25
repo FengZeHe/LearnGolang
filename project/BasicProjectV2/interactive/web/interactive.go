@@ -32,6 +32,8 @@ func (r *InteractiveHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.H
 	rg.POST("/addRead", r.AddReadCount)
 	rg.POST("/like", r.HandleLike)
 	rg.POST("/collect", r.HandleCollect)
+
+	rg.GET("/status/:aid", r.GetStatus)
 }
 
 /*
@@ -114,6 +116,34 @@ func (r *InteractiveHandler) HandleCollect(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"message": "collect success",
+	})
+
+}
+
+// 返回用户与文章交互
+func (r *InteractiveHandler) GetStatus(c *gin.Context) {
+	aid := c.Param("aid")
+	c.JSON(http.StatusOK, gin.H{
+		"aid": aid,
+	})
+
+	uid, exists := c.Get("userid")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"msg": "unauthorized",
+		})
+		return
+	}
+	uidStr := uid.(string)
+
+	res, err := r.svc.GetStatus(aid, uidStr, context.Background())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg": "get status error",
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": res,
 	})
 
 }
