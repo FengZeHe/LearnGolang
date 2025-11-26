@@ -15,7 +15,7 @@ type InteractiveRepository interface {
 	AddReadCount(aid string, ctx context.Context) (err error)
 	HandleLike(aid string, like int, uid string, ctx context.Context) (err error)
 	HandleCollect(aid string, collect int, uid string, ctx context.Context) (err error)
-	GetStatus(aid, uid string, ctx context.Context) (res domain.InteractiveStatus, err error)
+	GetStatus(aid, uid string, ctx context.Context) (res domain.InteractiveResp, err error)
 }
 
 func NewInteractiveRepository(interactiveDAO dao.InteractiveDAO) InteractiveRepository {
@@ -36,6 +36,6 @@ func (i *interactiveRepository) HandleCollect(aid string, collect int, uid strin
 	return i.interactiveDAO.HandleCollect(aid, collect, uid, ctx)
 }
 
-func (i *interactiveRepository) GetStatus(aid, uid string, ctx context.Context) (res domain.InteractiveStatus, err error) {
+func (i *interactiveRepository) GetStatus(aid, uid string, ctx context.Context) (res domain.InteractiveResp, err error) {
 	return i.interactiveDAO.GetStatus(aid, uid, ctx)
 }

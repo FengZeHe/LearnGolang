@@ -33,7 +33,7 @@ func (r *InteractiveHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.H
 	rg.POST("/like", r.HandleLike)
 	rg.POST("/collect", r.HandleCollect)
 
-	rg.GET("/status/:aid", r.GetStatus)
+	rg.GET("/status", r.GetStatus)
 }
 
 /*
@@ -122,11 +122,7 @@ func (r *InteractiveHandler) HandleCollect(c *gin.Context) {
 
 // 返回用户与文章交互
 func (r *InteractiveHandler) GetStatus(c *gin.Context) {
-	aid := c.Param("aid")
-	c.JSON(http.StatusOK, gin.H{
-		"aid": aid,
-	})
-
+	aid := c.Query("aid")
 	uid, exists := c.Get("userid")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -143,7 +139,6 @@ func (r *InteractiveHandler) GetStatus(c *gin.Context) {
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"message": res,
+		"data": res,
 	})
-
 }

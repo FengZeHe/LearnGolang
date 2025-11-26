@@ -19,7 +19,7 @@ type InteractiveDAO interface {
 	AddReadCount(aid string, ctx context.Context) (err error)
 	HandleLike(aid string, like int, uid string, ctx context.Context) (err error)
 	HandleCollect(aid string, collect int, uid string, ctx context.Context) (err error)
-	GetStatus(aid, uid string, ctx context.Context) (res domain.InteractiveStatus, err error)
+	GetStatus(aid, uid string, ctx context.Context) (res domain.InteractiveResp, err error)
 }
 
 func NewInteractiveDAO(db *gorm.DB) InteractiveDAO {
@@ -91,64 +91,84 @@ func (i *GORMInteractive) HandleLike(aid string, like int, uid string, ctx conte
 }
 
 func (i *GORMInteractive) HandleCollect(aid string, collect int, uid string, ctx context.Context) (err error) {
-	// todo  用mysql事务来做
 	now := time.Now().Format("2006-01-02 15:04:05")
 	// 查询是否有收藏记录
 	var rec domain.CollectRecord
 	var recColl int
-	if err = i.db.Model(domain.CollectRecord{}).Table("collect_record").Where("aid = ? AND uid = ?", aid, uid).First(&rec).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			recColl = 0
-		} else {
+
+	return i.db.Transaction(func(tx *gorm.DB) error {
+		if err = tx.Model(domain.CollectRecord{}).Table("collect_record").Where("aid = ? AND uid = ?", aid, uid).First(&rec).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				recColl = 0
+			} else {
+				return err
+			}
+		}
+		recColl = rec.Collected
+
+		switch {
+		case collect == 1 && recColl == 0:
+			//收藏
+			if err = tx.Model(domain.Interactive{}).Table("interactive").Where("aid = ?", aid).
+				UpdateColumn("collect_count", gorm.Expr("collect_count + ?", 1)).Error; err != nil {
+				log.Println("update interactive collect count error", err)
+				return err
+			}
+
+		case collect == 0 && recColl == 1:
+			//取消收藏
+			if err = tx.Model(domain.Interactive{}).Table("interactive").Where("aid = ?", aid).
+				UpdateColumn("collect_count", gorm.Expr("collect_count - ?", 1)).Error; err != nil {
+				log.Println("update interactive collect count error", err)
+				return err
+			}
+
+		default:
+			// 默认 不改动
+		}
+
+		if err = tx.Model(domain.CollectRecord{}).Table("collect_record").Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "aid"}, {Name: "uid"}},
+			DoUpdates: clause.Assignments(map[string]any{
+				"collected": collect,
+				"utime":     now,
+			}),
+		}).Create(&domain.CollectRecord{
+			Aid:       aid,
+			Uid:       uid,
+			Collected: collect,
+			Ctime:     now,
+			Utime:     now,
+		}).Error; err != nil {
 			return err
 		}
-	}
-	recColl = rec.Collected
+		return nil
+	})
 
-	switch {
-	case collect == 1 && recColl == 0:
-		//收藏
-		if err = i.db.Model(domain.Interactive{}).Table("interactive").Where("aid = ?", aid).
-			UpdateColumn("collect_count", gorm.Expr("collect_count + ?", 1)).Error; err != nil {
-			log.Println("update interactive collect count error", err)
-			return err
-		}
-
-	case collect == 0 && recColl == 1:
-		//取消收藏
-		if err = i.db.Model(domain.Interactive{}).Table("interactive").Where("aid = ?", aid).
-			UpdateColumn("collect_count", gorm.Expr("collect_count - ?", 1)).Error; err != nil {
-			log.Println("update interactive collect count error", err)
-			return err
-		}
-
-	default:
-		// 默认 不改动
-	}
-
-	if err = i.db.Model(domain.CollectRecord{}).Table("collect_record").Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "aid"}, {Name: "uid"}},
-		DoUpdates: clause.Assignments(map[string]any{
-			"collected": collect,
-			"utime":     now,
-		}),
-	}).Create(&domain.CollectRecord{
-		Aid:       aid,
-		Uid:       uid,
-		Collected: collect,
-		Ctime:     now,
-		Utime:     now,
-	}).Error; err != nil {
-		return err
-	}
-	return nil
 }
 
-func (i *GORMInteractive) GetStatus(aid, uid string, ctx context.Context) (res domain.InteractiveStatus, err error) {
-	if err = i.db.Model(domain.InteractiveStatus{}).Raw(`
+func (i *GORMInteractive) GetStatus(aid, uid string, ctx context.Context) (res domain.InteractiveResp, err error) {
+
+	var personRes domain.InteractiveStatus
+	var interRes domain.Interactive
+	i.db.Transaction(func(tx *gorm.DB) error {
+		if err = tx.Model(domain.InteractiveStatus{}).Raw(`
 	 SELECT a.collected,b.like from webook.collect_record as a LEFT JOIN webook.like_record as b ON 
-		a.aid = b.aid where a.aid=? and a.uid=?;`, aid, uid).Scan(&res).Error; err != nil {
-		return res, err
-	}
+		a.aid = b.aid where a.aid=? and a.uid=?;`, aid, uid).Scan(&personRes).Error; err != nil {
+			return err
+		}
+
+		if err = tx.Model(domain.Interactive{}).Table("interactive").Where("aid = ?", aid).Scan(&interRes).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	res.Collected = personRes.Collected
+	res.Liked = personRes.Liked
+	res.ReadCount = interRes.ReadCount
+	res.LikeCount = interRes.LikeCount
+	res.Collected = personRes.Collected
+
 	return res, nil
 }

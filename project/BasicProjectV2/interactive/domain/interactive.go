@@ -50,3 +50,11 @@ type InteractiveStatus struct {
 	Collected int `json:"collected"`
 	Liked     int `json:"liked"`
 }
+
+type InteractiveResp struct {
+	Collected    int `json:"collected"`
+	Liked        int `json:"liked"`
+	ReadCount    int `json:"readCount"`
+	LikeCount    int `json:"likeCount"`
+	CollectCount int `json:"collectCount"`
+}
