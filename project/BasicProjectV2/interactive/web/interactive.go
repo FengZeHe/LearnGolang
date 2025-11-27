@@ -34,6 +34,7 @@ func (r *InteractiveHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.H
 	rg.POST("/collect", r.HandleCollect)
 
 	rg.GET("/status", r.GetStatus)
+	rg.GET("/collection", r.GetCollection)
 }
 
 /*
@@ -141,4 +142,35 @@ func (r *InteractiveHandler) GetStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": res,
 	})
+}
+
+func (r *InteractiveHandler) GetCollection(c *gin.Context) {
+	req := domain.CollectionReq{}
+	uid, exists := c.Get("userid")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"msg": "unauthorized",
+		})
+		return
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": "bad request",
+		})
+		return
+	}
+
+	uidStr := uid.(string)
+	res, err := r.svc.GetCollection(uidStr, req, context.Background())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg": "get collection error",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data": res,
+	})
+
 }

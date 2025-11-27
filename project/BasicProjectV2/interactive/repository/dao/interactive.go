@@ -20,6 +20,7 @@ type InteractiveDAO interface {
 	HandleLike(aid string, like int, uid string, ctx context.Context) (err error)
 	HandleCollect(aid string, collect int, uid string, ctx context.Context) (err error)
 	GetStatus(aid, uid string, ctx context.Context) (res domain.InteractiveResp, err error)
+	GetCollection(uid string, collectionReq domain.CollectionReq, ctx context.Context) (res domain.CollectionResp, err error)
 }
 
 func NewInteractiveDAO(db *gorm.DB) InteractiveDAO {
@@ -151,7 +152,7 @@ func (i *GORMInteractive) GetStatus(aid, uid string, ctx context.Context) (res d
 
 	var personRes domain.InteractiveStatus
 	var interRes domain.Interactive
-	i.db.Transaction(func(tx *gorm.DB) error {
+	if err = i.db.Transaction(func(tx *gorm.DB) error {
 		if err = tx.Model(&domain.CollectRecord{}).Table("collect_record").Select("collect_record.collected", "like_record.like").
 			Joins("LEFT JOIN like_record ON collect_record.aid = like_record.aid AND collect_record.uid = like_record.uid").
 			Where("collect_record.aid = ? AND collect_record.uid = ?", aid, uid).Scan(&personRes).Error; err != nil {
@@ -162,7 +163,9 @@ func (i *GORMInteractive) GetStatus(aid, uid string, ctx context.Context) (res d
 			return err
 		}
 		return nil
-	})
+	}); err != nil {
+		return res, err
+	}
 
 	res.Collected = personRes.Collected
 	res.Liked = personRes.Liked
@@ -170,5 +173,9 @@ func (i *GORMInteractive) GetStatus(aid, uid string, ctx context.Context) (res d
 	res.LikeCount = interRes.LikeCount
 	res.CollectCount = interRes.CollectCount
 
+	return res, nil
+}
+
+func (i *GORMInteractive) GetCollection(uid string, collectionReq domain.CollectionReq, ctx context.Context) (res domain.CollectionResp, err error) {
 	return res, nil
 }

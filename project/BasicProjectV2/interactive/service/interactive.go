@@ -16,6 +16,7 @@ type InteractiveService interface {
 	HandleLike(aid string, like int, uid string, ctx context.Context) (err error)
 	HandleCollect(aid string, collect int, uid string, ctx context.Context) (err error)
 	GetStatus(aid, uid string, ctx context.Context) (res domain.InteractiveResp, err error)
+	GetCollection(uid string, collectionReq domain.CollectionReq, ctx context.Context) (res domain.CollectionResp, err error)
 }
 
 func NewInteractiveService(interactiveRepository repository.InteractiveRepository) InteractiveService {
@@ -38,4 +39,8 @@ func (i *interactiveService) HandleCollect(aid string, collect int, uid string, 
 
 func (i *interactiveService) GetStatus(aid, uid string, ctx context.Context) (res domain.InteractiveResp, err error) {
 	return i.interactiveRepo.GetStatus(aid, uid, ctx)
+}
+
+func (i *interactiveService) GetCollection(uid string, collectionReq domain.CollectionReq, ctx context.Context) (res domain.CollectionResp, err error) {
+	return i.interactiveRepo.GetCollection(uid, collectionReq, ctx)
 }

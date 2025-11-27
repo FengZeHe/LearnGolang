@@ -58,3 +58,16 @@ type InteractiveResp struct {
 	LikeCount    int `json:"likeCount"`
 	CollectCount int `json:"collectCount"`
 }
+
+// todo pageIndex ,pageSize, total 如何确定？
+type CollectionResp struct {
+	PageIndex   int             `json:"pageIndex"`
+	PageSize    int             `json:"pageSize"`
+	Total       int             `json:"total"`
+	CollectList []CollectRecord `json:"collectList"`
+}
+
+type CollectionReq struct {
+	PageIndex int `json:"pageIndex"`
+	PageSize  int `json:"pageSize"`
+}
