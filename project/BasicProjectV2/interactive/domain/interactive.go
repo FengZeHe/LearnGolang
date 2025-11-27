@@ -47,8 +47,8 @@ type CollectRecord struct {
 }
 
 type InteractiveStatus struct {
-	Collected int `json:"collected"`
-	Liked     int `json:"liked"`
+	Collected int `json:"collected" gorm:"column:collected"`
+	Liked     int `json:"liked" gorm:"column:like"`
 }
 
 type InteractiveResp struct {

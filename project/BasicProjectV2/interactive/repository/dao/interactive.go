@@ -152,10 +152,10 @@ func (i *GORMInteractive) GetStatus(aid, uid string, ctx context.Context) (res d
 	var personRes domain.InteractiveStatus
 	var interRes domain.Interactive
 	i.db.Transaction(func(tx *gorm.DB) error {
-		if err = tx.Model(domain.InteractiveStatus{}).Raw(`
-	 SELECT a.collected,b.like from webook.collect_record as a LEFT JOIN webook.like_record as b ON 
-		a.aid = b.aid where a.aid=? and a.uid=?;`, aid, uid).Scan(&personRes).Error; err != nil {
-			return err
+		if err = tx.Model(&domain.CollectRecord{}).Table("collect_record").Select("collect_record.collected", "like_record.like").
+			Joins("LEFT JOIN like_record ON collect_record.aid = like_record.aid AND collect_record.uid = like_record.uid").
+			Where("collect_record.aid = ? AND collect_record.uid = ?", aid, uid).Scan(&personRes).Error; err != nil {
+			log.Println(err)
 		}
 
 		if err = tx.Model(domain.Interactive{}).Table("interactive").Where("aid = ?", aid).Scan(&interRes).Error; err != nil {
@@ -168,7 +168,7 @@ func (i *GORMInteractive) GetStatus(aid, uid string, ctx context.Context) (res d
 	res.Liked = personRes.Liked
 	res.ReadCount = interRes.ReadCount
 	res.LikeCount = interRes.LikeCount
-	res.Collected = personRes.Collected
+	res.CollectCount = interRes.CollectCount
 
 	return res, nil
 }

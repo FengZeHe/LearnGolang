@@ -2,9 +2,10 @@ package repository
 
 import (
 	"context"
+	"log"
+
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository/dao"
-	"log"
 )
 
 type MenuRepository interface {
