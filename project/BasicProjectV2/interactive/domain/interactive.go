@@ -71,10 +71,11 @@ type CollectionResp struct {
 }
 
 type CollectList struct {
-	Aid       string `json:"aid" grom:"aid"`
-	Title     string `json:"title" grom:"title"`
-	Content   string `json:"content" grom:"content"`
-	Collected int    `json:"collected" grom:"collected"`
+	Aid        string `json:"aid" grom:"aid"`
+	Title      string `json:"title" grom:"title"`
+	AuthorName string `json:"author" grom:"author_name"`
+	Content    string `json:"content" grom:"content"`
+	Collected  int    `json:"collected" grom:"collected"`
 }
 
 type CollectionReq struct {

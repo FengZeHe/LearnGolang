@@ -191,8 +191,9 @@ func (i *GORMInteractive) GetCollection(uid string, collectionReq domain.Collect
 		}
 
 		if err = tx.Model(&domain.CollectRecord{}).Limit(pageSize).Offset(offset).
-			Select("article.title", "article.content", "collect_record.collected", "collect_record.aid").
-			Joins("LEFT JOIN article ON article.id = aid").Where("uid = ? AND collected = 1", uid).Scan(&rows).Error; err != nil {
+			Select("article.title", "article.content", "article.author_name", "collect_record.collected", "collect_record.aid").
+			Joins("JOIN article ON article.id = aid").
+			Where("uid = ? AND collected = 1", uid).Scan(&rows).Error; err != nil {
 			return err
 		}
 		return nil
