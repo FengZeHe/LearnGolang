@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/basicprojectv2/interactive/domain"
 	"github.com/basicprojectv2/interactive/service"
@@ -144,8 +145,8 @@ func (r *InteractiveHandler) GetStatus(c *gin.Context) {
 	})
 }
 
+// 获取用户收藏夹
 func (r *InteractiveHandler) GetCollection(c *gin.Context) {
-	req := domain.CollectionReq{}
 	uid, exists := c.Get("userid")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -154,12 +155,14 @@ func (r *InteractiveHandler) GetCollection(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": "bad request",
-		})
-		return
+	pageIndex, _ := strconv.Atoi(c.PostForm("pageIndex"))
+	pageSize, _ := strconv.Atoi(c.PostForm("pageSize"))
+	req := domain.CollectionReq{
+		PageIndex: pageIndex,
+		PageSize:  pageSize,
 	}
+
+	req.SetDefault()
 
 	uidStr := uid.(string)
 	res, err := r.svc.GetCollection(uidStr, req, context.Background())
@@ -172,5 +175,6 @@ func (r *InteractiveHandler) GetCollection(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": res,
 	})
+	return
 
 }

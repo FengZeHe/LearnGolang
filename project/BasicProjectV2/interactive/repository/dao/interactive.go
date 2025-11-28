@@ -177,5 +177,32 @@ func (i *GORMInteractive) GetStatus(aid, uid string, ctx context.Context) (res d
 }
 
 func (i *GORMInteractive) GetCollection(uid string, collectionReq domain.CollectionReq, ctx context.Context) (res domain.CollectionResp, err error) {
+	pageIndex := collectionReq.PageIndex
+	pageSize := collectionReq.PageSize
+
+	offset := (pageIndex - 1) * pageSize
+
+	var count int64
+	var rows []domain.CollectList
+
+	if err = i.db.Transaction(func(tx *gorm.DB) error {
+		if err = tx.Model(&domain.CollectRecord{}).Where("uid = ?", uid).Count(&count).Error; err != nil {
+			return err
+		}
+
+		if err = tx.Model(&domain.CollectRecord{}).Limit(pageSize).Offset(offset).
+			Select("article.title", "article.content", "collect_record.collected", "collect_record.aid").
+			Joins("LEFT JOIN article ON article.id = aid").Where("uid = ? AND collected = 1", uid).Scan(&rows).Error; err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return res, err
+	}
+	res.CollectList = rows
+	res.Total = int(count)
+	res.PageSize = pageSize
+	res.PageIndex = pageIndex
+
 	return res, nil
 }

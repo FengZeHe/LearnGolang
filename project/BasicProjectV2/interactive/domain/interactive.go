@@ -46,6 +46,10 @@ type CollectRecord struct {
 	Utime     string `json:"-" gorm:"column:utime"`
 }
 
+func (t *CollectRecord) TableName() string {
+	return "collect_record"
+}
+
 type InteractiveStatus struct {
 	Collected int `json:"collected" gorm:"column:collected"`
 	Liked     int `json:"liked" gorm:"column:like"`
@@ -59,15 +63,30 @@ type InteractiveResp struct {
 	CollectCount int `json:"collectCount"`
 }
 
-// todo pageIndex ,pageSize, total 如何确定？
 type CollectionResp struct {
-	PageIndex   int             `json:"pageIndex"`
-	PageSize    int             `json:"pageSize"`
-	Total       int             `json:"total"`
-	CollectList []CollectRecord `json:"collectList"`
+	PageIndex   int           `json:"pageIndex"`
+	PageSize    int           `json:"pageSize"`
+	Total       int           `json:"total"`
+	CollectList []CollectList `json:"collectList"`
+}
+
+type CollectList struct {
+	Aid       string `json:"aid" grom:"aid"`
+	Title     string `json:"title" grom:"title"`
+	Content   string `json:"content" grom:"content"`
+	Collected int    `json:"collected" grom:"collected"`
 }
 
 type CollectionReq struct {
 	PageIndex int `json:"pageIndex"`
 	PageSize  int `json:"pageSize"`
+}
+
+func (p *CollectionReq) SetDefault() {
+	if p.PageIndex <= 0 {
+		p.PageIndex = 1
+	}
+	if p.PageSize <= 0 {
+		p.PageSize = 10
+	}
 }
