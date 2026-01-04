@@ -72,7 +72,11 @@ func InitializeApp() *App {
 	interactiveRepository := repository2.NewInteractiveRepository(interactiveDAO)
 	interactiveService := service2.NewInteractiveService(interactiveRepository)
 	interactiveHandler := web2.NewInteractiveHandler(interactiveService)
-	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler, commentHandler, interactiveHandler)
+	userSettingDAO := dao.NewUserSettingDAO(db)
+	userSettingRepository := repository.NewUserSettingRepository(userSettingDAO)
+	userSettingService := service.NewUserSettingService(userSettingRepository)
+	userSettingHandler := web.NewUserSettingHandler(userSettingService)
+	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler, commentHandler, interactiveHandler, userSettingHandler)
 	app := &App{
 		server: engine,
 	}

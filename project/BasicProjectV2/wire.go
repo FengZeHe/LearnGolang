@@ -69,6 +69,7 @@ func InitializeApp() *App {
 		dao.NewArticleDAO,
 		dao.NewCommentDao,
 		intDao.NewInteractiveDAO,
+		dao.NewUserSettingDAO,
 
 		// repository部分
 		repository.NewCacheUserRepository,
@@ -80,6 +81,7 @@ func InitializeApp() *App {
 		repository.NewArticleRepository,
 		repository.NewCommentRepository,
 		intRepository.NewInteractiveRepository,
+		repository.NewUserSettingRepository,
 
 		// service部分
 		ioc.InitSMSService,
@@ -92,6 +94,7 @@ func InitializeApp() *App {
 		service.NewArticleService,
 		service.NewCommentService,
 		intService.NewInteractiveService,
+		service.NewUserSettingService,
 
 		//handler部分
 		web.NewUserHandler,
@@ -103,6 +106,7 @@ func InitializeApp() *App {
 		web.NewCommentHandler,
 		//wire.Bind(new(article.Producer), new(*article.SaramaSyncProducer)),
 		intWeb.NewInteractiveHandler,
+		web.NewUserSettingHandler,
 
 		// 中间件和路由
 		ioc.InitGinMiddlewares,

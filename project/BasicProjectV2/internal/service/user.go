@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository"
 	"github.com/basicprojectv2/pkg/bcrypt"
 	"github.com/basicprojectv2/pkg/snowflake"
-	"time"
 
 	//"github.com/pkg/errors"
 	"strconv"
@@ -134,7 +135,6 @@ func (svc *userService) FindOrCreate(ctx context.Context, phone string, id strin
 	return svc.repo.FindByPhone(ctx, phone)
 }
 
-func (svc *userService) FindById(ctx context.Context,
-	id string) (domain.User, error) {
+func (svc *userService) FindById(ctx context.Context, id string) (domain.User, error) {
 	return svc.repo.FindById(ctx, id)
 }
