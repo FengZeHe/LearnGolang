@@ -16,7 +16,7 @@ type GORMUserSetting struct {
 
 type UserSettingDAO interface {
 	HandleUserSetting(uid string, us domain.UserSettingReq, ctx context.Context) (err error)
-	GetUserSetting(uid string, ctx context.Context) (*domain.UserSettingReq, error)
+	GetUserSetting(uid string, ctx context.Context) (us domain.UserSetting, err error)
 	ResetUserSetting(uid string, ctx context.Context) error
 }
 
@@ -55,8 +55,11 @@ func (u *GORMUserSetting) HandleUserSetting(uid string, us domain.UserSettingReq
 
 }
 
-func (u *GORMUserSetting) GetUserSetting(uid string, ctx context.Context) (*domain.UserSettingReq, error) {
-	return &domain.UserSettingReq{}, nil
+func (u *GORMUserSetting) GetUserSetting(uid string, ctx context.Context) (us domain.UserSetting, err error) {
+	if err = u.db.Model(domain.UserSetting{}).Where("user_id = ?", uid).First(&us).Error; err != nil {
+		return domain.UserSetting{}, err
+	}
+	return us, nil
 }
 
 func (u *GORMUserSetting) ResetUserSetting(uid string, ctx context.Context) error {

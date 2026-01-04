@@ -14,6 +14,7 @@ type userSettingService struct {
 type UserSettingService interface {
 	// todo 获取/修改/重置
 	HandleUserSetting(uid string, req domain.UserSettingReq, ctx context.Context) error
+	GetUserSetting(uid string, ctx context.Context) (domain.UserSetting, error)
 }
 
 func NewUserSettingService(userSettingRepo repository.UserSettingRepository) UserSettingService {
@@ -22,4 +23,8 @@ func NewUserSettingService(userSettingRepo repository.UserSettingRepository) Use
 
 func (us *userSettingService) HandleUserSetting(uid string, req domain.UserSettingReq, ctx context.Context) error {
 	return us.repo.HandleUserSetting(uid, req, ctx)
+}
+
+func (us *userSettingService) GetUserSetting(uid string, ctx context.Context) (domain.UserSetting, error) {
+	return us.repo.GetUserSetting(uid, ctx)
 }

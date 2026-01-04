@@ -29,7 +29,14 @@ func (h *UserSettingHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.H
 
 // 获取用户配置
 func (h *UserSettingHandler) GetUserSetting(ctx *gin.Context) {
-
+	uid, _ := ctx.Get("userid")
+	var us = domain.UserSetting{}
+	var err error
+	if us, err = h.usService.GetUserSetting(uid.(string), ctx); err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, us)
 }
 
 // 更新用户配置

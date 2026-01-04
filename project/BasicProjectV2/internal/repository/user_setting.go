@@ -13,6 +13,7 @@ type userSettingRepository struct {
 
 type UserSettingRepository interface {
 	HandleUserSetting(uid string, us domain.UserSettingReq, ctx context.Context) (err error)
+	GetUserSetting(uid string, ctx context.Context) (domain.UserSetting, error)
 }
 
 func NewUserSettingRepository(dao dao.UserSettingDAO) UserSettingRepository {
@@ -21,4 +22,8 @@ func NewUserSettingRepository(dao dao.UserSettingDAO) UserSettingRepository {
 
 func (u *userSettingRepository) HandleUserSetting(uid string, us domain.UserSettingReq, ctx context.Context) (err error) {
 	return u.userSettingDAO.HandleUserSetting(uid, us, ctx)
+}
+
+func (u *userSettingRepository) GetUserSetting(uid string, ctx context.Context) (domain.UserSetting, error) {
+	return u.userSettingDAO.GetUserSetting(uid, ctx)
 }
