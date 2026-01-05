@@ -2,7 +2,6 @@ package dao
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/basicprojectv2/internal/domain"
@@ -25,18 +24,8 @@ func NewUserSettingDAO(db *gorm.DB) UserSettingDAO {
 }
 
 func (u *GORMUserSetting) HandleUserSetting(uid string, us domain.UserSettingReq, ctx context.Context) (err error) {
-	log.Println("Handle User Setting", us, uid)
-	/*
-		todo upsert操作
-	*/
 	now := time.Now().Format("2006-01-02 15:04:05")
 	return u.db.Transaction(func(tx *gorm.DB) error {
-		var usRec domain.UserSettingReq
-		err = tx.Model(domain.UserSettingReq{}).Where("id = ?", uid).First(&usRec).Error
-		if err != nil && err != gorm.ErrRecordNotFound {
-			return err
-		}
-
 		if err = tx.Model(domain.UserSetting{}).Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "user_id"}},
 			DoUpdates: clause.Assignments(map[string]any{
@@ -52,7 +41,6 @@ func (u *GORMUserSetting) HandleUserSetting(uid string, us domain.UserSettingReq
 		}
 		return nil
 	})
-
 }
 
 func (u *GORMUserSetting) GetUserSetting(uid string, ctx context.Context) (us domain.UserSetting, err error) {

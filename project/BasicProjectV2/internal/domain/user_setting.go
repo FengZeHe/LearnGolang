@@ -2,7 +2,7 @@ package domain
 
 type UserSetting struct {
 	ID        int    `json:"id" column:"id"`
-	UserID    string `json:"user_id"  column:"user_id"`
+	UserID    string `json:"user_id"  column:"user_id" gorm:"uniqueIndex;not null"`
 	ThemeMode string `json:"theme_mode" column:"theme_mode"`
 	CreatedAt string `json:"-" column:"created_at"`
 	UpdatedAt string `json:"-" column:"updated_at"`
