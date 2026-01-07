@@ -18,7 +18,7 @@ func NewUserSettingHandler(usService service.UserSettingService) *UserSettingHan
 
 // 注册路由
 func (h *UserSettingHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.HandlerFunc) {
-	ug := server.Group("/v2/usersetting")
+	ug := server.Group("/v2/usersetting/")
 	ug.Use(loginCheck)
 
 	ug.GET("/", h.GetUserSetting)
