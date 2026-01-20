@@ -12,7 +12,7 @@ type taskService struct {
 }
 
 type TaskService interface {
-	AddTask(req domain.AddTask, ctx context.Context) (err error)
+	AddTask(req domain.Task, ctx context.Context) (err error)
 }
 
 func NewTaskService(taskRepo repository.TaskRepository) TaskService {
@@ -21,6 +21,6 @@ func NewTaskService(taskRepo repository.TaskRepository) TaskService {
 	}
 }
 
-func (t taskService) AddTask(req domain.AddTask, ctx context.Context) (err error) {
+func (t taskService) AddTask(req domain.Task, ctx context.Context) (err error) {
 	return t.taskRepo.AddTask(req, ctx)
 }
