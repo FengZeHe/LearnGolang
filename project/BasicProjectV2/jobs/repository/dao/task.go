@@ -28,7 +28,7 @@ func NewTaskDAO(db *gorm.DB) TaskDAO {
 func (t *GromTbTask) AddTask(req domain.Task, ctx context.Context) (err error) {
 	now := time.Now().Format("2006-01-02 15:04:05")
 	req.CreatedAt = now
-	res := t.db.Create(&req)
+	res := t.db.WithContext(ctx).Create(&req)
 	if res.Error != nil {
 		return res.Error
 	}
