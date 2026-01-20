@@ -16,6 +16,10 @@ import (
 	"github.com/basicprojectv2/internal/web"
 	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/basicprojectv2/ioc"
+	jobsRepository "github.com/basicprojectv2/jobs/repository"
+	jobsDAO "github.com/basicprojectv2/jobs/repository/dao"
+	jobsService "github.com/basicprojectv2/jobs/service"
+	jobsWeb "github.com/basicprojectv2/jobs/web"
 	"github.com/basicprojectv2/settings"
 	"github.com/google/wire"
 )
@@ -70,6 +74,7 @@ func InitializeApp() *App {
 		dao.NewCommentDao,
 		intDao.NewInteractiveDAO,
 		dao.NewUserSettingDAO,
+		jobsDAO.NewTaskDAO,
 
 		// repository部分
 		repository.NewCacheUserRepository,
@@ -82,6 +87,7 @@ func InitializeApp() *App {
 		repository.NewCommentRepository,
 		intRepository.NewInteractiveRepository,
 		repository.NewUserSettingRepository,
+		jobsRepository.NewTaskRepository,
 
 		// service部分
 		ioc.InitSMSService,
@@ -95,6 +101,7 @@ func InitializeApp() *App {
 		service.NewCommentService,
 		intService.NewInteractiveService,
 		service.NewUserSettingService,
+		jobsService.NewTaskService,
 
 		//handler部分
 		web.NewUserHandler,
@@ -107,6 +114,7 @@ func InitializeApp() *App {
 		//wire.Bind(new(article.Producer), new(*article.SaramaSyncProducer)),
 		intWeb.NewInteractiveHandler,
 		web.NewUserSettingHandler,
+		jobsWeb.NewTaskHandler,
 
 		// 中间件和路由
 		ioc.InitGinMiddlewares,

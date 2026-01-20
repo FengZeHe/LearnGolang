@@ -20,6 +20,10 @@ import (
 	"github.com/basicprojectv2/internal/web"
 	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/basicprojectv2/ioc"
+	repository3 "github.com/basicprojectv2/jobs/repository"
+	dao3 "github.com/basicprojectv2/jobs/repository/dao"
+	service3 "github.com/basicprojectv2/jobs/service"
+	web3 "github.com/basicprojectv2/jobs/web"
 	"github.com/basicprojectv2/settings"
 	"github.com/google/wire"
 )
@@ -76,7 +80,11 @@ func InitializeApp() *App {
 	userSettingRepository := repository.NewUserSettingRepository(userSettingDAO)
 	userSettingService := service.NewUserSettingService(userSettingRepository)
 	userSettingHandler := web.NewUserSettingHandler(userSettingService)
-	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler, commentHandler, interactiveHandler, userSettingHandler)
+	taskDAO := dao3.NewTaskDAO(db)
+	taskRepository := repository3.NewTaskRepository(taskDAO)
+	taskService := service3.NewTaskService(taskRepository)
+	taskHandler := web3.NewTaskHandler(taskService)
+	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler, commentHandler, interactiveHandler, userSettingHandler, taskHandler)
 	app := &App{
 		server: engine,
 	}

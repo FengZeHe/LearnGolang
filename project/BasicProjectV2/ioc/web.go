@@ -3,9 +3,10 @@ package ioc
 import (
 	"time"
 
-	intWeb "github.com/basicprojectv2/interactive/web"
+	interactive "github.com/basicprojectv2/interactive/web"
 	"github.com/basicprojectv2/internal/web"
 	"github.com/basicprojectv2/internal/web/middleware"
+	jobs "github.com/basicprojectv2/jobs/web"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -15,8 +16,8 @@ import (
 // 初始化gin Engine
 func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web.SysHandler,
 	menuHdl *web.MenuHandler, roleHdl *web.RoleHandler, draftHdl *web.DraftHandler,
-	articleHdl *web.ArticleHandler, commentHdl *web.CommentHandler, intHdl *intWeb.InteractiveHandler,
-	userSetHdl *web.UserSettingHandler) *gin.Engine {
+	articleHdl *web.ArticleHandler, commentHdl *web.CommentHandler, intHdl *interactive.InteractiveHandler,
+	userSetHdl *web.UserSettingHandler, taskHdl *jobs.TaskHandler) *gin.Engine {
 	server := gin.Default()
 	server.Use(mdls[0], mdls[4], mdls[5], mdls[6])
 	userHdl.RegisterRoutes(server, mdls[3], mdls[2])
@@ -28,6 +29,7 @@ func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web
 	commentHdl.RegisterRoutes(server, mdls[2])
 	intHdl.RegisterRoutes(server, mdls[2])
 	userSetHdl.RegisterRoutes(server, mdls[2])
+	taskHdl.RegisterRoutes(server, mdls[2])
 
 	return server
 }
