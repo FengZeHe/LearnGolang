@@ -16,10 +16,13 @@ import (
 	"github.com/basicprojectv2/internal/web"
 	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/basicprojectv2/ioc"
+	"github.com/basicprojectv2/jobs"
 	jobsRepository "github.com/basicprojectv2/jobs/repository"
 	jobsDAO "github.com/basicprojectv2/jobs/repository/dao"
+	jobsSch "github.com/basicprojectv2/jobs/scheduler"
 	jobsService "github.com/basicprojectv2/jobs/service"
 	jobsWeb "github.com/basicprojectv2/jobs/web"
+
 	"github.com/basicprojectv2/settings"
 	"github.com/google/wire"
 )
@@ -115,6 +118,10 @@ func InitializeApp() *App {
 		intWeb.NewInteractiveHandler,
 		web.NewUserSettingHandler,
 		jobsWeb.NewTaskHandler,
+
+		// Scheduler
+		jobs.NewTaskRegistry,
+		jobsSch.NewCronScheduler,
 
 		// 中间件和路由
 		ioc.InitGinMiddlewares,

@@ -1,6 +1,9 @@
 package web
 
 import (
+	"net/http"
+
+	"github.com/basicprojectv2/jobs/domain"
 	"github.com/basicprojectv2/jobs/service"
 	"github.com/gin-gonic/gin"
 )
@@ -30,5 +33,19 @@ func (r *TaskHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.HandlerF
 		5. 查看某个定时任务
 	*/
 	rg.GET("/")
+	rg.POST("/add", r.HandleAddTask)
 
+}
+
+func (r *TaskHandler) HandleAddTask(c *gin.Context) {
+	req := domain.AddTaskReq{}
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := r.svc.AddTask(req, c); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": "task added"})
 }

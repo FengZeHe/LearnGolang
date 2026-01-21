@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+
+	"github.com/basicprojectv2/jobs"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -9,9 +11,10 @@ import (
 	"go.opentelemetry.io/otel/exporters/zipkin"
 	"go.opentelemetry.io/otel/sdk/resource"
 
+	"log"
+
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0" // 使用统一的架构版本
-	"log"
 )
 
 func main() {
@@ -22,21 +25,28 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
-
-	// 初始化 Zipkin exporter 和 TracerProvider
-	zipkinEndpoint := "http://192.168.95.131:9411/api/v2/spans"
-	tp, err := initTracerProvider(zipkinEndpoint)
-	if err != nil {
-		log.Fatalf("failed to initialize tracer provider: %v", err)
-	}
-	defer func() {
-		if err := tp.Shutdown(context.Background()); err != nil {
-			log.Printf("Error shutting down tracer provider: %v", err)
+	// 初始化定时任务注册
+	initTaskRegistry(app.Registry)
+	go func() {
+		if err := app.Scheduler.Start(context.Background()); err != nil {
+			log.Fatalln("启动 cron 失败:", err)
 		}
 	}()
 
-	server := app.server
-	err = server.Run(":8088")
+	// 初始化 Zipkin exporter 和 TracerProvider
+	//zipkinEndpoint := "http://192.168.95.131:9411/api/v2/spans"
+	//tp, err := initTracerProvider(zipkinEndpoint)
+	//if err != nil {
+	//	log.Fatalf("failed to initialize tracer provider: %v", err)
+	//}
+	//defer func() {
+	//	if err := tp.Shutdown(context.Background()); err != nil {
+	//		log.Printf("Error shutting down tracer provider: %v", err)
+	//	}
+	//}()
+
+	server := app.Server
+	err := server.Run(":8088")
 	if err != nil {
 		return
 	}
@@ -55,7 +65,7 @@ func initPrometheus() *gin.Engine {
 
 	r := gin.Default()
 	r.GET("/metrics", promAuthMiddleware(), gin.WrapH(promhttp.Handler()))
-	log.Println("init Prometheus metrics server success!")
+	log.Println("init Prometheus metrics Server success!")
 	return r
 }
 
@@ -91,4 +101,8 @@ func initTracerProvider(zipkinEndpoint string) (*tracesdk.TracerProvider, error)
 	)
 	otel.SetTracerProvider(tp)
 	return tp, nil
+}
+
+func initTaskRegistry(tr *jobs.TaskRegistry) {
+	//tr.Register("sayhi", events.ExecTimeKeeping)
 }

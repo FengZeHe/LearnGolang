@@ -15,10 +15,11 @@ type GromTbTask struct {
 
 type TaskDAO interface {
 	AddTask(req domain.Task, ctx context.Context) (err error)
-	UpdateTask(req domain.Task, ctx context.Context) (err error)
-	DeleteTask(req domain.DeleteTaskReq, ctx context.Context) (err error)
+	UpdateTask(req domain.Task) (err error)
+	DeleteTask(req domain.DeleteTaskReq) (err error)
 	FindTaskByID(id string, ctx context.Context) (task domain.Task, err error)
 	FindAllTasks(req domain.TaskFilterReq, ctx context.Context) (tasks []domain.Task, err error)
+	FindActiveTasks() (tasks []domain.Task, err error)
 }
 
 func NewTaskDAO(db *gorm.DB) TaskDAO {
@@ -35,7 +36,7 @@ func (t *GromTbTask) AddTask(req domain.Task, ctx context.Context) (err error) {
 	return nil
 }
 
-func (t *GromTbTask) UpdateTask(req domain.Task, ctx context.Context) (err error) {
+func (t *GromTbTask) UpdateTask(req domain.Task) (err error) {
 	res := t.db.Save(&req)
 	if res.Error != nil {
 		return res.Error
@@ -43,7 +44,7 @@ func (t *GromTbTask) UpdateTask(req domain.Task, ctx context.Context) (err error
 	return nil
 }
 
-func (t *GromTbTask) DeleteTask(req domain.DeleteTaskReq, ctx context.Context) (err error) {
+func (t *GromTbTask) DeleteTask(req domain.DeleteTaskReq) (err error) {
 	res := t.db.Delete(&req)
 	if res.Error != nil {
 		return res.Error
@@ -74,4 +75,13 @@ func (t *GromTbTask) FindAllTasks(req domain.TaskFilterReq, ctx context.Context)
 		return tasks, res.Error
 	}
 	return tasks, nil
+}
+
+func (t *GromTbTask) FindActiveTasks() (tasks []domain.Task, err error) {
+	res := t.db.Where("status = ?", 0).Find(&tasks)
+	if res.Error != nil {
+		return tasks, res.Error
+	}
+	return tasks, nil
+
 }

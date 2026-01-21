@@ -5,22 +5,29 @@ import (
 
 	"github.com/basicprojectv2/jobs/domain"
 	"github.com/basicprojectv2/jobs/repository"
+	"github.com/basicprojectv2/jobs/scheduler"
 )
 
 type taskService struct {
-	taskRepo repository.TaskRepository
+	taskRepo  repository.TaskRepository
+	scheduler *scheduler.CronScheduler
 }
 
 type TaskService interface {
-	AddTask(req domain.Task, ctx context.Context) (err error)
+	AddTask(req domain.AddTaskReq, ctx context.Context) (err error)
 }
 
-func NewTaskService(taskRepo repository.TaskRepository) TaskService {
+func NewTaskService(taskRepo repository.TaskRepository, scheduler *scheduler.CronScheduler) TaskService {
 	return &taskService{
-		taskRepo: taskRepo,
+		taskRepo:  taskRepo,
+		scheduler: scheduler,
 	}
 }
 
-func (t taskService) AddTask(req domain.Task, ctx context.Context) (err error) {
+func (t taskService) AddTask(req domain.AddTaskReq, ctx context.Context) (err error) {
 	return t.taskRepo.AddTask(req, ctx)
+}
+
+func (t taskService) StartTask() {
+
 }

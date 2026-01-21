@@ -20,8 +20,10 @@ import (
 	"github.com/basicprojectv2/internal/web"
 	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/basicprojectv2/ioc"
+	"github.com/basicprojectv2/jobs"
 	repository3 "github.com/basicprojectv2/jobs/repository"
 	dao3 "github.com/basicprojectv2/jobs/repository/dao"
+	"github.com/basicprojectv2/jobs/scheduler"
 	service3 "github.com/basicprojectv2/jobs/service"
 	web3 "github.com/basicprojectv2/jobs/web"
 	"github.com/basicprojectv2/settings"
@@ -82,11 +84,15 @@ func InitializeApp() *App {
 	userSettingHandler := web.NewUserSettingHandler(userSettingService)
 	taskDAO := dao3.NewTaskDAO(db)
 	taskRepository := repository3.NewTaskRepository(taskDAO)
-	taskService := service3.NewTaskService(taskRepository)
+	taskRegistry := jobs.NewTaskRegistry()
+	cronScheduler := scheduler.NewCronScheduler(taskDAO, taskRegistry)
+	taskService := service3.NewTaskService(taskRepository, cronScheduler)
 	taskHandler := web3.NewTaskHandler(taskService)
 	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler, commentHandler, interactiveHandler, userSettingHandler, taskHandler)
 	app := &App{
-		server: engine,
+		Server:    engine,
+		Registry:  taskRegistry,
+		Scheduler: cronScheduler,
 	}
 	return app
 }
