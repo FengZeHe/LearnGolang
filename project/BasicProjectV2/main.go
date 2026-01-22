@@ -45,7 +45,7 @@ func main() {
 	//	}
 	//}()
 
-	server := app.Server
+	server := app.server
 	err := server.Run(":8088")
 	if err != nil {
 		return
@@ -65,7 +65,7 @@ func initPrometheus() *gin.Engine {
 
 	r := gin.Default()
 	r.GET("/metrics", promAuthMiddleware(), gin.WrapH(promhttp.Handler()))
-	log.Println("init Prometheus metrics Server success!")
+	log.Println("init Prometheus metrics server success!")
 	return r
 }
 

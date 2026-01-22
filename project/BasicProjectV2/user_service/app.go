@@ -63,7 +63,7 @@ func (a *App) Start() error {
 
 	grpc_health_v1.RegisterHealthServer(a.grpcServer, a.healthSvc.(*healthServerWrapper))
 
-	//healthServer := a.healthSvc.(*health.Server)
+	//healthServer := a.healthSvc.(*health.server)
 	//healthServer.SetServingStatus("user_service.UserService", grpc_health_v1.HealthCheckResponse_SERVING)
 	//grpc_health_v1.RegisterHealthServer(a.grpcServer, healthServer)
 
@@ -73,7 +73,7 @@ func (a *App) Start() error {
 	if err != nil {
 		return err
 	}
-	log.Println("start gRPC Server on 50051")
+	log.Println("start gRPC server on 50051")
 
 	// 注册到etcd
 	serviceName := "user_service"

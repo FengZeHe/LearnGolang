@@ -34,6 +34,7 @@ func (r *TaskHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.HandlerF
 	*/
 	rg.GET("/")
 	rg.POST("/add", r.HandleAddTask)
+	rg.GET("/calc", r.ReCalcHotList)
 
 }
 
@@ -48,4 +49,12 @@ func (r *TaskHandler) HandleAddTask(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "task added"})
+}
+
+func (r *TaskHandler) ReCalcHotList(c *gin.Context) {
+	if err := r.svc.ReCalcHotList(c); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": "ok"})
 }

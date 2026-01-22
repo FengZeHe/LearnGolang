@@ -41,7 +41,6 @@ func (s *CronScheduler) Start(ctx context.Context) (err error) {
 	}
 
 	acTasklist, acErr := s.taskDAO.FindActiveTasks()
-	log.Println(acTasklist)
 	if acErr != nil {
 		log.Println("Get Active Tasks Error:", acErr)
 	}
@@ -52,7 +51,7 @@ func (s *CronScheduler) Start(ctx context.Context) (err error) {
 			log.Println("Add Task Error:", err)
 			return err
 		}
-		log.Println(task.ID, task.Name, task.TaskType, task.CronExpr)
+		//log.Println("获取到", task.ID, task.Name, task.TaskType, task.CronExpr)
 	}
 
 	s.cron.Start()
@@ -118,10 +117,10 @@ func (s *CronScheduler) addTaskToCron(task *domain.Task) (err error) {
 		return err
 	}
 
-	// 获取执行的 TaskName
+	// 获取正在执行的TaskName
 	executor, exists := s.registry.Get(task.TaskName)
 	if !exists {
-		log.Println("没有这个任务", task.TaskName)
+		log.Println("该任务没有正在执行：", task.TaskName)
 		return
 	}
 
@@ -135,7 +134,7 @@ func (s *CronScheduler) addTaskToCron(task *domain.Task) (err error) {
 
 // 执行任务
 func (s *CronScheduler) execTask(task *domain.Task, exec jobs.TaskExecutor) {
-	log.Println("执行任务", task.Name)
+	log.Println("开始执行任务:", task.Name)
 	if err := s.taskDAO.UpdateTask(*task); err != nil {
 		log.Println("Update Task Error:", err)
 		return

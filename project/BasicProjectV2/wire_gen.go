@@ -83,14 +83,14 @@ func InitializeApp() *App {
 	userSettingService := service.NewUserSettingService(userSettingRepository)
 	userSettingHandler := web.NewUserSettingHandler(userSettingService)
 	taskDAO := dao3.NewTaskDAO(db)
-	taskRepository := repository3.NewTaskRepository(taskDAO)
+	taskRepository := repository3.NewTaskRepository(taskDAO, cmdable)
 	taskRegistry := jobs.NewTaskRegistry()
 	cronScheduler := scheduler.NewCronScheduler(taskDAO, taskRegistry)
 	taskService := service3.NewTaskService(taskRepository, cronScheduler)
 	taskHandler := web3.NewTaskHandler(taskService)
 	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler, commentHandler, interactiveHandler, userSettingHandler, taskHandler)
 	app := &App{
-		Server:    engine,
+		server:    engine,
 		Registry:  taskRegistry,
 		Scheduler: cronScheduler,
 	}

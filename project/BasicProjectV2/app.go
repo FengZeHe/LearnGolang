@@ -7,7 +7,7 @@ import (
 )
 
 type App struct {
-	Server *gin.Engine
+	server *gin.Engine
 	//saramaConsumer article.Consumer
 	Registry  *jobs.TaskRegistry
 	Scheduler *scheduler.CronScheduler
