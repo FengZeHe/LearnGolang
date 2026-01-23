@@ -16,6 +16,7 @@ type ArticleService interface {
 	GetAuthorArticles(ctx context.Context, req domain.QueryAuthorArticlesReq, userid string) (domain.ArticleRepoResponse, error)
 	AddArticleReadCount(ctx context.Context, id string) error
 	GetArticlesByID(ctx context.Context, req domain.QueryArticlesByIDReq) (domain.Article, error)
+	GetHotList(ctx context.Context) ([]domain.ArticleWithScores, error)
 }
 
 func NewArticleService(repo repository.ArticleRepository) ArticleService {
@@ -52,4 +53,12 @@ func (s *articleService) GetArticlesByID(ctx context.Context, req domain.QueryAr
 		return domain.Article{}, err
 	}
 	return article, nil
+}
+
+func (s *articleService) GetHotList(ctx context.Context) ([]domain.ArticleWithScores, error) {
+	list, err := s.repo.GetHotList(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
 }

@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/basicprojectv2/jobs/domain"
+	"github.com/basicprojectv2/jobs/events"
 	"github.com/basicprojectv2/jobs/repository/dao"
 	"github.com/redis/go-redis/v9"
 	"github.com/robfig/cron/v3"
@@ -68,19 +69,20 @@ func (t taskRepository) ReCalcHotList(ctx context.Context) (err error) {
 		}
 
 		// todo 每计算完1000篇就写入redis,清空缓存区
-		for _, item := range alist {
-			log.Println(item.ID, item.Title)
+		for _, art := range alist {
+			// todo 计算分数
+			artScore := events.CalcHotScore(art)
 
-			_, err := t.rdb.ZAdd(ctx, "hotlist/articles/score/", redis.Z{1, item.ID}).Result()
+			_, err := t.rdb.ZAdd(ctx, "hotlist/articles/score/", redis.Z{Score: artScore, Member: art.ID}).Result()
 			if err != nil {
 				log.Println("err", err)
-				return
+				return err
 			}
 
-			_, err = t.rdb.HSet(ctx, "hotlist/articles/"+item.ID, "title", item.Title, "score", 0.1).Result()
+			_, err = t.rdb.HSet(ctx, "hotlist/articles/"+art.ID, "title", art.Title, "score", 0.1).Result()
 			if err != nil {
 				log.Println("err", err)
-				return
+				return err
 			}
 		}
 

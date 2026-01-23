@@ -75,3 +75,16 @@ type Interactive struct {
 	CTime        string `json:"-" gorm:"column:ctime"`
 	UTime        string `json:"-" gorm:"column:utime"`
 }
+
+func (Interactive) TableName() string {
+	return "interactive"
+}
+
+type ArticleWithInteractive struct {
+	ID           string `json:"id" gorm:"primary_key;autoIncrement;"`
+	Title        string `gorm:"column:title"`
+	ReadCount    int    `json:"readCount" gorm:"column:read_count"`
+	LikeCount    int    `json:"likeCount" gorm:"column:like_count"`
+	CollectCount int    `json:"collectCount" gorm:"column:collect_count"`
+	CreatedAt    string `json:"createdAt" gorm:"column:created_at"`
+}

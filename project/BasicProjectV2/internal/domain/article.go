@@ -60,3 +60,18 @@ type QueryArticlesByIDReq struct {
 type AddArticleCount struct {
 	ID string `json:"id"`
 }
+
+type ArticleWithInteractive struct {
+	ID           string `json:"id" `
+	Title        string `json:"title"`
+	ReadCount    int    `json:"readCount" `
+	LikeCount    int    `json:"likeCount" `
+	CollectCount int    `json:"collectCount" `
+	CreatedAt    string `json:"createdAt"`
+}
+
+type ArticleWithScores struct {
+	ID    string  `json:"id"`
+	Title string  `json:"title"`
+	Score float64 `json:"score"`
+}

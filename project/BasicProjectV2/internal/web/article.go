@@ -30,6 +30,7 @@ func (r *ArticleHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.Handl
 	rg.POST("/getAuthorArticles", r.GetAuthorArticles)
 	rg.POST("/getArticleByID", r.GetArticleByID)
 	//rg.POST("/addReadCount", r.AddReadCount)
+	rg.GET("/hotList", r.GetHotList)
 }
 
 func (r *ArticleHandler) GetArticles(c *gin.Context) {
@@ -157,4 +158,18 @@ func (r *ArticleHandler) AddReadCount(c *gin.Context) {
 		"msg": "ok",
 	})
 
+}
+
+func (r *ArticleHandler) GetHotList(c *gin.Context) {
+	list, err := r.svc.GetHotList(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": list,
+	})
 }

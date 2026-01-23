@@ -20,21 +20,18 @@ const (
 	CollectScore        = 10  //收藏分权重
 )
 
-func CalcHotScore(article domain.HostScoreCalc) float64 {
+func CalcHotScore(article domain.ArticleWithInteractive) float64 {
 	// 基础分数
 	baseScore := float64(article.ReadCount)*ReadScore + float64(article.LikeCount)*LikeScore + float64(article.CollectCount)*CollectScore
 
-	//已发布时间
-	now := time.Now().Format("2006-01-02 15:04:05")
-	t, err := time.ParseInLocation(now, article.CreatedAt, time.Local)
+	layout := "2006-01-02 15:04:05"
+	t, err := time.ParseInLocation(layout, article.CreatedAt, time.Local)
 	if err != nil {
-		log.Println(err)
 		return 0
 	}
 	log.Println("day -->", time.Since(t).Hours()/24)
 	pubishedDuration := time.Since(t).Hours()
 	decayFactor := math.Exp(-HotDecayCoefficient * pubishedDuration)
-	return baseScore * decayFactor
 
-	return 0.1
+	return baseScore * decayFactor
 }

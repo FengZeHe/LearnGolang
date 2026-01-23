@@ -16,6 +16,7 @@ type ArticleRepository interface {
 	GetArticleByID(ctx context.Context, articleID string) (domain.Article, error)
 	GetAuthorArticles(ctx context.Context, req domain.QueryAuthorArticlesReq, userid string) (domain.ArticleRepoResponse, error)
 	AddArticleReadCount(ctx context.Context, id string) error
+	GetHotList(ctx context.Context) ([]domain.ArticleWithScores, error)
 }
 
 func NewArticleRepository(dao dao.ArticleDAO) ArticleRepository {
@@ -92,4 +93,14 @@ func ArticleToEntity(origin []domain.Article) (target []domain.ArticleResponse) 
 		})
 	}
 	return target
+}
+
+const HostListScoreKey = "hotlist/articles/score/"
+
+func (a *articleRepository) GetHotList(ctx context.Context) (res []domain.ArticleWithScores, err error) {
+	res, err = a.articleDAO.GetHosList(ctx, HostListScoreKey)
+	if err != nil {
+		return res, err
+	}
+	return res, nil
 }

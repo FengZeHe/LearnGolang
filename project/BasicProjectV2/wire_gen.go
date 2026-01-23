@@ -66,7 +66,7 @@ func InitializeApp() *App {
 	draftRepository := repository.NewDraftRepository(draftDAO)
 	draftService := service.NewDraftService(draftRepository)
 	draftHandler := web.NewDraftHandler(draftService)
-	articleDAO := dao.NewArticleDAO(db)
+	articleDAO := dao.NewArticleDAO(db, cmdable)
 	articleRepository := repository.NewArticleRepository(articleDAO)
 	articleService := service.NewArticleService(articleRepository)
 	articleHandler := web.NewArticleHandler(articleService)

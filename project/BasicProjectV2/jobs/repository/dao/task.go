@@ -21,7 +21,7 @@ type TaskDAO interface {
 	FindAllTasks(req domain.TaskFilterReq, ctx context.Context) (tasks []domain.Task, err error)
 	FindActiveTasks() (tasks []domain.Task, err error)
 	GetInteractiveData(uid string) (res domain.HostScoreCalc, err error)
-	GetArticleIDs(pageIndex, pageSize int) ([]domain.Article, error)
+	GetArticleIDs(pageIndex, pageSize int) ([]domain.ArticleWithInteractive, error)
 }
 
 func NewTaskDAO(db *gorm.DB) TaskDAO {
@@ -95,9 +95,13 @@ func (i *GromTbTask) GetInteractiveData(uid string) (res domain.HostScoreCalc, e
 	return res, nil
 }
 
-func (i *GromTbTask) GetArticleIDs(pageIndex, pageSize int) (res []domain.Article, err error) {
-	if err = i.db.Model(&domain.Article{}).Limit(pageSize).Offset((pageIndex - 1) * pageSize).Find(&res).Error; err != nil {
+func (i *GromTbTask) GetArticleIDs(pageIndex, pageSize int) (res []domain.ArticleWithInteractive, err error) {
+	if err = i.db.Model(&domain.Article{}).
+		Select("article.id,title,read_count,like_count,collect_count,created_at").
+		Joins("JOIN webook.interactive ON webook.article.id = webook.interactive.aid").
+		Limit(pageSize).Offset((pageIndex - 1) * pageSize).Find(&res).Error; err != nil {
 		return res, err
 	}
+
 	return res, nil
 }
