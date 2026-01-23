@@ -3,7 +3,6 @@ package dao
 import (
 	"context"
 	"errors"
-	"log"
 	"math"
 	"strconv"
 	"time"
@@ -123,7 +122,6 @@ func (dao *GORMArticle) AddArticleCount(ctx context.Context, id string) (err err
 
 func (dao *GORMArticle) GetHosList(ctx context.Context, key string) (hostList []domain.ArticleWithScores, err error) {
 	pipe := dao.rdb.Pipeline()
-
 	zCmd := pipe.ZRevRangeWithScores(ctx, key, 0, 10)
 
 	_, _ = pipe.Exec(ctx)
@@ -157,6 +155,5 @@ func (dao *GORMArticle) GetHosList(ctx context.Context, key string) (hostList []
 		})
 	}
 	hostList = output
-	log.Println(len(hostList), len(output), len(zs))
 	return hostList, nil
 }

@@ -29,7 +29,6 @@ func CalcHotScore(article domain.ArticleWithInteractive) float64 {
 	if err != nil {
 		return 0
 	}
-	log.Println("day -->", time.Since(t).Hours()/24)
 	pubishedDuration := time.Since(t).Hours()
 	decayFactor := math.Exp(-HotDecayCoefficient * pubishedDuration)
 
