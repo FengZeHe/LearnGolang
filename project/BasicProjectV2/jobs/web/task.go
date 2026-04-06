@@ -32,7 +32,7 @@ func (r *TaskHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.HandlerF
 		4. 启动/暂停任务
 		5. 查看某个定时任务
 	*/
-	rg.GET("/")
+	rg.GET("/", r.GetAllTasks)
 	rg.POST("/add", r.HandleAddTask)
 	rg.GET("/calc", r.ReCalcHotList)
 
@@ -51,6 +51,15 @@ func (r *TaskHandler) HandleAddTask(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "task added"})
 }
 
+func (r *TaskHandler) GetAllTasks(c *gin.Context) {
+	req := domain.PageReq{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msg": "all tasks!"})
+}
 func (r *TaskHandler) ReCalcHotList(c *gin.Context) {
 	if err := r.svc.ReCalcHotList(c); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

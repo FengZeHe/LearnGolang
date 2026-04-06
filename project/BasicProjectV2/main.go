@@ -26,7 +26,7 @@ func main() {
 		}
 	}()
 	// 初始化定时任务注册
-	initTaskRegistry(app.Registry)
+	//initTaskRegistry(app.Registry)
 	go func() {
 		if err := app.Scheduler.Start(context.Background()); err != nil {
 			log.Fatalln("启动 cron 失败:", err)
