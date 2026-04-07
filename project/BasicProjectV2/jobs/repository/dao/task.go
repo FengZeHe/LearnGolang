@@ -15,6 +15,7 @@ type GromTbTask struct {
 
 type TaskDAO interface {
 	AddTask(req domain.Task, ctx context.Context) (err error)
+	GetAllTasks(req domain.PageReq, ctx context.Context) (d []domain.Task, total, pageIndex, pageSize int, err error)
 	UpdateTask(req domain.Task) (err error)
 	DeleteTask(req domain.DeleteTaskReq) (err error)
 	FindTaskByID(id string, ctx context.Context) (task domain.Task, err error)
@@ -38,6 +39,20 @@ func (t *GromTbTask) AddTask(req domain.Task, ctx context.Context) (err error) {
 	return nil
 }
 
+func (t *GromTbTask) GetAllTasks(req domain.PageReq, ctx context.Context) (d []domain.Task, total, pageIndex, pageSize int, err error) {
+	var tl []domain.Task
+	offset := (req.PageIndex - 1) * req.PageSize
+	var count int64
+
+	res := t.db.WithContext(ctx).Model(domain.Task{}).Count(&count).Offset(offset).Limit(req.PageSize).Find(&tl)
+	if res.Error != nil {
+		return d, total, pageIndex, pageSize, res.Error
+	}
+	d = tl
+	total = int(count)
+	return d, total, pageIndex, pageSize, nil
+}
+
 func (t *GromTbTask) UpdateTask(req domain.Task) (err error) {
 	res := t.db.Save(&req)
 	if res.Error != nil {
@@ -49,6 +64,7 @@ func (t *GromTbTask) UpdateTask(req domain.Task) (err error) {
 func (t *GromTbTask) DeleteTask(req domain.DeleteTaskReq) (err error) {
 	res := t.db.Delete(&req)
 	if res.Error != nil {
+		log.Println(res.Error)
 		return res.Error
 	}
 	return nil

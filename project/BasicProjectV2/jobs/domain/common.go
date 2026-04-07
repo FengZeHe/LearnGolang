@@ -2,12 +2,12 @@ package domain
 
 type PageReq struct {
 	PageIndex int `form:"pageIndex"`
-	pageSize  int `form:"pageSize"`
+	PageSize  int `form:"PageSize"`
 }
 
 type PageResp struct {
 	PageIndex int         `json:"pageIndex"`
-	PageSize  int         `json:"pageSize"`
+	PageSize  int         `json:"PageSize"`
 	Total     int         `json:"total"`
 	Data      interface{} `json:"data"`
 }

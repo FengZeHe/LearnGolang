@@ -38,6 +38,18 @@ type AddTaskReq struct {
 	TaskType string `json:"taskType"`
 }
 
+type TaskReq struct {
+	ID uint `json:"id"`
+}
+
+type UpdateTaskReq struct {
+	ID       uint   `json:"id"`
+	Name     string `json:"name"`
+	CronExpr string `json:"cronExpr"`
+	TaskName string `json:"taskName"`
+	TaskType string `json:"taskType"`
+}
+
 type HostScoreCalc struct {
 	ReadCount    int    `gorm:"column:read_count"`
 	LikeCount    int    `gorm:"column:like_count"`

@@ -16,7 +16,11 @@ type taskService struct {
 
 type TaskService interface {
 	AddTask(req domain.AddTaskReq, ctx context.Context) (err error)
+	UpdateTask(req domain.UpdateTaskReq, ctx context.Context) (err error)
+	DeleteTask(req domain.DeleteTaskReq, ctx context.Context) (err error)
 	ReCalcHotList(c *gin.Context) (err error)
+	GetTasksList(req domain.PageReq, ctx context.Context) (d domain.PageResp, err error)
+	StartTask(req domain.TaskReq, ctx context.Context) (err error)
 }
 
 func NewTaskService(taskRepo repository.TaskRepository, scheduler *scheduler.CronScheduler) TaskService {
@@ -30,10 +34,39 @@ func (t taskService) AddTask(req domain.AddTaskReq, ctx context.Context) (err er
 	return t.taskRepo.AddTask(req, ctx)
 }
 
-func (t taskService) ReCalcHotList(c *gin.Context) (err error) {
-	return t.taskRepo.ReCalcHotList(c)
+func (t taskService) UpdateTask(req domain.UpdateTaskReq, ctx context.Context) (err error) {
+	if err = t.scheduler.RemoveTask(req.ID); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (t taskService) StartTask() {
+func (t taskService) DeleteTask(req domain.DeleteTaskReq, ctx context.Context) (err error) {
+	if err = t.scheduler.RemoveTask(req.ID); err != nil {
+		return err
+	}
+	return t.taskRepo.DeleteTask(req, ctx)
+}
 
+func (t taskService) StartTask(req domain.TaskReq, ctx context.Context) (err error) {
+	task, err := t.taskRepo.QueryTaskByID(req, ctx)
+	if err != nil {
+		return err
+	}
+	if err = t.scheduler.StartTask(task); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t taskService) GetTasksList(req domain.PageReq, ctx context.Context) (d domain.PageResp, err error) {
+	d, err = t.taskRepo.GetAllTasks(req, ctx)
+	if err != nil {
+		return d, err
+	}
+	return d, nil
+}
+
+func (t taskService) ReCalcHotList(c *gin.Context) (err error) {
+	return t.taskRepo.ReCalcHotList(c)
 }

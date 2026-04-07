@@ -80,6 +80,23 @@ func (s *CronScheduler) Stop() {
 	s.taskEntry = make(map[uint]cron.EntryID)
 }
 
+func (s *CronScheduler) StartTask(task domain.Task) (err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if _, exists := s.taskEntry[task.ID]; exists {
+		log.Println("任务已启动", task.ID)
+		return nil
+	}
+
+	if err = s.addTaskToCron(&task); err != nil {
+		log.Println("启动任务失败:", err)
+		return err
+	}
+	return nil
+
+}
+
 func (s *CronScheduler) RemoveTask(taskID uint) (err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

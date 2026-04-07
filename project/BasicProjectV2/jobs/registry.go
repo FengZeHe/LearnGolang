@@ -1,6 +1,10 @@
 package jobs
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/basicprojectv2/jobs/fun"
+)
 
 type TaskExecutor func(taskID uint) (err error)
 
@@ -10,9 +14,12 @@ type TaskRegistry struct {
 }
 
 func NewTaskRegistry() *TaskRegistry {
-	return &TaskRegistry{
+	r := &TaskRegistry{
 		executors: make(map[string]TaskExecutor),
 	}
+	// 注册任务
+	r.Register("SayHi", fun.ExecTimeKeeping)
+	return r
 }
 
 func (tr *TaskRegistry) Register(taskName string, executor TaskExecutor) {

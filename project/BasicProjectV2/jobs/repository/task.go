@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"log"
+	"strconv"
 
 	"github.com/basicprojectv2/jobs/domain"
 	"github.com/basicprojectv2/jobs/events"
@@ -17,7 +18,11 @@ type taskRepository struct {
 }
 type TaskRepository interface {
 	AddTask(req domain.AddTaskReq, ctx context.Context) (err error)
+	UpdateTask(req domain.UpdateTaskReq, ctx context.Context) (err error)
+	DeleteTask(req domain.DeleteTaskReq, ctx context.Context) (err error)
 	ReCalcHotList(ctx context.Context) (err error)
+	GetAllTasks(req domain.PageReq, ctx context.Context) (resp domain.PageResp, err error)
+	QueryTaskByID(req domain.TaskReq, ctx context.Context) (task domain.Task, err error)
 }
 
 func NewTaskRepository(taskDAO dao.TaskDAO, rdb redis.Cmdable) TaskRepository {
@@ -50,6 +55,37 @@ func (t taskRepository) AddTask(req domain.AddTaskReq, ctx context.Context) (err
 	}
 
 	return t.taskDAO.AddTask(task, ctx)
+}
+
+func (t taskRepository) UpdateTask(req domain.UpdateTaskReq, ctx context.Context) (err error) {
+	// todo 1.暂停该任务 2.更新Mysql数据库
+	return err
+}
+
+func (t taskRepository) DeleteTask(req domain.DeleteTaskReq, ctx context.Context) (err error) {
+
+	return t.taskDAO.DeleteTask(req)
+}
+
+func (t taskRepository) GetAllTasks(req domain.PageReq, ctx context.Context) (resp domain.PageResp, err error) {
+	d, total, index, size, err := t.taskDAO.GetAllTasks(req, ctx)
+	if err != nil {
+		return resp, err
+	}
+	resp.Data = d
+	resp.Total = total
+	resp.PageIndex = index
+	resp.PageSize = size
+	return resp, nil
+}
+
+func (t taskRepository) QueryTaskByID(req domain.TaskReq, ctx context.Context) (task domain.Task, err error) {
+	iDstr := strconv.FormatUint(uint64(req.ID), 10)
+	task, err = t.taskDAO.FindTaskByID(iDstr, ctx)
+	if err != nil {
+		return task, err
+	}
+	return task, nil
 }
 
 func (t taskRepository) ReCalcHotList(ctx context.Context) (err error) {
