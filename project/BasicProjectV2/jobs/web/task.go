@@ -25,20 +25,14 @@ func (r *TaskHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.HandlerF
 			"message": "pong",
 		})
 	})
-	/*
-		todo
-		1. 获取所有定时任务 ok
-		2. 添加任务 ok
-		3. 删除任务 ok
-		4. 启动/暂停任务
-		5. 查看某个定时任务
-		6. 更新任务 ok
-	*/
+
 	rg.GET("/", r.GetAllTasks)
 	rg.POST("/add", r.HandleAddTask)
 	rg.POST("/delete", r.DeleteTask)
 	rg.POST("/update", r.HandleUpdateTask)
 	rg.POST("/start", r.StartTask)
+	rg.POST("/pause", r.PauseTask)
+	rg.POST("/info", r.HandleTaskInfo)
 
 	rg.GET("/calc", r.ReCalcHotList)
 
@@ -55,6 +49,20 @@ func (r *TaskHandler) HandleAddTask(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "task added"})
+}
+
+func (r *TaskHandler) HandleTaskInfo(c *gin.Context) {
+	req := domain.TaskReq{}
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	d, err := r.svc.GetTask(req, c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, d)
 }
 
 func (r *TaskHandler) GetAllTasks(c *gin.Context) {
@@ -91,6 +99,19 @@ func (r *TaskHandler) StartTask(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "task started"})
+}
+
+func (r *TaskHandler) PauseTask(c *gin.Context) {
+	req := domain.TaskReq{}
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := r.svc.PauseTask(req, c); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": "task paused"})
 }
 
 func (r *TaskHandler) DeleteTask(c *gin.Context) {

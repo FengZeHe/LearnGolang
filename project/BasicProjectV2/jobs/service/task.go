@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"log"
 
+	"github.com/basicprojectv2/jobs/code"
 	"github.com/basicprojectv2/jobs/domain"
 	"github.com/basicprojectv2/jobs/repository"
 	"github.com/basicprojectv2/jobs/scheduler"
@@ -20,7 +22,9 @@ type TaskService interface {
 	DeleteTask(req domain.DeleteTaskReq, ctx context.Context) (err error)
 	ReCalcHotList(c *gin.Context) (err error)
 	GetTasksList(req domain.PageReq, ctx context.Context) (d domain.PageResp, err error)
+	GetTask(req domain.TaskReq, ctx context.Context) (d domain.Task, err error)
 	StartTask(req domain.TaskReq, ctx context.Context) (err error)
+	PauseTask(req domain.TaskReq, ctx context.Context) (err error)
 }
 
 func NewTaskService(taskRepo repository.TaskRepository, scheduler *scheduler.CronScheduler) TaskService {
@@ -56,7 +60,27 @@ func (t taskService) StartTask(req domain.TaskReq, ctx context.Context) (err err
 	if err = t.scheduler.StartTask(task); err != nil {
 		return err
 	}
+	if err = t.taskRepo.UpdateTaskStatus(req, ctx, code.TaskRunning); err != nil {
+		return err
+	}
 	return nil
+}
+
+func (t taskService) PauseTask(req domain.TaskReq, ctx context.Context) (err error) {
+	task, err := t.taskRepo.QueryTaskByID(req, ctx)
+	if err != nil {
+		return err
+	}
+
+	if err = t.scheduler.RemoveTask(task.ID); err != nil {
+		return err
+	}
+	if err = t.taskRepo.UpdateTaskStatus(req, ctx, code.TaskPause); err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
 func (t taskService) GetTasksList(req domain.PageReq, ctx context.Context) (d domain.PageResp, err error) {
@@ -64,6 +88,15 @@ func (t taskService) GetTasksList(req domain.PageReq, ctx context.Context) (d do
 	if err != nil {
 		return d, err
 	}
+	return d, nil
+}
+
+func (t taskService) GetTask(req domain.TaskReq, ctx context.Context) (d domain.Task, err error) {
+	d, err = t.taskRepo.QueryTaskByID(req, ctx)
+	if err != nil {
+		return d, err
+	}
+	log.Print(d)
 	return d, nil
 }
 

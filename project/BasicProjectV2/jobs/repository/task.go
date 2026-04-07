@@ -23,6 +23,7 @@ type TaskRepository interface {
 	ReCalcHotList(ctx context.Context) (err error)
 	GetAllTasks(req domain.PageReq, ctx context.Context) (resp domain.PageResp, err error)
 	QueryTaskByID(req domain.TaskReq, ctx context.Context) (task domain.Task, err error)
+	UpdateTaskStatus(req domain.TaskReq, ctx context.Context, taskStatus int) (err error)
 }
 
 func NewTaskRepository(taskDAO dao.TaskDAO, rdb redis.Cmdable) TaskRepository {
@@ -62,6 +63,13 @@ func (t taskRepository) UpdateTask(req domain.UpdateTaskReq, ctx context.Context
 	return err
 }
 
+func (t taskRepository) UpdateTaskStatus(req domain.TaskReq, ctx context.Context, taskStatus int) (err error) {
+	if err = t.taskDAO.UpdateTaskStatus(req, ctx, taskStatus); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (t taskRepository) DeleteTask(req domain.DeleteTaskReq, ctx context.Context) (err error) {
 
 	return t.taskDAO.DeleteTask(req)
@@ -82,7 +90,9 @@ func (t taskRepository) GetAllTasks(req domain.PageReq, ctx context.Context) (re
 func (t taskRepository) QueryTaskByID(req domain.TaskReq, ctx context.Context) (task domain.Task, err error) {
 	iDstr := strconv.FormatUint(uint64(req.ID), 10)
 	task, err = t.taskDAO.FindTaskByID(iDstr, ctx)
+	log.Println(iDstr)
 	if err != nil {
+		log.Println(err)
 		return task, err
 	}
 	return task, nil

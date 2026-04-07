@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type GromTbTask struct {
+type GormTbTask struct {
 	db *gorm.DB
 }
 
@@ -23,13 +23,14 @@ type TaskDAO interface {
 	FindActiveTasks() (tasks []domain.Task, err error)
 	GetInteractiveData(uid string) (res domain.HostScoreCalc, err error)
 	GetArticleIDs(pageIndex, pageSize int) ([]domain.ArticleWithInteractive, error)
+	UpdateTaskStatus(req domain.TaskReq, ctx context.Context, taskStatus int) (err error)
 }
 
 func NewTaskDAO(db *gorm.DB) TaskDAO {
-	return &GromTbTask{db: db}
+	return &GormTbTask{db: db}
 }
 
-func (t *GromTbTask) AddTask(req domain.Task, ctx context.Context) (err error) {
+func (t *GormTbTask) AddTask(req domain.Task, ctx context.Context) (err error) {
 	now := time.Now().Format("2006-01-02 15:04:05")
 	req.CreatedAt = now
 	res := t.db.WithContext(ctx).Create(&req)
@@ -39,7 +40,7 @@ func (t *GromTbTask) AddTask(req domain.Task, ctx context.Context) (err error) {
 	return nil
 }
 
-func (t *GromTbTask) GetAllTasks(req domain.PageReq, ctx context.Context) (d []domain.Task, total, pageIndex, pageSize int, err error) {
+func (t *GormTbTask) GetAllTasks(req domain.PageReq, ctx context.Context) (d []domain.Task, total, pageIndex, pageSize int, err error) {
 	var tl []domain.Task
 	offset := (req.PageIndex - 1) * req.PageSize
 	var count int64
@@ -53,7 +54,7 @@ func (t *GromTbTask) GetAllTasks(req domain.PageReq, ctx context.Context) (d []d
 	return d, total, pageIndex, pageSize, nil
 }
 
-func (t *GromTbTask) UpdateTask(req domain.Task) (err error) {
+func (t *GormTbTask) UpdateTask(req domain.Task) (err error) {
 	res := t.db.Save(&req)
 	if res.Error != nil {
 		return res.Error
@@ -61,7 +62,19 @@ func (t *GromTbTask) UpdateTask(req domain.Task) (err error) {
 	return nil
 }
 
-func (t *GromTbTask) DeleteTask(req domain.DeleteTaskReq) (err error) {
+func (t *GormTbTask) UpdateTaskStatus(req domain.TaskReq, ctx context.Context, taskStatus int) (err error) {
+	temp := domain.Task{}
+	if err = t.db.WithContext(ctx).Model(domain.Task{}).Where("id = ?", req.ID).First(&temp).Error; err != nil {
+		return err
+	}
+	temp.Status = taskStatus
+	if err = t.db.WithContext(ctx).Model(domain.Task{}).Where("id = ?", req.ID).Update("status", taskStatus).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t *GormTbTask) DeleteTask(req domain.DeleteTaskReq) (err error) {
 	res := t.db.Delete(&req)
 	if res.Error != nil {
 		log.Println(res.Error)
@@ -70,7 +83,7 @@ func (t *GromTbTask) DeleteTask(req domain.DeleteTaskReq) (err error) {
 	return nil
 }
 
-func (t *GromTbTask) FindTaskByID(id string, ctx context.Context) (task domain.Task, err error) {
+func (t *GormTbTask) FindTaskByID(id string, ctx context.Context) (task domain.Task, err error) {
 	res := t.db.WithContext(ctx).Where("id = ?", id).First(&task)
 	if res.Error != nil {
 		return task, res.Error
@@ -78,7 +91,7 @@ func (t *GromTbTask) FindTaskByID(id string, ctx context.Context) (task domain.T
 	return task, nil
 }
 
-func (t *GromTbTask) FindAllTasks(req domain.TaskFilterReq, ctx context.Context) (tasks []domain.Task, err error) {
+func (t *GormTbTask) FindAllTasks(req domain.TaskFilterReq, ctx context.Context) (tasks []domain.Task, err error) {
 	if req.Status > 0 {
 		res := t.db.WithContext(ctx).Find(&tasks).Where("status = ?", req.Status)
 		if res.Error != nil {
@@ -95,7 +108,7 @@ func (t *GromTbTask) FindAllTasks(req domain.TaskFilterReq, ctx context.Context)
 	return tasks, nil
 }
 
-func (t *GromTbTask) FindActiveTasks() (tasks []domain.Task, err error) {
+func (t *GormTbTask) FindActiveTasks() (tasks []domain.Task, err error) {
 	res := t.db.Where("status = ?", 0).Find(&tasks)
 	if res.Error != nil {
 		return tasks, res.Error
@@ -104,14 +117,14 @@ func (t *GromTbTask) FindActiveTasks() (tasks []domain.Task, err error) {
 
 }
 
-func (i *GromTbTask) GetInteractiveData(uid string) (res domain.HostScoreCalc, err error) {
+func (i *GormTbTask) GetInteractiveData(uid string) (res domain.HostScoreCalc, err error) {
 	if err = i.db.Model(&domain.Interactive{}).Where("uid = ?", uid).First(&res).Error; err != nil {
 		return res, err
 	}
 	return res, nil
 }
 
-func (i *GromTbTask) GetArticleIDs(pageIndex, pageSize int) (res []domain.ArticleWithInteractive, err error) {
+func (i *GormTbTask) GetArticleIDs(pageIndex, pageSize int) (res []domain.ArticleWithInteractive, err error) {
 	if err = i.db.Model(&domain.Article{}).
 		Select("article.id,title,read_count,like_count,collect_count,created_at").
 		Joins("JOIN webook.interactive ON webook.article.id = webook.interactive.aid").

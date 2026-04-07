@@ -94,7 +94,6 @@ func (s *CronScheduler) StartTask(task domain.Task) (err error) {
 		return err
 	}
 	return nil
-
 }
 
 func (s *CronScheduler) RemoveTask(taskID uint) (err error) {
