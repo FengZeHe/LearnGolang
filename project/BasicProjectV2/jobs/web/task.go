@@ -33,7 +33,6 @@ func (r *TaskHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.HandlerF
 	rg.POST("/start", r.StartTask)
 	rg.POST("/pause", r.PauseTask)
 	rg.POST("/info", r.HandleTaskInfo)
-
 	rg.GET("/calc", r.ReCalcHotList)
 
 }
@@ -67,10 +66,11 @@ func (r *TaskHandler) HandleTaskInfo(c *gin.Context) {
 
 func (r *TaskHandler) GetAllTasks(c *gin.Context) {
 	req := domain.PageReq{}
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	list, err := r.svc.GetTasksList(req, context.Background())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

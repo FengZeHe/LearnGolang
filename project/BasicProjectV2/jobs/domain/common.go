@@ -2,7 +2,7 @@ package domain
 
 type PageReq struct {
 	PageIndex int `form:"pageIndex"`
-	PageSize  int `form:"PageSize"`
+	PageSize  int `form:"pageSize"`
 }
 
 type PageResp struct {
