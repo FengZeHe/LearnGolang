@@ -23,7 +23,7 @@ type TaskDAO interface {
 	FindActiveTasks() (tasks []domain.Task, err error)
 	GetInteractiveData(uid string) (res domain.HostScoreCalc, err error)
 	GetArticleIDs(pageIndex, pageSize int) ([]domain.ArticleWithInteractive, error)
-	UpdateTaskStatus(req domain.TaskReq, ctx context.Context, taskStatus int) (err error)
+	UpdateTaskStatus(req domain.TaskReq, taskStatus int) (err error)
 }
 
 func NewTaskDAO(db *gorm.DB) TaskDAO {
@@ -62,22 +62,32 @@ func (t *GormTbTask) UpdateTask(req domain.Task) (err error) {
 	return nil
 }
 
-func (t *GormTbTask) UpdateTaskStatus(req domain.TaskReq, ctx context.Context, taskStatus int) (err error) {
-	temp := domain.Task{}
-	if err = t.db.WithContext(ctx).Model(domain.Task{}).Where("id = ?", req.ID).First(&temp).Error; err != nil {
-		return err
+func (t *GormTbTask) UpdateTaskStatus(req domain.TaskReq, taskStatus int) (err error) {
+	result := t.db.Model(domain.Task{}).
+		Where("id = ?", req.ID).
+		Updates(map[string]interface{}{
+			"status":     taskStatus,
+			"updated_at": time.Now().Format("2006-01-02 15:04:05"),
+		})
+
+	if result.Error != nil {
+		return result.Error
 	}
-	temp.Status = taskStatus
-	if err = t.db.WithContext(ctx).Model(domain.Task{}).Where("id = ?", req.ID).Update("status", taskStatus).Error; err != nil {
-		return err
+	if result.RowsAffected == 0 {
+		log.Println("update task status error: %v\n", result.Error)
 	}
 	return nil
+
+	//if err = t.db.Debug().Model(domain.Task{}).Where("id = ?", req.ID).Update("status", taskStatus).Update("updated_at", time.Now().Format("2006-01-02 15:04:05")).Error; err != nil {
+	//	log.Println(err)
+	//	return err
+	//}
+	//return nil
 }
 
 func (t *GormTbTask) DeleteTask(req domain.DeleteTaskReq) (err error) {
 	res := t.db.Delete(&req)
 	if res.Error != nil {
-		log.Println(res.Error)
 		return res.Error
 	}
 	return nil

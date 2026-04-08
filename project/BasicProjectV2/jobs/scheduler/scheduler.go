@@ -91,7 +91,7 @@ func (s *CronScheduler) StartTask(task domain.Task) (err error) {
 
 	if err = s.addTaskToCron(&task); err != nil {
 		log.Println("启动任务失败:", err)
-		return err
+		return nil
 	}
 	return nil
 }
@@ -150,12 +150,6 @@ func (s *CronScheduler) addTaskToCron(task *domain.Task) (err error) {
 
 // 执行任务
 func (s *CronScheduler) execTask(task *domain.Task, exec jobs.TaskExecutor) {
-	log.Println("开始执行任务:", task.Name)
-	if err := s.taskDAO.UpdateTask(*task); err != nil {
-		log.Println("Update Task Error:", err)
-		return
-	}
-
 	if err := exec(task.ID); err != nil {
 		log.Println("exec Task Error:", err)
 		return

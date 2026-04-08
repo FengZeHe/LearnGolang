@@ -98,7 +98,7 @@ func (r *TaskHandler) StartTask(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"message": "task started"})
+	c.JSON(http.StatusOK, gin.H{"message": "task started"})
 }
 
 func (r *TaskHandler) PauseTask(c *gin.Context) {
@@ -111,7 +111,7 @@ func (r *TaskHandler) PauseTask(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"message": "task paused"})
+	c.JSON(http.StatusOK, gin.H{"message": "task paused"})
 }
 
 func (r *TaskHandler) DeleteTask(c *gin.Context) {

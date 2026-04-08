@@ -58,9 +58,10 @@ func (t taskService) StartTask(req domain.TaskReq, ctx context.Context) (err err
 		return err
 	}
 	if err = t.scheduler.StartTask(task); err != nil {
-		return err
+		log.Println(err)
 	}
 	if err = t.taskRepo.UpdateTaskStatus(req, ctx, code.TaskRunning); err != nil {
+		log.Println(err)
 		return err
 	}
 	return nil
@@ -73,14 +74,13 @@ func (t taskService) PauseTask(req domain.TaskReq, ctx context.Context) (err err
 	}
 
 	if err = t.scheduler.RemoveTask(task.ID); err != nil {
-		return err
+		log.Println(err)
 	}
 	if err = t.taskRepo.UpdateTaskStatus(req, ctx, code.TaskPause); err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
 func (t taskService) GetTasksList(req domain.PageReq, ctx context.Context) (d domain.PageResp, err error) {

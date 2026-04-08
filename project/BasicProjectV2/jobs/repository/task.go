@@ -64,7 +64,7 @@ func (t taskRepository) UpdateTask(req domain.UpdateTaskReq, ctx context.Context
 }
 
 func (t taskRepository) UpdateTaskStatus(req domain.TaskReq, ctx context.Context, taskStatus int) (err error) {
-	if err = t.taskDAO.UpdateTaskStatus(req, ctx, taskStatus); err != nil {
+	if err = t.taskDAO.UpdateTaskStatus(req, taskStatus); err != nil {
 		return err
 	}
 	return nil
