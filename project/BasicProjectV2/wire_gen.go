@@ -84,7 +84,7 @@ func InitializeApp() *App {
 	userSettingHandler := web.NewUserSettingHandler(userSettingService)
 	taskDAO := dao3.NewTaskDAO(db)
 	taskRepository := repository3.NewTaskRepository(taskDAO, cmdable)
-	taskRegistry := jobs.NewTaskRegistry()
+	taskRegistry := jobs.NewTaskRegistry(taskDAO, cmdable)
 	cronScheduler := scheduler.NewCronScheduler(taskDAO, taskRegistry)
 	taskService := service3.NewTaskService(taskRepository, cronScheduler)
 	taskHandler := web3.NewTaskHandler(taskService)

@@ -77,12 +77,6 @@ func (t *GormTbTask) UpdateTaskStatus(req domain.TaskReq, taskStatus int) (err e
 		log.Println("update task status error: %v\n", result.Error)
 	}
 	return nil
-
-	//if err = t.db.Debug().Model(domain.Task{}).Where("id = ?", req.ID).Update("status", taskStatus).Update("updated_at", time.Now().Format("2006-01-02 15:04:05")).Error; err != nil {
-	//	log.Println(err)
-	//	return err
-	//}
-	//return nil
 }
 
 func (t *GormTbTask) DeleteTask(req domain.DeleteTaskReq) (err error) {

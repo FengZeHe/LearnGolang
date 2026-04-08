@@ -114,9 +114,9 @@ func (t taskRepository) ReCalcHotList(ctx context.Context) (err error) {
 			break
 		}
 
-		// todo 每计算完1000篇就写入redis,清空缓存区
+		//  每计算完1000篇就写入redis,清空缓存区
 		for _, art := range alist {
-			// todo 计算分数
+			//  计算分数
 			artScore := events.CalcHotScore(art)
 
 			_, err := t.rdb.ZAdd(ctx, "hotlist/articles/score/", redis.Z{Score: artScore, Member: art.ID}).Result()
