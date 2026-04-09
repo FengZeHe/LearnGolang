@@ -42,6 +42,10 @@ func (t taskService) UpdateTask(req domain.UpdateTaskReq, ctx context.Context) (
 	if err = t.scheduler.RemoveTask(req.ID); err != nil {
 		return err
 	}
+	if err = t.taskRepo.UpdateTask(req, ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
 

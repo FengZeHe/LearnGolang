@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/basicprojectv2/jobs/code"
 	"github.com/basicprojectv2/jobs/domain"
 	"gorm.io/gorm"
 )
@@ -16,7 +17,7 @@ type GormTbTask struct {
 type TaskDAO interface {
 	AddTask(req domain.Task, ctx context.Context) (err error)
 	GetAllTasks(req domain.PageReq, ctx context.Context) (d []domain.Task, total, pageIndex, pageSize int, err error)
-	UpdateTask(req domain.Task) (err error)
+	UpdateTask(req domain.UpdateTaskReq) (err error)
 	DeleteTask(req domain.DeleteTaskReq) (err error)
 	FindTaskByID(id string, ctx context.Context) (task domain.Task, err error)
 	FindAllTasks(req domain.TaskFilterReq, ctx context.Context) (tasks []domain.Task, err error)
@@ -54,7 +55,7 @@ func (t *GormTbTask) GetAllTasks(req domain.PageReq, ctx context.Context) (d []d
 	return d, total, pageIndex, pageSize, nil
 }
 
-func (t *GormTbTask) UpdateTask(req domain.Task) (err error) {
+func (t *GormTbTask) UpdateTask(req domain.UpdateTaskReq) (err error) {
 	res := t.db.Save(&req)
 	if res.Error != nil {
 		return res.Error
@@ -113,7 +114,7 @@ func (t *GormTbTask) FindAllTasks(req domain.TaskFilterReq, ctx context.Context)
 }
 
 func (t *GormTbTask) FindActiveTasks() (tasks []domain.Task, err error) {
-	res := t.db.Where("status = ?", 0).Find(&tasks)
+	res := t.db.Where("status = ?", code.TaskRunning).Find(&tasks)
 	if res.Error != nil {
 		return tasks, res.Error
 	}

@@ -50,6 +50,10 @@ type UpdateTaskReq struct {
 	TaskType string `json:"taskType"`
 }
 
+func (UpdateTaskReq) TableName() string {
+	return "tb_tasks"
+}
+
 type HostScoreCalc struct {
 	ReadCount    int    `gorm:"column:read_count"`
 	LikeCount    int    `gorm:"column:like_count"`

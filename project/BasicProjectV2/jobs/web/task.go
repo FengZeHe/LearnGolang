@@ -86,6 +86,9 @@ func (r *TaskHandler) HandleUpdateTask(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if err := r.svc.UpdateTask(req, c); err != nil {
+	}
+
 }
 
 func (r *TaskHandler) StartTask(c *gin.Context) {

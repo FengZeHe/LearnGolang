@@ -59,7 +59,9 @@ func (t taskRepository) AddTask(req domain.AddTaskReq, ctx context.Context) (err
 }
 
 func (t taskRepository) UpdateTask(req domain.UpdateTaskReq, ctx context.Context) (err error) {
-	// todo 1.暂停该任务 2.更新Mysql数据库
+	if err = t.taskDAO.UpdateTask(req); err != nil {
+		return err
+	}
 	return err
 }
 
