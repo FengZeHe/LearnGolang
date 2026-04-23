@@ -26,6 +26,10 @@ import (
 	"github.com/basicprojectv2/jobs/scheduler"
 	service3 "github.com/basicprojectv2/jobs/service"
 	web3 "github.com/basicprojectv2/jobs/web"
+	repository4 "github.com/basicprojectv2/relationship/repository"
+	dao4 "github.com/basicprojectv2/relationship/repository/dao"
+	service4 "github.com/basicprojectv2/relationship/service"
+	web4 "github.com/basicprojectv2/relationship/web"
 	"github.com/basicprojectv2/settings"
 	"github.com/google/wire"
 )
@@ -88,7 +92,11 @@ func InitializeApp() *App {
 	cronScheduler := scheduler.NewCronScheduler(taskDAO, taskRegistry)
 	taskService := service3.NewTaskService(taskRepository, cronScheduler)
 	taskHandler := web3.NewTaskHandler(taskService)
-	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler, commentHandler, interactiveHandler, userSettingHandler, taskHandler)
+	relationshipDAO := dao4.NewGORMRelationshipDAO(db)
+	relationshipRepository := repository4.NewRelationshipRepository(relationshipDAO)
+	relationshipService := service4.NewRelationshipService(relationshipRepository)
+	relationshipHandler := web4.NewRelationshipHandler(relationshipService)
+	engine := ioc.InitWebServer(v, userHandler, sysHandler, menuHandler, roleHandler, draftHandler, articleHandler, commentHandler, interactiveHandler, userSettingHandler, taskHandler, relationshipHandler)
 	app := &App{
 		server:    engine,
 		Registry:  taskRegistry,

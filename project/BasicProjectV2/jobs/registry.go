@@ -26,7 +26,6 @@ func NewTaskRegistry(taskDAO dao.TaskDAO, rdb redis.Cmdable) *TaskRegistry {
 	// 注册任务
 	r.Register("SayHi", fun.ExecTimeKeeping)
 
-	// todo 闭包知识点
 	r.Register("CalcHotList", func(taskID uint) error {
 		return fun.CalcHotList(taskID, r.taskDAO, r.rdb)
 	})

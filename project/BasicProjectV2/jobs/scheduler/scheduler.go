@@ -105,6 +105,7 @@ func (s *CronScheduler) RemoveTask(taskID uint) (err error) {
 	if !exists {
 		log.Println("任务不存在", taskID)
 		return nil
+
 	}
 	s.cron.Remove(entryID)
 	delete(s.taskEntry, taskID) // 删除map中的字段

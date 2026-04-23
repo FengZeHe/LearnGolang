@@ -7,6 +7,7 @@ import (
 	"github.com/basicprojectv2/internal/web"
 	"github.com/basicprojectv2/internal/web/middleware"
 	jobs "github.com/basicprojectv2/jobs/web"
+	relationship "github.com/basicprojectv2/relationship/web"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -17,7 +18,7 @@ import (
 func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web.SysHandler,
 	menuHdl *web.MenuHandler, roleHdl *web.RoleHandler, draftHdl *web.DraftHandler,
 	articleHdl *web.ArticleHandler, commentHdl *web.CommentHandler, intHdl *interactive.InteractiveHandler,
-	userSetHdl *web.UserSettingHandler, taskHdl *jobs.TaskHandler) *gin.Engine {
+	userSetHdl *web.UserSettingHandler, taskHdl *jobs.TaskHandler, relationshipHdl *relationship.RelationshipHandler) *gin.Engine {
 	server := gin.Default()
 	server.Use(mdls[0], mdls[4], mdls[5], mdls[6])
 	userHdl.RegisterRoutes(server, mdls[3], mdls[2])
@@ -30,6 +31,7 @@ func InitWebServer(mdls []gin.HandlerFunc, userHdl *web.UserHandler, sysHdl *web
 	intHdl.RegisterRoutes(server, mdls[2])
 	userSetHdl.RegisterRoutes(server, mdls[2])
 	taskHdl.RegisterRoutes(server, mdls[2])
+	relationshipHdl.RegisterRoutes(server, mdls[2])
 
 	return server
 }

@@ -16,13 +16,16 @@ import (
 	"github.com/basicprojectv2/internal/web"
 	"github.com/basicprojectv2/internal/web/middleware"
 	"github.com/basicprojectv2/ioc"
-	"github.com/basicprojectv2/jobs"
+	jobs "github.com/basicprojectv2/jobs"
 	jobsRepository "github.com/basicprojectv2/jobs/repository"
 	jobsDAO "github.com/basicprojectv2/jobs/repository/dao"
 	jobsSch "github.com/basicprojectv2/jobs/scheduler"
 	jobsService "github.com/basicprojectv2/jobs/service"
 	jobsWeb "github.com/basicprojectv2/jobs/web"
-
+	relationshipRepository "github.com/basicprojectv2/relationship/repository"
+	relationshipDAO "github.com/basicprojectv2/relationship/repository/dao"
+	relationshipService "github.com/basicprojectv2/relationship/service"
+	relationshipWeb "github.com/basicprojectv2/relationship/web"
 	"github.com/basicprojectv2/settings"
 	"github.com/google/wire"
 )
@@ -78,6 +81,7 @@ func InitializeApp() *App {
 		intDao.NewInteractiveDAO,
 		dao.NewUserSettingDAO,
 		jobsDAO.NewTaskDAO,
+		relationshipDAO.NewGORMRelationshipDAO,
 
 		// repository部分
 		repository.NewCacheUserRepository,
@@ -91,6 +95,7 @@ func InitializeApp() *App {
 		intRepository.NewInteractiveRepository,
 		repository.NewUserSettingRepository,
 		jobsRepository.NewTaskRepository,
+		relationshipRepository.NewRelationshipRepository,
 
 		// service部分
 		ioc.InitSMSService,
@@ -105,6 +110,7 @@ func InitializeApp() *App {
 		intService.NewInteractiveService,
 		service.NewUserSettingService,
 		jobsService.NewTaskService,
+		relationshipService.NewRelationshipService,
 
 		//handler部分
 		web.NewUserHandler,
@@ -118,6 +124,7 @@ func InitializeApp() *App {
 		intWeb.NewInteractiveHandler,
 		web.NewUserSettingHandler,
 		jobsWeb.NewTaskHandler,
+		relationshipWeb.NewRelationshipHandler,
 
 		// Scheduler
 		jobs.NewTaskRegistry,
