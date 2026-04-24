@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
-	"encoding/base64"
+	"log"
+
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/repository/dao"
-	"log"
 )
 
 type SysRepository interface {
@@ -38,7 +38,6 @@ func (s sysRepository) GetUserProfileByUserID(ctx context.Context, id string) (u
 	temp, err := s.dao.FindUserProfileByUserID(ctx, id)
 	// 图片二进制转base64格式
 	user = UserProfileToEntity(temp)
-	log.Println(user.AvatarFile)
 	return user, err
 }
 
@@ -101,22 +100,22 @@ type RepoUserProfile struct {
 	Role       string `gorm:"size:255;" json:"role"`
 	Phone      string `gorm:"size:255;" json:"phone"`
 	Birthday   string `gorm:"size:255;" json:"-"`
-	NickName   string `gorm:"size:255;" json:"nickName"`
+	NickName   string `column:"nickname" json:"nickName"`
 	AboutMe    string `gorm:"size:255;" json:"aboutMe"`
 	AvatarFile string `gorm:"size:255;" json:"avatarFile"`
 }
 
 func UserProfileToEntity(target domain.UserProfile) RepoUserProfile {
-	base64Avatar := base64.StdEncoding.EncodeToString(target.AvatarFile)
+	//base64Avatar := base64.StdEncoding.EncodeToString(target.AvatarFile)
 
 	return RepoUserProfile{
-		ID:         target.ID,
-		Email:      target.Email,
-		Role:       target.Role,
-		Phone:      target.Phone,
-		Birthday:   target.Birthday,
-		NickName:   target.NickName,
-		AboutMe:    target.AboutMe,
-		AvatarFile: base64Avatar,
+		ID:       target.ID,
+		Email:    target.Email,
+		Role:     target.Role,
+		Phone:    target.Phone,
+		Birthday: target.Birthday,
+		NickName: target.NickName,
+		AboutMe:  target.AboutMe,
+		//AvatarFile: base64Avatar,
 	}
 }

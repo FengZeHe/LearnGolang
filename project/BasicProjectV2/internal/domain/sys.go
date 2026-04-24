@@ -21,14 +21,17 @@ type API struct {
 }
 
 type UserProfile struct {
-	ID         uint   `gorm:"primaryKey" json:"userID"`
-	Email      string `gorm:"size:255;" json:"email"`
-	Role       string `gorm:"size:255;" json:"role"`
-	Phone      string `gorm:"size:255;" json:"phone"`
-	Birthday   string `gorm:"size:255;" json:"-"`
-	NickName   string `gorm:"size:255;" json:"nickName"`
-	AboutMe    string `gorm:"size:255;" json:"aboutMe"`
-	AvatarFile []byte `gorm:"size:255;" json:"avatarFile"`
+	ID       uint   `gorm:"primaryKey" json:"userID"`
+	Email    string `gorm:"column:email" json:"email"`
+	Role     string `gorm:"column:role" json:"role"`
+	Phone    string `gorm:"column:phone" json:"phone"`
+	Birthday string `gorm:"size:255;" json:"-"`
+	NickName string `gorm:"column:nickname" json:"nickName"`
+	AboutMe  string `gorm:"column:aboutme" json:"aboutMe"`
+}
+
+func (u UserProfile) TableName() string {
+	return "users"
 }
 
 type UserAvatar struct {

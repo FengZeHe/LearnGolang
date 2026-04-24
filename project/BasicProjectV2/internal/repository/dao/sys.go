@@ -2,9 +2,10 @@ package dao
 
 import (
 	"context"
+	"log"
+
 	"github.com/basicprojectv2/internal/domain"
 	"gorm.io/gorm"
-	"log"
 )
 
 type GORMSysDAO struct {
@@ -29,14 +30,12 @@ func NewSysDAO(db *gorm.DB) SysDAO {
 }
 
 func (dao *GORMSysDAO) FindUserProfileByUserID(ctx context.Context, id string) (user domain.UserProfile, err error) {
-	if err = dao.db.Table("users").
-		Select("users.id,users.email,users.role,users.phone,users.birthday,users.nickname,users.aboutme,user_avatar.avatar_file").
-		Joins("LEFT JOIN user_avatar ON user_avatar.user_id = users.id").
-		Where("users.id = ?", id).Scan(&user).Error; err != nil {
+	temp := domain.UserProfile{}
+	if err = dao.db.Model(&temp).Where("id = ?", id).First(&user).Error; err != nil {
 		return user, err
 	}
 
-	return user, err
+	return user, nil
 }
 
 func (dao *GORMSysDAO) FindApisByRole(ctx context.Context, role string) (apiItems []domain.API, err error) {
