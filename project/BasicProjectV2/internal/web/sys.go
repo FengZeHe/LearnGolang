@@ -1,12 +1,13 @@
 package web
 
 import (
+	"log"
+	"net/http"
+
 	"github.com/basicprojectv2/internal/domain"
 	"github.com/basicprojectv2/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
-	"log"
-	"net/http"
 )
 
 type SysHandler struct {
@@ -34,6 +35,7 @@ func (h *SysHandler) RegisterRoutes(server *gin.Engine, roleCheck, loginCheck, i
 
 	//获取用户个人信息
 	ug.POST("/userProfile", loginCheck, h.HandleGetUserProfile)
+	ug.GET("/userProfileByUID", loginCheck, h.HandleGetUserProfileByID)
 
 	// 管理casbin策略
 	ug.POST("/addPolicy", loginCheck, h.HandleAddPolicy)
@@ -167,6 +169,26 @@ func (h *SysHandler) HandleGetUserProfile(ctx *gin.Context) {
 	}
 	strUserid := userid.(string)
 	user, err := h.svc.GetUserProfileByUserID(ctx, strUserid)
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, "error")
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": user,
+	})
+}
+
+func (h *SysHandler) HandleGetUserProfileByID(ctx *gin.Context) {
+	uid, exists := ctx.GetQuery("uid")
+	if !exists {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"msg": "bad request",
+		})
+		return
+	}
+
+	user, err := h.svc.GetUserProfileByUserID(ctx, uid)
 	if err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, "error")
