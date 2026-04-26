@@ -23,6 +23,7 @@ var (
 
 type RelationshipDAO interface {
 	HandleFollow(followeeUId, followerUId string, action int, ctx context.Context) error
+	HandleBlock(blockerUId, blockedUid string, action int, ctx context.Context) error
 }
 
 func NewGORMRelationshipDAO(db *gorm.DB) RelationshipDAO {
@@ -31,7 +32,7 @@ func NewGORMRelationshipDAO(db *gorm.DB) RelationshipDAO {
 
 func (d *GORMRelationship) HandleFollow(followeeUId, followerUId string, action int, ctx context.Context) (err error) {
 
-	// todo  1. 修改follow关系 2. 更新relationship_record表
+	// 1. 修改follow关系 2. 更新relationship_record表
 	now := time.Now().Format("2006-01-02 15:04:05")
 
 	return d.db.Transaction(func(tx *gorm.DB) error {
@@ -60,7 +61,6 @@ func (d *GORMRelationship) HandleFollow(followeeUId, followerUId string, action 
 			return err
 		}
 
-		// todo 如果之前已关注 followee 就不增加  (relationship_record)
 		switch {
 		case beforeStatus == strconv.Itoa(action):
 			log.Println("已有记录，不增加了")
@@ -131,5 +131,32 @@ func (d *GORMRelationship) HandleFollow(followeeUId, followerUId string, action 
 
 		return nil
 
+	})
+}
+
+func (d *GORMRelationship) HandleBlock(blockerUId, blockedUid string, action int, ctx context.Context) (err error) {
+
+	now := time.Now().Format("2006-01-02 15:04:05")
+	return d.db.Transaction(func(tx *gorm.DB) error {
+		temp := domain.User{}
+		if err = tx.Model(&domain.User{}).Where("id = ?", blockedUid).First(&temp).Error; err != nil {
+			return err
+		}
+
+		if err = tx.Model(&domain.UserBlock{}).Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "blocker_id"}, {Name: "blocked_uid"}},
+			DoUpdates: clause.Assignments(map[string]any{
+				"status":     strconv.Itoa(action),
+				"updated_at": now,
+			}),
+		}).Create(&domain.UserBlock{
+			BlockerId: blockerUId,
+			BlockedId: blockedUid,
+			Status:    strconv.Itoa(action),
+			CreatedAt: now,
+		}).Error; err != nil {
+			return err
+		}
+		return nil
 	})
 }

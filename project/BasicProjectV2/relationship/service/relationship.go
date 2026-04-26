@@ -13,6 +13,7 @@ type relationshipService struct {
 
 type RelationshipService interface {
 	HandleFollow(uid string, req domain.FollowReq, ctx context.Context) error
+	HandleBlock(uid string, req domain.BlockReq, ctx context.Context) error
 }
 
 func NewRelationshipService(r repository.RelationshipRepository) RelationshipService {
@@ -21,6 +22,13 @@ func NewRelationshipService(r repository.RelationshipRepository) RelationshipSer
 
 func (r *relationshipService) HandleFollow(uid string, req domain.FollowReq, ctx context.Context) (err error) {
 	if err = r.repo.HandleFollow(uid, req, ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *relationshipService) HandleBlock(uid string, req domain.BlockReq, ctx context.Context) (err error) {
+	if err = r.repo.HandleBlock(uid, req, ctx); err != nil {
 		return err
 	}
 	return nil

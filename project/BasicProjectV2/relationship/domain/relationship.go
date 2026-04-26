@@ -2,7 +2,7 @@ package domain
 
 type FollowReq struct {
 	Uid    string `json:"uid"`
-	Follow int    `json:"follow"`
+	Action int    `json:"action"`
 }
 
 type UserFollow struct {
@@ -44,4 +44,22 @@ type Relationship struct {
 
 func (Relationship) TableName() string {
 	return "relationship_record"
+}
+
+type BlockReq struct {
+	Uid    string `json:"uid"`
+	Action int    `json:"action"`
+}
+
+type UserBlock struct {
+	ID        string `gorm:"primaryKey;autoIncrement;column:id" json:"id"`
+	BlockerId string `gorm:"column:blocker_id" json:"blocker_id"`
+	BlockedId string `gorm:"column:blocked_id" json:"blocked_id"`
+	Status    string `gorm:"column:status" json:"status"`
+	CreatedAt string `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt string `gorm:"column:updated_at" json:"updated_at"`
+}
+
+func (UserBlock) TableName() string {
+	return "user_block"
 }
