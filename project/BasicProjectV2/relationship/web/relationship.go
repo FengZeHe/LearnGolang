@@ -30,6 +30,7 @@ func (r *RelationshipHandler) RegisterRoutes(service *gin.Engine, loginCheck gin
 	rg.GET("/followee", r.QueryFolloweeList)
 	rg.GET("/follower", r.QueryFollowerList)
 	rg.GET("/count", r.HandleCount)
+	rg.GET("/countMe", r.HandleCountMe)
 }
 
 func (r *RelationshipHandler) HandleFollow(ctx *gin.Context) {
@@ -101,13 +102,7 @@ func (r *RelationshipHandler) QueryRelationship(ctx *gin.Context) {
 
 	targetUid := ctx.Query("uid")
 
-	userStatus, err := r.svc.QueryRelationship(strUid, targetUid, ctx)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"message": err.Error(),
-		})
-		return
-	}
+	userStatus, _ := r.svc.QueryRelationship(strUid, targetUid, ctx)
 	ctx.JSON(200, gin.H{
 		"data": userStatus,
 	})
@@ -169,6 +164,21 @@ func (r *RelationshipHandler) QueryFollowerList(ctx *gin.Context) {
 }
 
 func (r *RelationshipHandler) HandleCount(ctx *gin.Context) {
+	uid := ctx.Query("uid")
+	c, err := r.svc.CountRelationship(uid, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"data": c,
+	})
+}
+
+func (r *RelationshipHandler) HandleCountMe(ctx *gin.Context) {
 	uid, exists := ctx.Get("userid")
 	if !exists {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
@@ -176,8 +186,8 @@ func (r *RelationshipHandler) HandleCount(ctx *gin.Context) {
 		})
 		return
 	}
-	strUid, _ := uid.(string)
 
+	strUid, _ := uid.(string)
 	c, err := r.svc.CountRelationship(strUid, ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
