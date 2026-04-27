@@ -178,12 +178,12 @@ func (d *GORMRelationship) QueryFolloweeList(uid string, pageIndex, pageSize int
 
 	if err = d.db.Model(&domain.UserRespList{}).Table("user_follow uf").
 		Select("uf.follower_id,u.nickname").Joins("JOIN users u ON uf.followee_id = u.id").
-		Where("uf.followee_id = ? ", uid).Count(&total).Error; err != nil {
+		Where("uf.followee_id = ? AND uf.status = 1", uid).Count(&total).Error; err != nil {
 	}
 
 	if err = d.db.Model(&domain.UserRespList{}).Table("user_follow uf").
-		Select("uf.follower_id,u.nickname").Joins("JOIN users u ON uf.followee_id = u.id").
-		Where("uf.followee_id = ? ", uid).
+		Select("uf.follower_id,u.nickname").Joins("JOIN users u ON uf.follower_id = u.id").
+		Where("uf.followee_id = ? AND uf.status = 1", uid).
 		Limit(pageSize).Offset(pageSize * (pageIndex - 1)).
 		Find(&ulist).Error; err != nil {
 		return resp, err
@@ -196,21 +196,22 @@ func (d *GORMRelationship) QueryFolloweeList(uid string, pageIndex, pageSize int
 }
 
 func (d *GORMRelationship) QueryFollowerList(uid string, pageIndex, pageSize int, ctx context.Context) (resp domain.FollowerListResp, err error) {
-	var ulist []domain.UserRespList
+	var ulist []domain.FollowerList
 	var total int64
 
 	if err = d.db.Model(&domain.UserRespList{}).Table("user_follow uf").
 		Select("uf.followee_id,u.nickname").Joins("JOIN users u ON uf.follower_id = u.id").
-		Where("uf.follower_id = ? ", uid).Count(&total).Error; err != nil {
+		Where("uf.follower_id = ? AND status = 1", uid).Count(&total).Error; err != nil {
 	}
 
 	if err = d.db.Model(&domain.UserRespList{}).Table("user_follow uf").
-		Select("uf.followee_id,u.nickname").Joins("JOIN users u ON uf.follower_id = u.id").
-		Where("uf.follower_id = ? ", uid).
+		Select("uf.followee_id,u.nickname").Joins("JOIN users u ON uf.followee_id = u.id").
+		Where("uf.follower_id = ? AND status = 1", uid).
 		Limit(pageSize).Offset(pageSize * (pageIndex - 1)).
 		Find(&ulist).Error; err != nil {
 		return resp, err
 	}
+
 	resp.List = ulist
 	resp.Total = int(total)
 	resp.PageIndex = pageIndex

@@ -96,7 +96,12 @@ type FollowerListResp struct {
 	PageIndex int            `json:"page_index"`
 	PageSize  int            `json:"page_size"`
 	Total     int            `json:"total"`
-	List      []UserRespList `json:"list"`
+	List      []FollowerList `json:"list"`
+}
+
+type FollowerList struct {
+	ID       string `gorm:"column:followee_id" json:"followee_id"`
+	Nickname string `gorm:"column:nickname" json:"nickname"`
 }
 
 type RelationshipCount struct {

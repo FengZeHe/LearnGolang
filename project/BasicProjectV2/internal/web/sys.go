@@ -36,6 +36,7 @@ func (h *SysHandler) RegisterRoutes(server *gin.Engine, roleCheck, loginCheck, i
 	//获取用户个人信息
 	ug.POST("/userProfile", loginCheck, h.HandleGetUserProfile)
 	ug.GET("/userProfileByUID", loginCheck, h.HandleGetUserProfileByID)
+	ug.GET("/myProfileByUID", loginCheck, h.HandleGetMyProfileByID)
 
 	// 管理casbin策略
 	ug.POST("/addPolicy", loginCheck, h.HandleAddPolicy)
@@ -189,6 +190,26 @@ func (h *SysHandler) HandleGetUserProfileByID(ctx *gin.Context) {
 	}
 
 	user, err := h.svc.GetUserProfileByUserID(ctx, uid)
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, "error")
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": user,
+	})
+}
+
+func (h *SysHandler) HandleGetMyProfileByID(ctx *gin.Context) {
+	uid, exists := ctx.Get("userid")
+	if !exists {
+		ctx.JSON(400, gin.H{
+			"msg": "emmm",
+		})
+		return
+	}
+	strUserid := uid.(string)
+	user, err := h.svc.GetUserProfileByUserID(ctx, strUserid)
 	if err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, "error")
