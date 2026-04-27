@@ -14,6 +14,17 @@ type UserFollow struct {
 	UpdatedAt  string `gorm:"column:updated_at" json:"updated_at"`
 }
 
+type UserStatus struct {
+	FolloweeId string `gorm:"column:followee_id" json:"followee_id"`
+	FollowerId string `gorm:"column:follower_id" json:"follower_id"`
+	Status     string `gorm:"column:status" json:"status"`
+	CreatedAt  string `gorm:"column:created_at" json:"created_at"`
+}
+
+func (UserStatus) TableName() string {
+	return "user_follow"
+}
+
 func (UserFollow) TableName() string {
 	return "user_follow"
 }
@@ -62,4 +73,37 @@ type UserBlock struct {
 
 func (UserBlock) TableName() string {
 	return "user_block"
+}
+
+type FollowListReq struct {
+	PageIndex int `form:"pageIndex" json:"page_index"`
+	PageSize  int `form:"pageSize" json:"page_size"`
+}
+
+type FolloweeListResp struct {
+	PageIndex int            `json:"page_index"`
+	PageSize  int            `json:"page_size"`
+	Total     int            `json:"total"`
+	List      []UserRespList `json:"list"`
+}
+
+type UserRespList struct {
+	ID       string `gorm:"column:follower_id" json:"follower_id"`
+	Nickname string `gorm:"column:nickname" json:"nickname"`
+}
+
+type FollowerListResp struct {
+	PageIndex int            `json:"page_index"`
+	PageSize  int            `json:"page_size"`
+	Total     int            `json:"total"`
+	List      []UserRespList `json:"list"`
+}
+
+type RelationshipCount struct {
+	FolloweeNum int64 `gorm:"column:followee_num" json:"followee_num"`
+	FollowerNum int64 `gorm:"column:follower_num" json:"follower_num"`
+}
+
+func (RelationshipCount) TableName() string {
+	return "relationship_record"
 }

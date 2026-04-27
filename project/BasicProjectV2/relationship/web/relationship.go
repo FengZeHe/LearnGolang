@@ -25,6 +25,11 @@ func (r *RelationshipHandler) RegisterRoutes(service *gin.Engine, loginCheck gin
 		})
 	})
 	rg.POST("/follow", r.HandleFollow)
+	rg.POST("/block", r.HandleBlock)
+	rg.GET("/", r.QueryRelationship)
+	rg.GET("/followee", r.QueryFolloweeList)
+	rg.GET("/follower", r.QueryFollowerList)
+	rg.GET("/count", r.HandleCount)
 }
 
 func (r *RelationshipHandler) HandleFollow(ctx *gin.Context) {
@@ -82,4 +87,106 @@ func (r *RelationshipHandler) HandleBlock(ctx *gin.Context) {
 		"message": "ok",
 	})
 
+}
+
+func (r *RelationshipHandler) QueryRelationship(ctx *gin.Context) {
+	uid, exists := ctx.Get("userid")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"code": http.StatusUnauthorized,
+		})
+		return
+	}
+	strUid, _ := uid.(string)
+
+	targetUid := ctx.Query("uid")
+
+	userStatus, err := r.svc.QueryRelationship(strUid, targetUid, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	ctx.JSON(200, gin.H{
+		"data": userStatus,
+	})
+
+}
+
+func (r *RelationshipHandler) QueryFolloweeList(ctx *gin.Context) {
+	uid, exists := ctx.Get("userid")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"code": http.StatusUnauthorized,
+		})
+		return
+	}
+	strUid, _ := uid.(string)
+	req := domain.FollowListReq{}
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		req.PageIndex = 1
+		req.PageSize = 10
+	}
+
+	fl, err := r.svc.QueryFolloweeList(strUid, req, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	ctx.JSON(200, gin.H{
+		"data": fl,
+	})
+}
+
+func (r *RelationshipHandler) QueryFollowerList(ctx *gin.Context) {
+	uid, exists := ctx.Get("userid")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"code": http.StatusUnauthorized,
+		})
+		return
+	}
+	strUid, _ := uid.(string)
+	req := domain.FollowListReq{}
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		req.PageIndex = 1
+		req.PageSize = 10
+	}
+
+	fl, err := r.svc.QueryFollowerList(strUid, req, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	ctx.JSON(200, gin.H{
+		"data": fl,
+	})
+}
+
+func (r *RelationshipHandler) HandleCount(ctx *gin.Context) {
+	uid, exists := ctx.Get("userid")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"code": http.StatusUnauthorized,
+		})
+		return
+	}
+	strUid, _ := uid.(string)
+
+	c, err := r.svc.CountRelationship(strUid, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"data": c,
+	})
 }

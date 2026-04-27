@@ -24,6 +24,10 @@ var (
 type RelationshipDAO interface {
 	HandleFollow(followeeUId, followerUId string, action int, ctx context.Context) error
 	HandleBlock(blockerUId, blockedUid string, action int, ctx context.Context) error
+	QueryRelationship(uid, targetUid string, ctx context.Context) (userStatus domain.UserStatus, err error)
+	QueryFolloweeList(uid string, pageIndex, pageSize int, ctx context.Context) (userStatus domain.FolloweeListResp, err error)
+	QueryFollowerList(uid string, pageIndex, pageSize int, ctx context.Context) (userStatus domain.FollowerListResp, err error)
+	CountRelationship(uid string, ctx context.Context) (resp domain.RelationshipCount, err error)
 }
 
 func NewGORMRelationshipDAO(db *gorm.DB) RelationshipDAO {
@@ -159,4 +163,64 @@ func (d *GORMRelationship) HandleBlock(blockerUId, blockedUid string, action int
 		}
 		return nil
 	})
+}
+
+func (d *GORMRelationship) QueryRelationship(uid, targetUid string, ctx context.Context) (userStatus domain.UserStatus, err error) {
+	if err = d.db.Model(&domain.UserStatus{}).Where("followee_id = ? AND follower_id = ?", uid, targetUid).First(&userStatus).Error; err != nil {
+		return userStatus, err
+	}
+	return userStatus, nil
+}
+
+func (d *GORMRelationship) QueryFolloweeList(uid string, pageIndex, pageSize int, ctx context.Context) (resp domain.FolloweeListResp, err error) {
+	var ulist []domain.UserRespList
+	var total int64
+
+	if err = d.db.Model(&domain.UserRespList{}).Table("user_follow uf").
+		Select("uf.follower_id,u.nickname").Joins("JOIN users u ON uf.followee_id = u.id").
+		Where("uf.followee_id = ? ", uid).Count(&total).Error; err != nil {
+	}
+
+	if err = d.db.Model(&domain.UserRespList{}).Table("user_follow uf").
+		Select("uf.follower_id,u.nickname").Joins("JOIN users u ON uf.followee_id = u.id").
+		Where("uf.followee_id = ? ", uid).
+		Limit(pageSize).Offset(pageSize * (pageIndex - 1)).
+		Find(&ulist).Error; err != nil {
+		return resp, err
+	}
+	resp.List = ulist
+	resp.Total = int(total)
+	resp.PageIndex = pageIndex
+	resp.PageSize = pageSize
+	return resp, nil
+}
+
+func (d *GORMRelationship) QueryFollowerList(uid string, pageIndex, pageSize int, ctx context.Context) (resp domain.FollowerListResp, err error) {
+	var ulist []domain.UserRespList
+	var total int64
+
+	if err = d.db.Model(&domain.UserRespList{}).Table("user_follow uf").
+		Select("uf.followee_id,u.nickname").Joins("JOIN users u ON uf.follower_id = u.id").
+		Where("uf.follower_id = ? ", uid).Count(&total).Error; err != nil {
+	}
+
+	if err = d.db.Model(&domain.UserRespList{}).Table("user_follow uf").
+		Select("uf.followee_id,u.nickname").Joins("JOIN users u ON uf.follower_id = u.id").
+		Where("uf.follower_id = ? ", uid).
+		Limit(pageSize).Offset(pageSize * (pageIndex - 1)).
+		Find(&ulist).Error; err != nil {
+		return resp, err
+	}
+	resp.List = ulist
+	resp.Total = int(total)
+	resp.PageIndex = pageIndex
+	resp.PageSize = pageSize
+	return resp, nil
+}
+
+func (d *GORMRelationship) CountRelationship(uid string, ctx context.Context) (resp domain.RelationshipCount, err error) {
+	if err = d.db.Model(&domain.RelationshipCount{}).Where("uid = ?", uid).Find(&resp).Error; err != nil {
+		return resp, err
+	}
+	return resp, nil
 }
