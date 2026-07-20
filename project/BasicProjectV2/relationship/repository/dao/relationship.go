@@ -132,9 +132,7 @@ func (d *GORMRelationship) HandleFollow(followeeUId, followerUId string, action 
 			log.Println("followee 关注-1 , follower 粉丝-1")
 
 		}
-
 		return nil
-
 	})
 }
 
@@ -177,7 +175,6 @@ func (d *GORMRelationship) QueryFolloweeList(uid string, pageIndex, pageSize int
 	var total int64
 
 	if err = d.db.Model(&domain.UserRespList{}).Table("user_follow uf").
-		Select("uf.follower_id,u.nickname").Joins("JOIN users u ON uf.followee_id = u.id").
 		Where("uf.followee_id = ? AND uf.status = 1", uid).Count(&total).Error; err != nil {
 	}
 
