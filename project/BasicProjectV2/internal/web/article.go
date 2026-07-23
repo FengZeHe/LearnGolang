@@ -31,6 +31,8 @@ func (r *ArticleHandler) RegisterRoutes(server *gin.Engine, loginCheck gin.Handl
 	rg.POST("/getArticleByID", r.GetArticleByID)
 	//rg.POST("/addReadCount", r.AddReadCount)
 	rg.GET("/hotList", r.GetHotList)
+	rg.GET("/search", r.HandleSearch)
+	rg.GET("sync", r.HandleSync)
 }
 
 func (r *ArticleHandler) GetArticles(c *gin.Context) {
@@ -172,4 +174,36 @@ func (r *ArticleHandler) GetHotList(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": list,
 	})
+}
+
+func (r *ArticleHandler) HandleSearch(c *gin.Context) {
+	var req domain.ArticleSearchReq
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": err.Error(),
+		})
+		return
+	}
+
+	data, err := r.svc.HandleSearch(c, req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg": err.Error(),
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data": data,
+	})
+}
+
+func (r *ArticleHandler) HandleSync(c *gin.Context) {
+	if err := r.svc.HandleSync(c); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg": err.Error(),
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"msg": "ok",
+	})
+
 }

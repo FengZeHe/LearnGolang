@@ -17,3 +17,6 @@ redis:
 
 kafka:
   addr: 192.168.31.212:9092
+
+elasticsearch:
+  addr: "http://localhost:9200"

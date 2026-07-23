@@ -17,10 +17,20 @@ type ArticleRepository interface {
 	GetAuthorArticles(ctx context.Context, req domain.QueryAuthorArticlesReq, userid string) (domain.ArticleRepoResponse, error)
 	AddArticleReadCount(ctx context.Context, id string) error
 	GetHotList(ctx context.Context) ([]domain.ArticleWithScores, error)
+	HandleSearch(ctx context.Context, req domain.ArticleSearchReq) (map[string]interface{}, error)
+	HandleSync(ctx context.Context) error
 }
 
 func NewArticleRepository(dao dao.ArticleDAO) ArticleRepository {
 	return &articleRepository{articleDAO: dao}
+}
+
+func (a *articleRepository) HandleSearch(ctx context.Context, req domain.ArticleSearchReq) (map[string]interface{}, error) {
+	return a.articleDAO.SearchByKeyword(ctx, req.Keywords, req.Page, req.Size)
+}
+
+func (a *articleRepository) HandleSync(ctx context.Context) error {
+	return a.articleDAO.SyncArticles()
 }
 
 func (a *articleRepository) GetArticles(ctx context.Context, req domain.QueryArticlesReq) (l domain.ArticleRepoResponse, err error) {

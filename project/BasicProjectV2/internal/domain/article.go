@@ -9,16 +9,17 @@ type AddArticle struct {
 }
 
 type Article struct {
-	ID         string `json:"id"`
-	Title      string `json:"title"`
-	Content    string `json:"content"`
-	Status     string `json:"status"`
-	Read       int    `json:"read"`
-	AuthorName string `json:"authorName"`
-	AuthorID   string `json:"authorId"`
-	CreatedAt  string `json:"created_at"`
-	UpdatedAt  string `json:"updated_at"`
-	DeletedAt  string `json:"-"`
+	ID         string   `json:"id"`
+	Title      string   `json:"title"`
+	Content    string   `json:"content"`
+	Status     string   `json:"status"`
+	Read       int      `json:"read"`
+	AuthorName string   `json:"authorName"`
+	AuthorID   string   `json:"authorId"`
+	CreatedAt  string   `json:"created_at"`
+	UpdatedAt  string   `json:"updated_at"`
+	DeletedAt  string   `json:"-"`
+	Tags       []string `json:"tags" gorm:"column:tags;serializer:json"`
 }
 
 type ArticlesDAOResponse struct {
@@ -42,6 +43,16 @@ type ArticleRepoResponse struct {
 	PageCount  int               `json:"pageCount"`
 	TotalCount int               `json:"totalCount"`
 	Articles   []ArticleResponse `json:"articles"`
+}
+
+type ArticleWithES struct {
+	ID        string   `json:"id"`
+	Title     string   `json:"title"`
+	Content   string   `json:"content"`
+	Tags      []string `json:"tags"`
+	Status    string   `json:"status"`
+	CreatedAt string   `json:"created_at,omitempty"`
+	UpdatedAt string   `json:"updated_at,omitempty"`
 }
 
 type QueryArticlesReq struct {
@@ -74,4 +85,10 @@ type ArticleWithScores struct {
 	ID    string  `json:"id"`
 	Title string  `json:"title"`
 	Score float64 `json:"score"`
+}
+
+type ArticleSearchReq struct {
+	Keywords string `form:"keywords" binding:"required"`
+	Page     int    `form:"page,default=1"`
+	Size     int    `form:"size,default=10"`
 }

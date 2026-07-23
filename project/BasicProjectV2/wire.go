@@ -50,10 +50,11 @@ var SaramaConsumerSet = wire.NewSet(
 func InitializeApp() *App {
 	wire.Build(
 		// 读取配置
-		settings.InitMysqlConfig, settings.InitRedisConfig,
+		settings.InitMysqlConfig, settings.InitRedisConfig, settings.InitElasticsearchConfig,
 		// settings.InitSaramaConfig,
 		// 第三方依赖部分
 		ioc.InitDB, ioc.InitRedis, ioc.InitMysqlCasbinEnforcer, ioc.LoadI18nBundle,
+		ioc.InitES,
 		// Kafka部分
 		//ioc.InitSaramaClient, ioc.InitSyncProducer,
 		//ioc.InitConsumer,

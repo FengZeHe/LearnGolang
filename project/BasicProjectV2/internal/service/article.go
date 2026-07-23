@@ -17,10 +17,24 @@ type ArticleService interface {
 	AddArticleReadCount(ctx context.Context, id string) error
 	GetArticlesByID(ctx context.Context, req domain.QueryArticlesByIDReq) (domain.Article, error)
 	GetHotList(ctx context.Context) ([]domain.ArticleWithScores, error)
+	HandleSearch(ctx context.Context, req domain.ArticleSearchReq) (map[string]interface{}, error)
+	HandleSync(ctx context.Context) error
 }
 
 func NewArticleService(repo repository.ArticleRepository) ArticleService {
 	return &articleService{repo: repo}
+}
+
+func (s *articleService) HandleSearch(ctx context.Context, req domain.ArticleSearchReq) (map[string]interface{}, error) {
+	data, err := s.repo.HandleSearch(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (s *articleService) HandleSync(ctx context.Context) error {
+	return s.repo.HandleSync(ctx)
 }
 
 func (s *articleService) GetArticles(ctx context.Context, req domain.QueryArticlesReq) (l domain.ArticleRepoResponse, err error) {
