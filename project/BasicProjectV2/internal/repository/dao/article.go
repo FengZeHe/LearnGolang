@@ -54,9 +54,10 @@ func (dao *GORMArticle) SearchByKeyword(ctx context.Context, keyword string, pag
 		"size": pageSize,
 		"query": map[string]interface{}{
 			"multi_match": map[string]interface{}{
-				"query":  keyword,
-				"fields": []string{"title^3", "content^1", "tags"},
-				"type":   "best_fields",
+				"query":    keyword,
+				"fields":   []string{"title^3", "content^1", "tags"},
+				"type":     "best_fields",
+				"analyzer": "ik_smart", // 明确使用ik_smart（粗粒度）进行搜索，适合长尾词精准匹配
 			},
 		},
 		"highlight": map[string]interface{}{
